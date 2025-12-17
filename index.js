@@ -301,8 +301,8 @@ function renderStores() {
     grid.innerHTML = stores.map(store => {
         const isOpen = store.open !== false;
         const bannerStyle = store.imageUrl 
-            ? `background-image: url('${store.imageUrl}'); background-size: cover; background-position: center;`
-            : (store.bannerColor ? 'background:' + store.bannerColor : '');
+            ? `background: url('${store.imageUrl}') center/cover no-repeat;`
+            : (store.bannerColor ? `background: ${store.bannerColor};` : '');
         const bannerContent = store.imageUrl ? '' : (store.emoji || '🏪');
         return `
             <div class="store-card ${isOpen ? '' : 'closed'}" onclick="${isOpen ? `selectStore('${store.id}')` : 'showToast(\'Loja fechada no momento\')'}">
