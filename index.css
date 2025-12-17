@@ -164,6 +164,7 @@ body {
     align-items: center;
     justify-content: center;
     font-size: 3rem;
+    overflow: hidden;
 }
 
 .store-info { padding: 16px; }
