@@ -300,10 +300,10 @@ function renderStores() {
     
     grid.innerHTML = stores.map(store => {
         const isOpen = store.open !== false;
-        const bannerStyle = store.image 
-            ? `background-image: url('${store.image}'); background-size: cover; background-position: center;`
+        const bannerStyle = store.imageUrl 
+            ? `background-image: url('${store.imageUrl}'); background-size: cover; background-position: center;`
             : (store.bannerColor ? 'background:' + store.bannerColor : '');
-        const bannerContent = store.image ? '' : (store.emoji || '🏪');
+        const bannerContent = store.imageUrl ? '' : (store.emoji || '🏪');
         return `
             <div class="store-card ${isOpen ? '' : 'closed'}" onclick="${isOpen ? `selectStore('${store.id}')` : 'showToast(\'Loja fechada no momento\')'}">
                 <div class="store-banner" style="${bannerStyle}">${bannerContent}</div>
