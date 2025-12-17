@@ -138,7 +138,7 @@
             </div>
             
             <div class="profile-menu">
-                <div class="profile-menu-item" onclick="showAddressesPage()">
+                <div class="profile-menu-item" onclick="showPage('addresses')">
                     <div class="profile-menu-icon">📍</div>
                     <div class="profile-menu-text">Meus endereços</div>
                     <div class="profile-menu-arrow">›</div>
@@ -154,6 +154,18 @@
                     <div class="profile-menu-arrow">›</div>
                 </div>
             </div>
+        </div>
+        
+        <!-- Addresses Page -->
+        <div id="addressesPage" class="page">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                <span style="font-size: 1.5rem; cursor: pointer;" onclick="showPage('profile')">←</span>
+                <h2>📍 Meus Endereços</h2>
+            </div>
+            <div id="addressesList"></div>
+            <button class="btn btn-primary" onclick="showAddAddressModal()" style="margin-top: 16px;">
+                + Adicionar endereço
+            </button>
         </div>
         
         <!-- Navigation -->
