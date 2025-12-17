@@ -390,16 +390,21 @@ function renderProducts() {
         return;
     }
     
-    grid.innerHTML = filtered.map(p => `
+    grid.innerHTML = filtered.map(p => {
+        const hasImage = p.imageUrl && p.imageUrl.startsWith('data:');
+        return `
         <div class="product-card" onclick="openProductModal('${p.id}')">
-            <div class="product-img">${p.emoji || '🍽️'}</div>
+            <div class="product-img ${hasImage ? 'has-image' : ''}" ${hasImage ? `style="background-image: url('${p.imageUrl}')"` : ''}>
+                ${hasImage ? '' : (p.emoji || '🍽️')}
+            </div>
             <div class="product-info">
                 <div class="product-name">${p.name}</div>
                 <div class="product-desc">${p.description || ''}</div>
                 <div class="product-price">${formatCurrency(p.price)}</div>
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
 function filterByCategory(cat) {
@@ -429,9 +434,13 @@ function renderCart() {
         return;
     }
     
-    container.innerHTML = `<div class="card">${cart.map((item, idx) => `
+    container.innerHTML = `<div class="card">${cart.map((item, idx) => {
+        const hasImage = item.imageUrl && item.imageUrl.startsWith('data:');
+        return `
         <div class="cart-item">
-            <div class="cart-item-img">${item.emoji || '🍽️'}</div>
+            <div class="cart-item-img ${hasImage ? 'has-image' : ''}" ${hasImage ? `style="background-image: url('${item.imageUrl}')"` : ''}>
+                ${hasImage ? '' : (item.emoji || '🍽️')}
+            </div>
             <div class="cart-item-info">
                 <div class="cart-item-name">${item.name}</div>
                 <div class="cart-item-price">${formatCurrency(item.price * item.qty)}</div>
@@ -442,7 +451,8 @@ function renderCart() {
                 <button class="qty-btn" onclick="updateCartQty(${idx}, 1)">+</button>
             </div>
         </div>
-    `).join('')}</div>`;
+    `;
+    }).join('')}</div>`;
     
     updateCartSummary();
     summary.style.display = 'block';
@@ -553,6 +563,7 @@ function addToCart(product, qty = 1) {
             name: product.name,
             price: product.price,
             emoji: product.emoji,
+            imageUrl: product.imageUrl || null,
             storeId: selectedStore.id,
             storeName: selectedStore.name,
             qty
@@ -929,7 +940,19 @@ function openProductModal(productId) {
     
     modalQty = 1;
     
-    document.getElementById('modalProductImg').textContent = selectedProduct.emoji || '🍽️';
+    const modalImg = document.getElementById('modalProductImg');
+    const hasImage = selectedProduct.imageUrl && selectedProduct.imageUrl.startsWith('data:');
+    
+    if (hasImage) {
+        modalImg.innerHTML = '';
+        modalImg.style.backgroundImage = `url('${selectedProduct.imageUrl}')`;
+        modalImg.classList.add('has-image');
+    } else {
+        modalImg.textContent = selectedProduct.emoji || '🍽️';
+        modalImg.style.backgroundImage = '';
+        modalImg.classList.remove('has-image');
+    }
+    
     document.getElementById('modalProductName').textContent = selectedProduct.name;
     document.getElementById('modalProductDesc').textContent = selectedProduct.description || 'Sem descrição';
     document.getElementById('modalProductPrice').textContent = formatCurrency(selectedProduct.price);
