@@ -300,9 +300,13 @@ function renderStores() {
     
     grid.innerHTML = stores.map(store => {
         const isOpen = store.open !== false;
+        const bannerStyle = store.image 
+            ? `background-image: url('${store.image}'); background-size: cover; background-position: center;`
+            : (store.bannerColor ? 'background:' + store.bannerColor : '');
+        const bannerContent = store.image ? '' : (store.emoji || '🏪');
         return `
             <div class="store-card ${isOpen ? '' : 'closed'}" onclick="${isOpen ? `selectStore('${store.id}')` : 'showToast(\'Loja fechada no momento\')'}">
-                <div class="store-banner" style="${store.bannerColor ? 'background:' + store.bannerColor : ''}">${store.emoji || '🏪'}</div>
+                <div class="store-banner" style="${bannerStyle}">${bannerContent}</div>
                 <div class="store-info">
                     <div style="display: flex; justify-content: space-between; align-items: start;">
                         <div class="store-name">${store.name}</div>
@@ -766,8 +770,57 @@ async function submitOrder() {
 
 // ==================== ADDRESS ====================
 
-function showAddressesPage() {
-    showToast('Vá em Finalizar Pedido para gerenciar endereços');
+function renderAddressesList() {
+    const container = document.getElementById('addressesList');
+    
+    if (addresses.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">📍</div>
+                <div class="empty-state-title">Nenhum endereço cadastrado</div>
+                <div class="empty-state-text">Adicione um endereço para fazer pedidos</div>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = addresses.map(addr => {
+        const fee = getDeliveryFeeByNeighborhood(addr.neighborhood);
+        return `
+            <div class="address-card" style="cursor: default;">
+                <div class="address-icon">📍</div>
+                <div class="address-info" style="flex: 1;">
+                    <div class="address-label">${addr.label}</div>
+                    <div class="address-text">${addr.street}, ${addr.number}</div>
+                    <div class="address-text">${addr.neighborhood}</div>
+                    ${addr.reference ? `<div class="address-text" style="font-size: 0.8rem;">Ref: ${addr.reference}</div>` : ''}
+                    <div class="address-fee">Taxa: ${formatCurrency(fee)}</div>
+                    ${addr.location ? '<div style="font-size: 0.75rem; color: var(--success); margin-top: 4px;">📍 Localização salva</div>' : ''}
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="deleteAddress('${addr.id}')" style="padding: 8px; min-width: auto;">🗑️</button>
+            </div>
+        `;
+    }).join('');
+}
+
+async function deleteAddress(addressId) {
+    if (!confirm('Excluir este endereço?')) return;
+    
+    try {
+        await db.collection('users').doc(currentUser.uid)
+            .collection('addresses').doc(addressId).delete();
+        
+        addresses = addresses.filter(a => a.id !== addressId);
+        
+        if (selectedAddress === addressId) {
+            selectedAddress = addresses.length > 0 ? addresses[0].id : null;
+        }
+        
+        renderAddressesList();
+        showToast('Endereço excluído');
+    } catch (err) {
+        showToast('Erro ao excluir');
+    }
 }
 
 function showAddAddressModal() {
@@ -851,6 +904,7 @@ async function saveAddress(e) {
         
         closeModal('addressModal');
         renderCheckoutAddresses();
+        renderAddressesList();
         updateCheckoutSummary();
         showToast('Endereço salvo!');
         
@@ -971,11 +1025,12 @@ function showPage(page) {
     
     document.getElementById(`${page}Page`).classList.add('active');
     
-    const navIndex = { home: 0, orders: 1, profile: 2, cart: 0 };
+    const navIndex = { home: 0, orders: 1, profile: 2, cart: 0, addresses: 2 };
     document.querySelectorAll('.nav-item')[navIndex[page]]?.classList.add('active');
     
     if (page === 'cart') renderCart();
     if (page === 'orders') renderOrders();
+    if (page === 'addresses') renderAddressesList();
 }
 
 function updateProfile() {
