@@ -70,9 +70,16 @@
         
         <!-- Home Page -->
         <div id="homePage" class="page active">
+            <!-- Review Prompt Container -->
+            <div id="reviewPromptContainer"></div>
+            
             <div id="storeSelection">
                 <h2 style="margin-bottom: 8px;">🏪 Escolha uma loja</h2>
                 <p style="color: var(--text-muted); margin-bottom: 20px;">Selecione onde você quer pedir</p>
+                
+                <!-- Filtros -->
+                <div id="storeFilters"></div>
+                
                 <div id="storesGrid" class="stores-grid"></div>
             </div>
             
@@ -132,7 +139,7 @@
         <!-- Profile Page -->
         <div id="profilePage" class="page">
             <div class="profile-header">
-                <div class="profile-avatar">👤</div>
+                <div id="profileAvatarContainer"></div>
                 <div class="profile-name" id="profileName">-</div>
                 <div class="profile-email" id="profileEmail">-</div>
             </div>
@@ -325,10 +332,24 @@
             <div class="modal-body" id="orderDetailContent"></div>
         </div>
     </div>
+    
+    <!-- Review Modal -->
+    <div class="modal" id="reviewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">⭐ Avaliar Pedido</div>
+                <button class="modal-close" onclick="closeModal('reviewModal')">×</button>
+            </div>
+            <div class="modal-body" id="reviewModalContent"></div>
+        </div>
+    </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="modules/stores.js"></script>
+    <script src="modules/profile.js"></script>
+    <script src="modules/notifications.js"></script>
     <script src="index.js"></script>
 </body>
 </html>

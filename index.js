@@ -39,6 +39,18 @@ auth.onAuthStateChanged(async (user) => {
         currentUser = user;
         await loadUserData();
         showMainApp();
+        
+        // Inicializa módulos
+        StoresModule.init();
+        ProfileModule.init();
+        NotificationsModule.init();
+        
+        // Renderiza com módulos
+        StoresModule.render();
+        ProfileModule.render();
+        NotificationsModule.checkAndShowReviewPrompt();
+        NotificationsModule.updateNotificationBadge();
+        NotificationsModule.setupOrderStatusListener();
     } else {
         currentUser = null;
         showAuthPage();
@@ -135,8 +147,6 @@ async function loadUserData() {
         loadCart()
     ]);
     
-    updateProfile();
-    renderStores();
     populateNeighborhoodSelect();
     setupRealtimeListeners();
 }
@@ -270,7 +280,7 @@ function setupRealtimeListeners() {
                 const idx = stores.findIndex(s => s.id === store.id);
                 if (idx !== -1) {
                     stores[idx] = store;
-                    renderStores();
+                    StoresModule.render();
                     
                     if (selectedStore?.id === store.id) {
                         selectedStore = store;
@@ -284,44 +294,6 @@ function setupRealtimeListeners() {
 }
 
 // ==================== RENDER ====================
-
-function renderStores() {
-    const grid = document.getElementById('storesGrid');
-    
-    if (stores.length === 0) {
-        grid.innerHTML = `
-            <div class="empty-state" style="grid-column: 1/-1;">
-                <div class="empty-state-icon">🏪</div>
-                <div class="empty-state-title">Nenhuma loja disponível</div>
-            </div>
-        `;
-        return;
-    }
-    
-    grid.innerHTML = stores.map(store => {
-        const isOpen = store.open !== false;
-        const bannerStyle = store.imageUrl 
-            ? `background: url('${store.imageUrl}') center/cover no-repeat;`
-            : (store.bannerColor ? `background: ${store.bannerColor};` : '');
-        const bannerContent = store.imageUrl ? '' : (store.emoji || '🏪');
-        return `
-            <div class="store-card ${isOpen ? '' : 'closed'}" onclick="${isOpen ? `selectStore('${store.id}')` : 'showToast(\'Loja fechada no momento\')'}">
-                <div class="store-banner" style="${bannerStyle}">${bannerContent}</div>
-                <div class="store-info">
-                    <div style="display: flex; justify-content: space-between; align-items: start;">
-                        <div class="store-name">${store.name}</div>
-                        <span class="store-status ${isOpen ? 'open' : 'closed'}">${isOpen ? 'Aberto' : 'Fechado'}</span>
-                    </div>
-                    <div class="store-category">${store.category || 'Restaurante'}</div>
-                    <div class="store-meta">
-                        <span>⭐ ${store.rating || '4.5'}</span>
-                        <span>🕐 ${store.deliveryTime || '30-45 min'}</span>
-                    </div>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
 
 async function selectStore(storeId) {
     selectedStore = stores.find(s => s.id === storeId);
@@ -643,7 +615,6 @@ function applyCoupon() {
 function calculateDiscount(subtotal) {
     if (!appliedCoupon) return 0;
     
-    // Cupom aplica só no subtotal, não na entrega
     if (appliedCoupon.type === 'percent') {
         return Math.min(subtotal * (appliedCoupon.value / 100), subtotal);
     } else {
@@ -663,7 +634,6 @@ function showCheckout() {
         return;
     }
     
-    // Verificar se loja ainda está aberta
     const store = stores.find(s => s.id === cart[0].storeId);
     if (store && store.open === false) {
         showToast('Esta loja fechou. Tente novamente mais tarde.');
@@ -1035,6 +1005,12 @@ function openOrderDetail(orderId) {
                 <span>${formatCurrency(order.total)}</span>
             </div>
         </div>
+        
+        ${order.status === 'delivered' && !order.reviewed ? `
+            <button class="btn btn-primary" onclick="closeModal('orderModal'); NotificationsModule.openReviewModal('${order.id}')" style="margin-top: 16px;">
+                ⭐ Avaliar pedido
+            </button>
+        ` : ''}
     `;
     
     openModal('orderModal');
@@ -1054,13 +1030,8 @@ function showPage(page) {
     if (page === 'cart') renderCart();
     if (page === 'orders') renderOrders();
     if (page === 'addresses') renderAddressesList();
-}
-
-function updateProfile() {
-    if (currentUser) {
-        document.getElementById('profileName').textContent = currentUser.displayName || 'Usuário';
-        document.getElementById('profileEmail').textContent = currentUser.email;
-    }
+    if (page === 'profile') ProfileModule.render();
+    if (page === 'home') NotificationsModule.checkAndShowReviewPrompt();
 }
 
 // ==================== UTILITIES ====================
