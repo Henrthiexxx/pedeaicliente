@@ -44,6 +44,7 @@ auth.onAuthStateChanged(async (user) => {
         StoresModule.init();
         ProfileModule.init();
         NotificationsModule.init();
+        TrackingModule.init();
         
         // Renderiza com módulos
         StoresModule.render();
@@ -463,7 +464,9 @@ function renderOrders() {
         return;
     }
     
-    container.innerHTML = orders.map(order => `
+    container.innerHTML = orders.map(order => {
+        const canTrack = TrackingModule.canTrack(order);
+        return `
         <div class="order-card" onclick="openOrderDetail('${order.id}')">
             <div class="order-store">${order.storeName || 'Loja'}</div>
             <div class="order-header">
@@ -480,8 +483,14 @@ function renderOrders() {
                 <span>Total</span>
                 <span>${formatCurrency(order.total)}</span>
             </div>
+            ${canTrack ? `
+                <button class="order-track-btn" onclick="event.stopPropagation(); TrackingModule.openTracking('${order.id}')">
+                    🗺️ Rastrear entrega em tempo real
+                </button>
+            ` : ''}
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
 function renderCheckoutAddresses() {
@@ -947,12 +956,20 @@ function openOrderDetail(orderId) {
     const order = orders.find(o => o.id === orderId);
     if (!order) return;
     
+    const canTrack = TrackingModule.canTrack(order);
+    
     document.getElementById('orderDetailContent').innerHTML = `
         <div style="margin-bottom: 20px;">
             <div class="order-store" style="font-size: 1.2rem;">${order.storeName || 'Loja'}</div>
             <h3 style="margin-bottom: 4px;">Pedido #${order.id.slice(-6).toUpperCase()}</h3>
             <p style="color: var(--text-muted);">${formatDate(order.createdAt)}</p>
         </div>
+        
+        ${canTrack ? `
+            <button class="order-track-btn" onclick="closeModal('orderModal'); TrackingModule.openTracking('${order.id}')" style="margin-bottom: 20px;">
+                🗺️ Rastrear entrega em tempo real
+            </button>
+        ` : ''}
         
         <h4 style="margin-bottom: 12px;">📦 Itens</h4>
         <div class="card" style="margin-bottom: 20px;">
@@ -1024,7 +1041,7 @@ function showPage(page) {
     
     document.getElementById(`${page}Page`).classList.add('active');
     
-    const navIndex = { home: 0, orders: 1, profile: 2, cart: 0, addresses: 2 };
+    const navIndex = { home: 0, orders: 1, profile: 2, cart: 0, addresses: 2, tracking: 1 };
     document.querySelectorAll('.nav-item')[navIndex[page]]?.classList.add('active');
     
     if (page === 'cart') renderCart();
@@ -1079,3 +1096,58 @@ document.querySelectorAll('.modal').forEach(modal => {
         if (e.target === modal) modal.classList.remove('active');
     });
 });
+
+// Adicione no index.js do cliente
+function openMapPicker() {
+    const modal = document.createElement('div');
+    modal.id = 'mapPickerModal';
+    modal.className = 'modal active';
+    modal.innerHTML = `
+        <div class="modal-content" style="height:90vh;max-height:90vh;display:flex;flex-direction:column;">
+            <div class="modal-header">
+                <div class="modal-title">📍 Toque no mapa para marcar</div>
+                <button class="modal-close" onclick="closeMapPicker()">×</button>
+            </div>
+            <div id="pickerMap" style="flex:1;min-height:300px;"></div>
+            <div style="padding:16px;">
+                <div id="pickerCoords" style="text-align:center;margin-bottom:12px;color:var(--text-muted);">Toque no mapa para selecionar</div>
+                <button class="btn btn-primary" id="confirmLocationBtn" disabled onclick="confirmPickedLocation()">Confirmar localização</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    setTimeout(() => {
+        const map = L.map('pickerMap').setView([-15.8267, -47.9218], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        
+        let marker = null;
+        window._pickedLocation = null;
+
+        // Tenta centralizar na localização atual
+        navigator.geolocation?.getCurrentPosition(pos => {
+            map.setView([pos.coords.latitude, pos.coords.longitude], 16);
+        });
+
+        map.on('click', e => {
+            if (marker) map.removeLayer(marker);
+            marker = L.marker(e.latlng).addTo(map);
+            window._pickedLocation = { lat: e.latlng.lat, lng: e.latlng.lng };
+            document.getElementById('pickerCoords').textContent = `${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`;
+            document.getElementById('confirmLocationBtn').disabled = false;
+        });
+    }, 100);
+}
+
+function closeMapPicker() {
+    document.getElementById('mapPickerModal')?.remove();
+}
+
+function confirmPickedLocation() {
+    if (!window._pickedLocation) return;
+    capturedLocation = { ...window._pickedLocation, accuracy: 0, manual: true };
+    document.getElementById('addressLocationStatus').innerHTML = `<span class="location-icon">✅</span><span>Localização selecionada no mapa</span>`;
+    document.getElementById('addressLocationStatus').className = 'location-status success';
+    closeMapPicker();
+    showToast('Localização definida!');
+}

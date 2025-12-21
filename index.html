@@ -175,6 +175,9 @@
             </button>
         </div>
         
+        <!-- Tracking Page -->
+        <div id="trackingPage" class="page"></div>
+        
         <!-- Navigation -->
         <nav class="nav">
             <div class="nav-item active" onclick="showPage('home')">
@@ -315,7 +318,11 @@
                             📍 Usar minha localização
                         </button>
                     </div>
-                    
+<div style="display:flex;gap:8px;">
+    <button type="button" class="btn btn-secondary" onclick="captureAddressLocation()" style="flex:1;">📍 GPS automático</button>
+    <button type="button" class="btn btn-secondary" onclick="openMapPicker()" style="flex:1;">🗺️ Escolher no mapa</button>
+</div>
+</div>
                     <button type="submit" class="btn btn-primary">Salvar endereço</button>
                 </form>
             </div>
@@ -350,6 +357,7 @@
     <script src="modules/stores.js"></script>
     <script src="modules/profile.js"></script>
     <script src="modules/notifications.js"></script>
+    <script src="modules/tracking.js"></script>
     <script src="index.js"></script>
 </body>
 </html>
