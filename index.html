@@ -4,18 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Pedrad - Delivery</title>
-    <meta name="theme-color" content="#6366f1">
+    <meta name="theme-color" content="#000000">
     <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body>
-    <div class="offline-banner" id="offlineBanner">📴 Você está offline</div>
+    <div class="offline-banner" id="offlineBanner">Você está offline</div>
     <div class="toast" id="toast"></div>
     
     <!-- Auth Page -->
     <div id="authPage" class="auth-container">
         <div class="auth-logo">
-            <h1>🛵 Pedrad</h1>
-            <p>Seu delivery favorito</p>
+            <h1>PEDRAD</h1>
+            <p>Delivery</p>
         </div>
         
         <div class="auth-tabs">
@@ -59,10 +60,10 @@
     <!-- Main App -->
     <div id="mainApp" style="display: none;">
         <header class="header">
-            <div class="header-title">🛵 Pedrad</div>
+            <div class="header-title">PEDRAD</div>
             <div class="header-actions">
                 <button class="header-btn" onclick="showPage('cart')">
-                    🛒
+                    ◎
                     <span class="cart-badge" id="cartBadge"></span>
                 </button>
             </div>
@@ -74,8 +75,8 @@
             <div id="reviewPromptContainer"></div>
             
             <div id="storeSelection">
-                <h2 style="margin-bottom: 8px;">🏪 Escolha uma loja</h2>
-                <p style="color: var(--text-muted); margin-bottom: 20px;">Selecione onde você quer pedir</p>
+                <h2 style="margin-bottom: 8px; font-weight: 400; letter-spacing: 1px;">Escolha uma loja</h2>
+                <p style="color: var(--text-muted); margin-bottom: 24px; font-size: 0.85rem;">Selecione onde você quer pedir</p>
                 
                 <!-- Filtros -->
                 <div id="storeFilters"></div>
@@ -93,7 +94,7 @@
                 </div>
                 
                 <div class="search-bar">
-                    <input type="text" class="search-input" placeholder="🔍 Buscar produtos..." id="searchInput" oninput="filterProducts()">
+                    <input type="text" class="search-input" placeholder="Buscar produtos..." id="searchInput" oninput="filterProducts()">
                 </div>
                 
                 <div class="categories" id="categoriesContainer"></div>
@@ -103,7 +104,7 @@
         
         <!-- Cart Page -->
         <div id="cartPage" class="page">
-            <h2 style="margin-bottom: 20px;">🛒 Carrinho</h2>
+            <h2 style="margin-bottom: 24px; font-weight: 400; letter-spacing: 1px;">Carrinho</h2>
             <div id="cartItems"></div>
             <div id="cartSummary" style="display: none;">
                 <div class="card" style="margin-top: 16px;">
@@ -111,7 +112,7 @@
                         <span>Subtotal</span>
                         <span id="cartSubtotal">R$ 0,00</span>
                     </div>
-                    <div class="summary-row" id="cartDiscountRow" style="display:none; color: var(--success);">
+                    <div class="summary-row" id="cartDiscountRow" style="display:none; color: var(--primary);">
                         <span>Desconto</span>
                         <span id="cartDiscount">- R$ 0,00</span>
                     </div>
@@ -132,7 +133,7 @@
         
         <!-- Orders Page -->
         <div id="ordersPage" class="page">
-            <h2 style="margin-bottom: 20px;">📦 Meus Pedidos</h2>
+            <h2 style="margin-bottom: 24px; font-weight: 400; letter-spacing: 1px;">Meus Pedidos</h2>
             <div id="ordersList"></div>
         </div>
         
@@ -146,18 +147,18 @@
             
             <div class="profile-menu">
                 <div class="profile-menu-item" onclick="showPage('addresses')">
-                    <div class="profile-menu-icon">📍</div>
+                    <div class="profile-menu-icon">◎</div>
                     <div class="profile-menu-text">Meus endereços</div>
                     <div class="profile-menu-arrow">›</div>
                 </div>
                 <div class="profile-menu-item" onclick="showPage('orders')">
-                    <div class="profile-menu-icon">📦</div>
+                    <div class="profile-menu-icon">≡</div>
                     <div class="profile-menu-text">Histórico de pedidos</div>
                     <div class="profile-menu-arrow">›</div>
                 </div>
                 <div class="profile-menu-item" onclick="handleLogout()">
-                    <div class="profile-menu-icon">🚪</div>
-                    <div class="profile-menu-text" style="color: var(--danger);">Sair</div>
+                    <div class="profile-menu-icon">→</div>
+                    <div class="profile-menu-text" style="color: var(--text-muted);">Sair</div>
                     <div class="profile-menu-arrow">›</div>
                 </div>
             </div>
@@ -165,9 +166,9 @@
         
         <!-- Addresses Page -->
         <div id="addressesPage" class="page">
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
-                <span style="font-size: 1.5rem; cursor: pointer;" onclick="showPage('profile')">←</span>
-                <h2>📍 Meus Endereços</h2>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+                <span style="font-size: 1.3rem; cursor: pointer;" onclick="showPage('profile')">←</span>
+                <h2 style="font-weight: 400; letter-spacing: 1px;">Meus Endereços</h2>
             </div>
             <div id="addressesList"></div>
             <button class="btn btn-primary" onclick="showAddAddressModal()" style="margin-top: 16px;">
@@ -181,15 +182,15 @@
         <!-- Navigation -->
         <nav class="nav">
             <div class="nav-item active" onclick="showPage('home')">
-                <span>🏠</span>
+                <span>⌂</span>
                 Início
             </div>
             <div class="nav-item" onclick="showPage('orders')">
-                <span>📦</span>
+                <span>≡</span>
                 Pedidos
             </div>
             <div class="nav-item" onclick="showPage('profile')">
-                <span>👤</span>
+                <span>○</span>
                 Perfil
             </div>
         </nav>
@@ -198,7 +199,7 @@
     <!-- Product Modal -->
     <div class="modal" id="productModal">
         <div class="modal-content">
-            <div class="product-detail-img" id="modalProductImg">🍔</div>
+            <div class="product-detail-img" id="modalProductImg">◎</div>
             <div class="product-detail-info">
                 <div class="product-detail-name" id="modalProductName">-</div>
                 <div class="product-detail-desc" id="modalProductDesc">-</div>
@@ -224,23 +225,23 @@
                 <button class="modal-close" onclick="closeModal('checkoutModal')">×</button>
             </div>
             <div class="modal-body">
-                <h3 style="margin-bottom: 12px;">📍 Endereço de entrega</h3>
+                <h3 style="margin-bottom: 12px; font-weight: 400; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Endereço de entrega</h3>
                 <div id="checkoutAddresses"></div>
                 
                 <button class="btn btn-secondary btn-sm" onclick="showAddAddressModal()" style="margin-bottom: 24px;">
                     + Adicionar novo endereço
                 </button>
                 
-                <h3 style="margin-bottom: 12px;">🎟️ Cupom de desconto</h3>
+                <h3 style="margin-bottom: 12px; font-weight: 400; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Cupom de desconto</h3>
                 <div class="coupon-box">
                     <input type="text" class="input" id="couponInput" placeholder="Digite o código">
                     <button class="btn btn-secondary btn-sm" onclick="applyCoupon()">Aplicar</button>
                 </div>
                 <div id="couponStatus" class="coupon-status"></div>
                 
-                <h3 style="margin-bottom: 12px;">💳 Forma de pagamento</h3>
+                <h3 style="margin-bottom: 12px; font-weight: 400; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Forma de pagamento</h3>
                 <div class="address-card selected" style="margin-bottom: 24px;">
-                    <div class="address-icon">💵</div>
+                    <div class="address-icon">$</div>
                     <div class="address-info">
                         <div class="address-label">Dinheiro</div>
                         <div class="address-text">Pagar na entrega</div>
@@ -252,7 +253,7 @@
                         <span>Subtotal</span>
                         <span id="checkoutSubtotal">R$ 0,00</span>
                     </div>
-                    <div class="summary-row" id="checkoutDiscountRow" style="display:none; color: var(--success);">
+                    <div class="summary-row" id="checkoutDiscountRow" style="display:none; color: var(--primary);">
                         <span>Desconto</span>
                         <span id="checkoutDiscount">- R$ 0,00</span>
                     </div>
@@ -311,18 +312,15 @@
                     
                     <div class="location-box" id="addressLocationBox">
                         <div class="location-status" id="addressLocationStatus">
-                            <span class="location-icon">📍</span>
+                            <span class="location-icon">◎</span>
                             <span>Localização não capturada</span>
                         </div>
-                        <button type="button" class="btn btn-secondary btn-sm" onclick="captureAddressLocation()">
-                            📍 Usar minha localização
-                        </button>
+                        <div style="display:flex;gap:8px;margin-top:12px;">
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="captureAddressLocation()" style="flex:1;">GPS automático</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="openMapPicker()" style="flex:1;">Escolher no mapa</button>
+                        </div>
                     </div>
-<div style="display:flex;gap:8px;">
-    <button type="button" class="btn btn-secondary" onclick="captureAddressLocation()" style="flex:1;">📍 GPS automático</button>
-    <button type="button" class="btn btn-secondary" onclick="openMapPicker()" style="flex:1;">🗺️ Escolher no mapa</button>
-</div>
-</div>
+                    
                     <button type="submit" class="btn btn-primary">Salvar endereço</button>
                 </form>
             </div>
@@ -344,7 +342,7 @@
     <div class="modal" id="reviewModal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">⭐ Avaliar Pedido</div>
+                <div class="modal-title">Avaliar Pedido</div>
                 <button class="modal-close" onclick="closeModal('reviewModal')">×</button>
             </div>
             <div class="modal-body" id="reviewModalContent"></div>
@@ -354,6 +352,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="modules/stores.js"></script>
     <script src="modules/profile.js"></script>
     <script src="modules/notifications.js"></script>
