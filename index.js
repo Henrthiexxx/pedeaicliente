@@ -1151,3 +1151,61 @@ function confirmPickedLocation() {
     closeMapPicker();
     showToast('Localização definida!');
 }
+// Renderiza os adicionais do produto no modal
+function renderProductAddons(product) {
+    const addons = product.addons || [];
+    if (addons.length === 0) return '';
+    
+    // Ordena por "order" 
+    const sorted = [...addons].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    
+    return `
+        <div class="addons-section">
+            <div class="addons-title">Adicionais</div>
+            <div class="addons-options">
+                <label class="addon-option selected">
+                    <input type="radio" name="addon-${product.id}" value="" checked onchange="selectAddon(null)">
+                    <span class="addon-label">
+                        <span class="addon-name">Nenhum</span>
+                        <span class="addon-price">-</span>
+                    </span>
+                </label>
+                ${sorted.map((addon, idx) => `
+                    <label class="addon-option">
+                        <input type="radio" name="addon-${product.id}" value="${idx}" onchange="selectAddon(${JSON.stringify(addon).replace(/"/g, '&quot;')})">
+                        <span class="addon-label">
+                            <span class="addon-name">${addon.name}</span>
+                            <span class="addon-price">+ ${formatCurrency(addon.price)}</span>
+                        </span>
+                    </label>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+// Variável para guardar addon selecionado
+let selectedAddon = null;
+
+function selectAddon(addon) {
+    selectedAddon = addon;
+    // Atualiza visual
+    document.querySelectorAll('.addon-option').forEach(el => {
+        el.classList.toggle('selected', el.querySelector('input').checked);
+    });
+    // Atualiza preço total se necessário
+    updateTotalPrice();
+}
+
+// Ao adicionar ao carrinho, inclua o addon:
+function addToCart(product, qty) {
+    const item = {
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        qty: qty,
+        addons: selectedAddon ? [selectedAddon] : [] // Array para suportar múltiplos no futuro
+    };
+    cart.push(item);
+    selectedAddon = null; // Reset
+}
