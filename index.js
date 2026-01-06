@@ -256,43 +256,109 @@ function saveCart() {
 
 // ==================== REALTIME ====================
 
+let ordersUnsubscribe = null;
+let storesUnsubscribe = null;
+
 function setupRealtimeListeners() {
     if (!currentUser) return;
     
-    db.collection('orders')
+    // Limpa listeners anteriores
+    if (ordersUnsubscribe) ordersUnsubscribe();
+    if (storesUnsubscribe) storesUnsubscribe();
+    
+    // Listener de pedidos do usuário
+    ordersUnsubscribe = db.collection('orders')
         .where('userId', '==', currentUser.uid)
         .onSnapshot(snapshot => {
             snapshot.docChanges().forEach(change => {
-                if (change.type === 'modified') {
-                    const order = { id: change.doc.id, ...change.doc.data() };
-                    const idx = orders.findIndex(o => o.id === order.id);
-                    if (idx !== -1) {
-                        orders[idx] = order;
-                        renderOrders();
-                        showToast(`Pedido: ${getStatusLabel(order.status)}`);
+                const order = { id: change.doc.id, ...change.doc.data() };
+                
+                if (change.type === 'added') {
+                    // Novo pedido (pode ser do próprio usuário)
+                    const exists = orders.find(o => o.id === order.id);
+                    if (!exists) {
+                        orders.unshift(order);
+                        orders.sort((a, b) => {
+                            const dateA = a.createdAt?.toDate?.() || new Date(a.createdAt) || 0;
+                            const dateB = b.createdAt?.toDate?.() || new Date(b.createdAt) || 0;
+                            return dateB - dateA;
+                        });
                     }
                 }
+                
+                if (change.type === 'modified') {
+                    const idx = orders.findIndex(o => o.id === order.id);
+                    const oldStatus = idx !== -1 ? orders[idx].status : null;
+                    
+                    if (idx !== -1) {
+                        orders[idx] = order;
+                    }
+                    
+                    // Notifica mudança de status
+                    if (oldStatus && oldStatus !== order.status) {
+                        showToast(`Pedido: ${getStatusLabel(order.status)}`);
+                        NotificationsModule.notifyOrderStatus(order, order.status);
+                        
+                        // Vibra se disponível
+                        if (navigator.vibrate) {
+                            navigator.vibrate([200, 100, 200]);
+                        }
+                    }
+                }
+                
+                if (change.type === 'removed') {
+                    orders = orders.filter(o => o.id !== order.id);
+                }
             });
+            
+            renderOrders();
+            NotificationsModule.checkAndShowReviewPrompt();
+        }, err => {
+            console.error('Erro no listener de pedidos:', err);
         });
     
-    db.collection('stores').onSnapshot(snapshot => {
-        snapshot.docChanges().forEach(change => {
-            if (change.type === 'modified') {
+    // Listener de lojas
+    storesUnsubscribe = db.collection('stores')
+        .onSnapshot(snapshot => {
+            snapshot.docChanges().forEach(change => {
                 const store = { id: change.doc.id, ...change.doc.data() };
-                const idx = stores.findIndex(s => s.id === store.id);
-                if (idx !== -1) {
-                    stores[idx] = store;
-                    StoresModule.render();
+                
+                if (change.type === 'added') {
+                    const exists = stores.find(s => s.id === store.id);
+                    if (!exists && store.active !== false) {
+                        stores.push(store);
+                        stores.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                    }
+                }
+                
+                if (change.type === 'modified') {
+                    const idx = stores.findIndex(s => s.id === store.id);
+                    if (idx !== -1) {
+                        stores[idx] = store;
+                    }
                     
                     if (selectedStore?.id === store.id) {
                         selectedStore = store;
-                        document.getElementById('selectedStoreStatus').textContent = 
-                            store.open !== false ? '🟢 Aberto' : '🔴 Fechado';
+                        const statusEl = document.getElementById('selectedStoreStatus');
+                        if (statusEl) {
+                            statusEl.textContent = store.open !== false ? '🟢 Aberto' : '🔴 Fechado';
+                        }
                     }
                 }
+                
+                if (change.type === 'removed') {
+                    stores = stores.filter(s => s.id !== store.id);
+                }
+            });
+            
+            if (typeof StoresModule !== 'undefined') {
+                StoresModule.render();
             }
+        }, err => {
+            console.error('Erro no listener de lojas:', err);
         });
-    });
+    
+    console.log('✅ Realtime listeners ativos');
 }
 
 // ==================== RENDER ====================
