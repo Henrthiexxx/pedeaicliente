@@ -1232,3 +1232,24 @@ function addToCart(product, qty) {
     cart.push(item);
     selectedAddon = null; // Reset
 }
+let selectedPayment = 'pix';
+
+function setDeliveryMode(mode) {
+    deliveryMode = mode;
+    document.getElementById('modeDelivery').classList.toggle('selected', mode === 'delivery');
+    document.getElementById('modePickup').classList.toggle('selected', mode === 'pickup');
+    document.getElementById('addressSection').style.display = mode === 'delivery' ? 'block' : 'none';
+    updateCheckoutSummary();
+}
+
+function selectPayment(el) {
+    selectedPayment = el.value;
+    document.querySelectorAll('.payment-option').forEach(p => p.classList.remove('selected'));
+    el.closest('.payment-option').classList.add('selected');
+}
+
+function getSelectedDeliveryFee() {
+    if (deliveryMode === 'pickup') return 0;
+    const addr = addresses.find(a => a.id === selectedAddress);
+    return addr ? getDeliveryFeeByNeighborhood(addr.neighborhood) : 0;
+}
