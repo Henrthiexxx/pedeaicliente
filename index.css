@@ -1723,3 +1723,46 @@ select.input {
     font-size: 18px;
     font-weight: bold;
 }
+.mode-option {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.mode-option.selected {
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.1);
+}
+.mode-option span:first-child {
+    display: block;
+    font-size: 1.5rem;
+    margin-bottom: 4px;
+}
+
+.payment-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+.payment-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+}
+.payment-option.selected {
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.1);
+}
+.payment-option input { display: none; }
+.payment-icon { font-size: 1.3rem; }
+.payment-info { display: flex; flex-direction: column; }
+.payment-name { font-weight: 500; }
+.payment-desc { font-size: 0.75rem; color: var(--text-muted); }
