@@ -31,6 +31,9 @@ let appliedCoupon = null;
 let modalQty = 1;
 let activeCategory = 'all';
 let capturedLocation = null;
+let selectedAddon = null;
+let deliveryMode = 'delivery';
+let selectedPayment = 'pix';
 
 // ==================== AUTH ====================
 
@@ -40,13 +43,11 @@ auth.onAuthStateChanged(async (user) => {
         await loadUserData();
         showMainApp();
         
-        // Inicializa módulos
         StoresModule.init();
         ProfileModule.init();
         NotificationsModule.init();
         TrackingModule.init();
         
-        // Renderiza com módulos
         StoresModule.render();
         ProfileModule.render();
         NotificationsModule.checkAndShowReviewPrompt();
@@ -177,7 +178,7 @@ async function loadStores() {
         stores = snapshot.docs
             .map(doc => ({ id: doc.id, ...doc.data() }))
             .filter(s => s.active !== false)
-            .sort((a, b) => a.name.localeCompare(b.name));
+            .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     } catch (err) {
         console.error('Error loading stores:', err);
     }
@@ -227,7 +228,7 @@ async function loadProducts(storeId) {
         products = snapshot.docs
             .map(doc => ({ id: doc.id, ...doc.data() }))
             .filter(p => p.active !== false)
-            .sort((a, b) => a.name.localeCompare(b.name));
+            .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
         
         const cats = new Set(products.map(p => p.category).filter(Boolean));
         categories = ['all', ...cats];
@@ -409,6 +410,8 @@ function renderCart() {
     
     container.innerHTML = `<div class="card">${cart.map((item, idx) => {
         const hasImage = item.imageUrl && item.imageUrl.startsWith('data:');
+        const addonTotal = (item.addons || []).reduce((s, a) => s + (a.price || 0), 0);
+        const itemTotal = (item.price + addonTotal) * item.qty;
         return `
         <div class="cart-item">
             <div class="cart-item-img ${hasImage ? 'has-image' : ''}" ${hasImage ? `style="background-image: url('${item.imageUrl}')"` : ''}>
@@ -416,7 +419,8 @@ function renderCart() {
             </div>
             <div class="cart-item-info">
                 <div class="cart-item-name">${item.name}</div>
-                <div class="cart-item-price">${formatCurrency(item.price * item.qty)}</div>
+                ${item.addons?.length ? `<div class="cart-item-addons">${item.addons.map(a => `+ ${a.name}`).join(', ')}</div>` : ''}
+                <div class="cart-item-price">${formatCurrency(itemTotal)}</div>
             </div>
             <div class="cart-item-controls">
                 <button class="qty-btn" onclick="updateCartQty(${idx}, -1)">−</button>
@@ -432,7 +436,7 @@ function renderCart() {
 }
 
 function updateCartSummary() {
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    const subtotal = getCartSubtotal();
     const delivery = getSelectedDeliveryFee();
     const discount = calculateDiscount(subtotal);
     const total = subtotal - discount + delivery;
@@ -525,25 +529,6 @@ function populateNeighborhoodSelect() {
 
 // ==================== CART ====================
 
-// Variável para guardar addon selecionado
-let selectedAddon = null;
-let deliveryMode = 'delivery'; // 'delivery' ou 'pickup'
-
-function selectAddon(addon) {
-    selectedAddon = addon;
-    document.querySelectorAll('.addon-option').forEach(el => {
-        el.classList.toggle('selected', el.querySelector('input').checked);
-    });
-    updateModalPrice();
-}
-
-function updateModalPrice() {
-    if (!selectedProduct) return;
-    const addonPrice = selectedAddon?.price || 0;
-    const unitPrice = selectedProduct.price + addonPrice;
-    document.getElementById('modalProductPrice').textContent = formatCurrency(unitPrice * modalQty);
-}
-
 function addToCart(product, qty = 1) {
     // Bloqueia mistura de lojas
     if (cart.length > 0 && cart[0].storeId !== selectedStore.id) {
@@ -578,6 +563,7 @@ function addToCart(product, qty = 1) {
     saveCart();
     showToast(`${product.name} adicionado!`);
 }
+
 function updateCartQty(index, delta) {
     cart[index].qty += delta;
     
@@ -595,6 +581,13 @@ function updateCartBadge() {
     badge.textContent = total > 0 ? total : '';
 }
 
+function getCartSubtotal() {
+    return cart.reduce((sum, item) => {
+        const addonTotal = (item.addons || []).reduce((s, a) => s + (a.price || 0), 0);
+        return sum + ((item.price + addonTotal) * item.qty);
+    }, 0);
+}
+
 // ==================== DELIVERY FEE ====================
 
 function getDeliveryFeeByNeighborhood(neighborhood) {
@@ -604,8 +597,26 @@ function getDeliveryFeeByNeighborhood(neighborhood) {
 }
 
 function getSelectedDeliveryFee() {
+    if (deliveryMode === 'pickup') return 0;
     const addr = addresses.find(a => a.id === selectedAddress);
     return addr ? getDeliveryFeeByNeighborhood(addr.neighborhood) : 0;
+}
+
+// ==================== DELIVERY MODE & PAYMENT ====================
+
+function setDeliveryMode(mode) {
+    deliveryMode = mode;
+    document.getElementById('modeDelivery').classList.toggle('selected', mode === 'delivery');
+    document.getElementById('modePickup').classList.toggle('selected', mode === 'pickup');
+    document.getElementById('addressSection').style.display = mode === 'delivery' ? 'block' : 'none';
+    document.getElementById('checkoutDeliveryRow').style.display = mode === 'delivery' ? 'flex' : 'none';
+    updateCheckoutSummary();
+}
+
+function selectPayment(el) {
+    selectedPayment = el.value;
+    document.querySelectorAll('.payment-option').forEach(p => p.classList.remove('selected'));
+    el.closest('.payment-option').classList.add('selected');
 }
 
 // ==================== COUPON ====================
@@ -654,10 +665,6 @@ function calculateDiscount(subtotal) {
     }
 }
 
-function getCartSubtotal() {
-    return cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-}
-
 // ==================== CHECKOUT ====================
 
 function showCheckout() {
@@ -672,9 +679,22 @@ function showCheckout() {
         return;
     }
     
+    // Reset states
     appliedCoupon = null;
+    deliveryMode = 'delivery';
+    selectedPayment = 'pix';
+    
     document.getElementById('couponInput').value = '';
     document.getElementById('couponStatus').textContent = '';
+    document.getElementById('modeDelivery').classList.add('selected');
+    document.getElementById('modePickup').classList.remove('selected');
+    document.getElementById('addressSection').style.display = 'block';
+    document.getElementById('checkoutDeliveryRow').style.display = 'flex';
+    
+    // Reset payment selection
+    document.querySelectorAll('.payment-option').forEach(p => p.classList.remove('selected'));
+    document.querySelector('.payment-option input[value="pix"]').checked = true;
+    document.querySelector('.payment-option input[value="pix"]').closest('.payment-option').classList.add('selected');
     
     renderCheckoutAddresses();
     updateCheckoutSummary();
@@ -697,7 +717,7 @@ function updateCheckoutSummary() {
     
     document.getElementById('checkoutSubtotal').textContent = formatCurrency(subtotal);
     document.getElementById('checkoutDelivery').textContent = formatCurrency(delivery);
-    document.getElementById('checkoutNeighborhood').textContent = addr?.neighborhood || '-';
+    document.getElementById('checkoutNeighborhood').textContent = deliveryMode === 'pickup' ? 'Retirada' : (addr?.neighborhood || '-');
     document.getElementById('checkoutTotal').textContent = formatCurrency(total);
     
     const discountRow = document.getElementById('checkoutDiscountRow');
@@ -710,14 +730,23 @@ function updateCheckoutSummary() {
 }
 
 async function submitOrder() {
-    if (!selectedAddress) {
+    if (deliveryMode === 'delivery' && !selectedAddress) {
         showToast('Selecione um endereço!');
         return;
     }
     
-    const store = stores.find(s => s.id === cart[0].storeId);
+    const storeId = cart[0]?.storeId;
+    if (!storeId) {
+        showToast('Carrinho vazio!');
+        return;
+    }
+    
+    const store = stores.find(s => s.id === storeId);
     if (!store) {
-        showToast('Loja não encontrada!');
+        showToast('Loja não encontrada! Limpe o carrinho.');
+        cart = [];
+        saveCart();
+        closeModal('checkoutModal');
         return;
     }
     
@@ -726,9 +755,9 @@ async function submitOrder() {
         return;
     }
     
-    const address = addresses.find(a => a.id === selectedAddress);
+    const address = deliveryMode === 'delivery' ? addresses.find(a => a.id === selectedAddress) : null;
     const subtotal = getCartSubtotal();
-    const delivery = getDeliveryFeeByNeighborhood(address.neighborhood);
+    const delivery = deliveryMode === 'delivery' ? getDeliveryFeeByNeighborhood(address?.neighborhood) : 0;
     const discount = calculateDiscount(subtotal);
     const total = subtotal - discount + delivery;
     
@@ -736,16 +765,22 @@ async function submitOrder() {
         userId: currentUser.uid,
         userName: currentUser.displayName || 'Cliente',
         userEmail: currentUser.email,
-        userPhone: address.phone || '',
         storeId: store.id,
         storeName: store.name,
-        items: [...cart],
+        items: cart.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            qty: item.qty,
+            addons: item.addons || []
+        })),
         subtotal,
         delivery,
         discount,
         total,
         couponCode: appliedCoupon?.code || null,
-        address: {
+        deliveryMode,
+        address: deliveryMode === 'delivery' ? {
             label: address.label,
             street: address.street,
             number: address.number,
@@ -753,20 +788,15 @@ async function submitOrder() {
             neighborhood: address.neighborhood,
             reference: address.reference || '',
             location: address.location || null
-        },
+        } : null,
         status: 'pending',
-        paymentMethod: 'cash',
+        paymentMethod: selectedPayment,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        timeline: [{
-            status: 'pending',
-            timestamp: new Date().toISOString(),
-            message: 'Pedido recebido'
-        }]
+        timeline: [{ status: 'pending', timestamp: new Date().toISOString(), message: 'Pedido recebido' }]
     };
     
     try {
         await db.collection('orders').add(order);
-        
         cart = [];
         appliedCoupon = null;
         saveCart();
@@ -774,7 +804,6 @@ async function submitOrder() {
         showPage('orders');
         await loadOrders();
         showToast('Pedido realizado!');
-        
     } catch (err) {
         console.error('Order error:', err);
         showToast('Erro ao fazer pedido');
@@ -936,11 +965,27 @@ function closeModal(id) {
     document.getElementById(id).classList.remove('active');
 }
 
+function selectAddon(addon) {
+    selectedAddon = addon;
+    document.querySelectorAll('.addon-option').forEach(el => {
+        el.classList.toggle('selected', el.querySelector('input').checked);
+    });
+    updateModalPrice();
+}
+
+function updateModalPrice() {
+    if (!selectedProduct) return;
+    const addonPrice = selectedAddon?.price || 0;
+    const unitPrice = selectedProduct.price + addonPrice;
+    document.getElementById('modalProductPrice').textContent = formatCurrency(unitPrice * modalQty);
+}
+
 function openProductModal(productId) {
     selectedProduct = products.find(p => p.id === productId);
     if (!selectedProduct) return;
     
     modalQty = 1;
+    selectedAddon = null;
     
     const modalImg = document.getElementById('modalProductImg');
     const hasImage = selectedProduct.imageUrl && selectedProduct.imageUrl.startsWith('data:');
@@ -960,12 +1005,65 @@ function openProductModal(productId) {
     document.getElementById('modalProductPrice').textContent = formatCurrency(selectedProduct.price);
     document.getElementById('modalQty').textContent = modalQty;
     
+    // Render addons
+    const addonsContainer = document.getElementById('modalAddons');
+    if (addonsContainer) {
+        addonsContainer.innerHTML = renderProductAddons(selectedProduct);
+    }
+    
     openModal('productModal');
+}
+
+function renderProductAddons(product) {
+    const addons = product.addons || [];
+    if (addons.length === 0) return '';
+    
+    const sorted = [...addons].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    
+    return `
+        <div class="addons-section">
+            <div class="addons-header" onclick="toggleAddons()">
+                <span class="addons-title">➕ Adicionais (${addons.length})</span>
+                <span class="addons-toggle" id="addonsToggle">▼</span>
+            </div>
+            <div class="addons-options" id="addonsOptions" style="display:none;">
+                <label class="addon-option selected">
+                    <input type="radio" name="addon" value="" checked onchange="selectAddon(null)">
+                    <span class="addon-label">
+                        <span class="addon-name">Nenhum</span>
+                        <span class="addon-price">-</span>
+                    </span>
+                </label>
+                ${sorted.map(addon => `
+                    <label class="addon-option">
+                        <input type="radio" name="addon" value="${addon.name}" onchange="selectAddon({name:'${addon.name}',price:${addon.price}})">
+                        <span class="addon-label">
+                            <span class="addon-name">${addon.name}</span>
+                            <span class="addon-price">+ ${formatCurrency(addon.price)}</span>
+                        </span>
+                    </label>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+function toggleAddons() {
+    const options = document.getElementById('addonsOptions');
+    const toggle = document.getElementById('addonsToggle');
+    if (options.style.display === 'none') {
+        options.style.display = 'block';
+        toggle.textContent = '▲';
+    } else {
+        options.style.display = 'none';
+        toggle.textContent = '▼';
+    }
 }
 
 function changeModalQty(delta) {
     modalQty = Math.max(1, modalQty + delta);
     document.getElementById('modalQty').textContent = modalQty;
+    updateModalPrice();
 }
 
 function addToCartFromModal() {
@@ -980,12 +1078,24 @@ function openOrderDetail(orderId) {
     if (!order) return;
     
     const canTrack = TrackingModule.canTrack(order);
+    const paymentLabels = {
+        pix: 'PIX',
+        credit: 'Cartão de Crédito',
+        debit: 'Cartão de Débito',
+        cash: 'Dinheiro',
+        picpay: 'PicPay',
+        alimentacao: 'Vale Alimentação'
+    };
     
     document.getElementById('orderDetailContent').innerHTML = `
         <div style="margin-bottom: 20px;">
             <div class="order-store" style="font-size: 1.2rem;">${order.storeName || 'Loja'}</div>
             <h3 style="margin-bottom: 4px;">Pedido #${order.id.slice(-6).toUpperCase()}</h3>
             <p style="color: var(--text-muted);">${formatDate(order.createdAt)}</p>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">
+                ${order.deliveryMode === 'pickup' ? '🏪 Retirar na loja' : '🛵 Entrega'}
+                • ${paymentLabels[order.paymentMethod] || order.paymentMethod || 'Dinheiro'}
+            </p>
         </div>
         
         ${canTrack ? `
@@ -996,21 +1106,35 @@ function openOrderDetail(orderId) {
         
         <h4 style="margin-bottom: 12px;">📦 Itens</h4>
         <div class="card" style="margin-bottom: 20px;">
-            ${order.items.map(item => `
+            ${order.items.map(item => {
+                const addonTotal = (item.addons || []).reduce((s, a) => s + (a.price || 0), 0);
+                const itemTotal = (item.price + addonTotal) * item.qty;
+                return `
                 <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
-                    <span>${item.qty}x ${item.name}</span>
-                    <span>${formatCurrency(item.price * item.qty)}</span>
+                    <div>
+                        <span>${item.qty}x ${item.name}</span>
+                        ${item.addons?.length ? `<div style="font-size:0.8rem;color:var(--text-muted);">${item.addons.map(a => `+ ${a.name} (${formatCurrency(a.price)})`).join(', ')}</div>` : ''}
+                    </div>
+                    <span>${formatCurrency(itemTotal)}</span>
                 </div>
-            `).join('')}
+            `;
+            }).join('')}
         </div>
         
-        <h4 style="margin-bottom: 12px;">📍 Entrega</h4>
-        <div class="card" style="margin-bottom: 20px;">
-            <p><strong>${order.address.label}</strong></p>
-            <p style="color: var(--text-muted);">${order.address.street}, ${order.address.number}</p>
-            <p style="color: var(--text-muted);">${order.address.neighborhood}</p>
-            ${order.address.reference ? `<p style="color: var(--text-muted);">Ref: ${order.address.reference}</p>` : ''}
-        </div>
+        ${order.deliveryMode !== 'pickup' && order.address ? `
+            <h4 style="margin-bottom: 12px;">📍 Entrega</h4>
+            <div class="card" style="margin-bottom: 20px;">
+                <p><strong>${order.address.label}</strong></p>
+                <p style="color: var(--text-muted);">${order.address.street}, ${order.address.number}</p>
+                <p style="color: var(--text-muted);">${order.address.neighborhood}</p>
+                ${order.address.reference ? `<p style="color: var(--text-muted);">Ref: ${order.address.reference}</p>` : ''}
+            </div>
+        ` : `
+            <h4 style="margin-bottom: 12px;">🏪 Retirada na Loja</h4>
+            <div class="card" style="margin-bottom: 20px;">
+                <p style="color: var(--text-muted);">Retire seu pedido em ${order.storeName}</p>
+            </div>
+        `}
         
         <h4 style="margin-bottom: 12px;">📋 Status</h4>
         <div class="timeline">
@@ -1036,10 +1160,12 @@ function openOrderDetail(orderId) {
                     <span>- ${formatCurrency(order.discount)}</span>
                 </div>
             ` : ''}
-            <div class="summary-row">
-                <span>Entrega</span>
-                <span>${formatCurrency(order.delivery)}</span>
-            </div>
+            ${order.deliveryMode !== 'pickup' ? `
+                <div class="summary-row">
+                    <span>Entrega</span>
+                    <span>${formatCurrency(order.delivery)}</span>
+                </div>
+            ` : ''}
             <div class="summary-row total">
                 <span>Total</span>
                 <span>${formatCurrency(order.total)}</span>
@@ -1109,18 +1235,8 @@ function showToast(message) {
     setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
-// Online/Offline
-window.addEventListener('online', () => document.getElementById('offlineBanner').classList.remove('show'));
-window.addEventListener('offline', () => document.getElementById('offlineBanner').classList.add('show'));
+// ==================== MAP PICKER ====================
 
-// Close modals on backdrop
-document.querySelectorAll('.modal').forEach(modal => {
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) modal.classList.remove('active');
-    });
-});
-
-// Adicione no index.js do cliente
 function openMapPicker() {
     const modal = document.createElement('div');
     modal.id = 'mapPickerModal';
@@ -1147,7 +1263,6 @@ function openMapPicker() {
         let marker = null;
         window._pickedLocation = null;
 
-        // Tenta centralizar na localização atual
         navigator.geolocation?.getCurrentPosition(pos => {
             map.setView([pos.coords.latitude, pos.coords.longitude], 16);
         });
@@ -1174,82 +1289,14 @@ function confirmPickedLocation() {
     closeMapPicker();
     showToast('Localização definida!');
 }
-// Renderiza os adicionais do produto no modal
-function renderProductAddons(product) {
-    const addons = product.addons || [];
-    if (addons.length === 0) return '';
-    
-    // Ordena por "order" 
-    const sorted = [...addons].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-    
-    return `
-        <div class="addons-section">
-            <div class="addons-title">Adicionais</div>
-            <div class="addons-options">
-                <label class="addon-option selected">
-                    <input type="radio" name="addon-${product.id}" value="" checked onchange="selectAddon(null)">
-                    <span class="addon-label">
-                        <span class="addon-name">Nenhum</span>
-                        <span class="addon-price">-</span>
-                    </span>
-                </label>
-                ${sorted.map((addon, idx) => `
-                    <label class="addon-option">
-                        <input type="radio" name="addon-${product.id}" value="${idx}" onchange="selectAddon(${JSON.stringify(addon).replace(/"/g, '&quot;')})">
-                        <span class="addon-label">
-                            <span class="addon-name">${addon.name}</span>
-                            <span class="addon-price">+ ${formatCurrency(addon.price)}</span>
-                        </span>
-                    </label>
-                `).join('')}
-            </div>
-        </div>
-    `;
-}
 
-// Variável para guardar addon selecionado
-let selectedAddon = null;
+// ==================== INIT ====================
 
-function selectAddon(addon) {
-    selectedAddon = addon;
-    // Atualiza visual
-    document.querySelectorAll('.addon-option').forEach(el => {
-        el.classList.toggle('selected', el.querySelector('input').checked);
+window.addEventListener('online', () => document.getElementById('offlineBanner').classList.remove('show'));
+window.addEventListener('offline', () => document.getElementById('offlineBanner').classList.add('show'));
+
+document.querySelectorAll('.modal').forEach(modal => {
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.classList.remove('active');
     });
-    // Atualiza preço total se necessário
-    updateTotalPrice();
-}
-
-// Ao adicionar ao carrinho, inclua o addon:
-function addToCart(product, qty) {
-    const item = {
-        productId: product.id,
-        name: product.name,
-        price: product.price,
-        qty: qty,
-        addons: selectedAddon ? [selectedAddon] : [] // Array para suportar múltiplos no futuro
-    };
-    cart.push(item);
-    selectedAddon = null; // Reset
-}
-let selectedPayment = 'pix';
-
-function setDeliveryMode(mode) {
-    deliveryMode = mode;
-    document.getElementById('modeDelivery').classList.toggle('selected', mode === 'delivery');
-    document.getElementById('modePickup').classList.toggle('selected', mode === 'pickup');
-    document.getElementById('addressSection').style.display = mode === 'delivery' ? 'block' : 'none';
-    updateCheckoutSummary();
-}
-
-function selectPayment(el) {
-    selectedPayment = el.value;
-    document.querySelectorAll('.payment-option').forEach(p => p.classList.remove('selected'));
-    el.closest('.payment-option').classList.add('selected');
-}
-
-function getSelectedDeliveryFee() {
-    if (deliveryMode === 'pickup') return 0;
-    const addr = addresses.find(a => a.id === selectedAddress);
-    return addr ? getDeliveryFeeByNeighborhood(addr.neighborhood) : 0;
-}
+});
