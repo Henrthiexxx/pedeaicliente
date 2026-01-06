@@ -1,286 +1,171 @@
-// ==================== NOTIFICATIONS & RATINGS MODULE ====================
-// Gerencia notificações de entrega e sistema de avaliação
+// ==================== NOTIFICATIONS MODULE ====================
 
 const NotificationsModule = {
-    pendingReviews: [],
-    hasUnseen: false,
-
+    hasPermission: false,
+    
     init() {
-        this.loadPendingReviews();
+        this.requestPermission();
     },
-
-    loadPendingReviews() {
-        try {
-            const saved = localStorage.getItem(`pendingReviews_${currentUser?.uid}`);
-            this.pendingReviews = saved ? JSON.parse(saved) : [];
-            this.hasUnseen = this.pendingReviews.some(r => !r.seen);
-        } catch (e) {
-            this.pendingReviews = [];
-            this.hasUnseen = false;
-        }
-    },
-
-    savePendingReviews() {
-        localStorage.setItem(`pendingReviews_${currentUser?.uid}`, JSON.stringify(this.pendingReviews));
-        this.hasUnseen = this.pendingReviews.some(r => !r.seen);
-        this.updateNotificationBadge();
-    },
-
-    // Chamado quando um pedido é marcado como entregue
-    addDeliveredOrder(order) {
-        // Verifica se já existe pendente
-        if (this.pendingReviews.some(r => r.orderId === order.id)) return;
-
-        this.pendingReviews.push({
-            orderId: order.id,
-            storeId: order.storeId,
-            storeName: order.storeName,
-            items: order.items.map(i => i.name).join(', '),
-            deliveredAt: new Date().toISOString(),
-            seen: false,
-            reviewed: false
-        });
-
-        this.savePendingReviews();
-        this.showDeliveryNotification(order);
-    },
-
-    showDeliveryNotification(order) {
-        showToast(`🎉 Pedido entregue! Avalie ${order.storeName}`);
-        
-        // Vibrar se suportado
-        if (navigator.vibrate) {
-            navigator.vibrate([200, 100, 200]);
-        }
-    },
-
-    markAsSeen(orderId) {
-        const review = this.pendingReviews.find(r => r.orderId === orderId);
-        if (review) {
-            review.seen = true;
-            this.savePendingReviews();
-        }
-    },
-
-    markAllAsSeen() {
-        this.pendingReviews.forEach(r => r.seen = true);
-        this.savePendingReviews();
-    },
-
-    removeReview(orderId) {
-        this.pendingReviews = this.pendingReviews.filter(r => r.orderId !== orderId);
-        this.savePendingReviews();
-    },
-
-    getUnseenCount() {
-        return this.pendingReviews.filter(r => !r.seen && !r.reviewed).length;
-    },
-
-    getPendingCount() {
-        return this.pendingReviews.filter(r => !r.reviewed).length;
-    },
-
-    updateNotificationBadge() {
-        const badge = document.getElementById('notificationBadge');
-        const count = this.getUnseenCount();
-        if (badge) {
-            badge.textContent = count > 0 ? count : '';
-            badge.style.display = count > 0 ? 'flex' : 'none';
-        }
-    },
-
-    // Verifica se há avaliações pendentes para mostrar na home
-    checkAndShowReviewPrompt() {
-        const pending = this.pendingReviews.filter(r => !r.reviewed);
-        if (pending.length > 0) {
-            this.renderReviewPrompt(pending[0]);
-        } else {
-            const prompt = document.getElementById('reviewPromptContainer');
-            if (prompt) prompt.innerHTML = '';
-        }
-    },
-
-    renderReviewPrompt(review) {
-        const container = document.getElementById('reviewPromptContainer');
-        if (!container) return;
-
-        container.innerHTML = `
-            <div class="review-prompt-card">
-                <div class="review-prompt-header">
-                    <span class="review-prompt-icon">⭐</span>
-                    <div>
-                        <div class="review-prompt-title">Como foi seu pedido?</div>
-                        <div class="review-prompt-subtitle">${review.storeName}</div>
-                    </div>
-                    <button class="review-prompt-close" onclick="NotificationsModule.dismissPrompt('${review.orderId}')">×</button>
-                </div>
-                <div class="review-prompt-items">${review.items}</div>
-                <button class="btn btn-primary btn-sm" onclick="NotificationsModule.openReviewModal('${review.orderId}')" style="margin-top: 12px;">
-                    Avaliar agora
-                </button>
-            </div>
-        `;
-
-        // Marca como visto
-        this.markAsSeen(review.orderId);
-    },
-
-    dismissPrompt(orderId) {
-        const container = document.getElementById('reviewPromptContainer');
-        if (container) container.innerHTML = '';
-        
-        // Mostra próxima avaliação pendente se houver
-        const pending = this.pendingReviews.filter(r => !r.reviewed && r.orderId !== orderId);
-        if (pending.length > 0) {
-            setTimeout(() => this.renderReviewPrompt(pending[0]), 300);
-        }
-    },
-
-    openReviewModal(orderId) {
-        const review = this.pendingReviews.find(r => r.orderId === orderId);
-        if (!review) return;
-
-        const modal = document.getElementById('reviewModal');
-        const content = document.getElementById('reviewModalContent');
-
-        content.innerHTML = `
-            <div class="review-store-name">${review.storeName}</div>
-            <div class="review-items">${review.items}</div>
-            
-            <div class="review-section">
-                <h4>🚚 Entrega</h4>
-                <p class="review-section-desc">Como foi a entrega e o entregador?</p>
-                <div class="emoji-rating" id="deliveryRating" data-value="0">
-                    ${this.renderEmojiOptions('delivery')}
-                </div>
-            </div>
-            
-            <div class="review-section">
-                <h4>🍽️ Produto e Atendimento</h4>
-                <p class="review-section-desc">Como foi a comida e o atendimento da loja?</p>
-                <div class="emoji-rating" id="productRating" data-value="0">
-                    ${this.renderEmojiOptions('product')}
-                </div>
-            </div>
-            
-            <div class="review-section">
-                <h4>💬 Comentário (opcional)</h4>
-                <textarea class="input review-comment" id="reviewComment" 
-                          placeholder="Conte mais sobre sua experiência..." rows="3"></textarea>
-            </div>
-            
-            <button class="btn btn-primary" onclick="NotificationsModule.submitReview('${orderId}')">
-                Enviar Avaliação
-            </button>
-        `;
-
-        openModal('reviewModal');
-    },
-
-    renderEmojiOptions(type) {
-        const emojis = [
-            { value: 1, emoji: '😠', label: 'Péssimo' },
-            { value: 2, emoji: '😕', label: 'Ruim' },
-            { value: 3, emoji: '😐', label: 'Regular' },
-            { value: 4, emoji: '😊', label: 'Bom' },
-            { value: 5, emoji: '🤩', label: 'Excelente' }
-        ];
-
-        return emojis.map(e => `
-            <button type="button" class="emoji-option" 
-                    data-value="${e.value}"
-                    onclick="NotificationsModule.selectRating('${type}', ${e.value}, this)">
-                <span class="emoji">${e.emoji}</span>
-                <span class="emoji-label">${e.label}</span>
-            </button>
-        `).join('');
-    },
-
-    selectRating(type, value, btn) {
-        const container = btn.parentElement;
-        container.dataset.value = value;
-        
-        // Remove seleção anterior
-        container.querySelectorAll('.emoji-option').forEach(opt => {
-            opt.classList.remove('selected');
-        });
-        
-        // Adiciona seleção atual
-        btn.classList.add('selected');
-    },
-
-    async submitReview(orderId) {
-        const deliveryRating = parseInt(document.getElementById('deliveryRating').dataset.value);
-        const productRating = parseInt(document.getElementById('productRating').dataset.value);
-        const comment = document.getElementById('reviewComment').value.trim();
-
-        if (deliveryRating === 0 || productRating === 0) {
-            showToast('Por favor, avalie entrega e produto');
+    
+    async requestPermission() {
+        if (!('Notification' in window)) {
+            console.log('Browser não suporta notificações');
             return;
         }
-
-        const review = this.pendingReviews.find(r => r.orderId === orderId);
-        if (!review) return;
-
+        
+        if (Notification.permission === 'granted') {
+            this.hasPermission = true;
+        } else if (Notification.permission !== 'denied') {
+            const permission = await Notification.requestPermission();
+            this.hasPermission = permission === 'granted';
+        }
+    },
+    
+    send(title, body, icon = '🛵') {
+        if (!this.hasPermission) return;
+        
         try {
-            // Salva avaliação no Firestore
-            await db.collection('reviews').add({
-                orderId: orderId,
-                storeId: review.storeId,
-                storeName: review.storeName,
-                userId: currentUser.uid,
-                userName: currentUser.displayName || 'Cliente',
-                deliveryRating,
-                productRating,
-                averageRating: (deliveryRating + productRating) / 2,
-                comment,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            const notification = new Notification(title, {
+                body,
+                icon: '/icon.png',
+                badge: '/icon.png',
+                tag: 'pedrad-' + Date.now(),
+                vibrate: [200, 100, 200]
             });
-
-            // Atualiza pedido como avaliado
-            await db.collection('orders').doc(orderId).update({
-                reviewed: true,
-                reviewedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            // Remove da lista de pendentes
-            this.removeReview(orderId);
-
+            
+            notification.onclick = () => {
+                window.focus();
+                notification.close();
+            };
+            
+            // Auto close após 5s
+            setTimeout(() => notification.close(), 5000);
+        } catch (err) {
+            console.log('Erro ao enviar notificação:', err);
+        }
+    },
+    
+    // Notifica mudança de status do pedido
+    notifyOrderStatus(order, newStatus) {
+        const messages = {
+            confirmed: 'Seu pedido foi confirmado! 🎉',
+            preparing: 'Seu pedido está sendo preparado 👨‍🍳',
+            ready: 'Seu pedido está pronto! 📦',
+            delivering: 'Seu pedido saiu para entrega! 🛵',
+            delivered: 'Pedido entregue! Bom apetite! 🍽️',
+            cancelled: 'Seu pedido foi cancelado 😔'
+        };
+        
+        const msg = messages[newStatus];
+        if (msg) {
+            this.send(`Pedido #${order.id.slice(-6).toUpperCase()}`, msg);
+        }
+    },
+    
+    // Verifica pedidos para avaliar
+    checkAndShowReviewPrompt() {
+        const pending = orders.find(o => o.status === 'delivered' && !o.reviewed);
+        const container = document.getElementById('reviewPromptContainer');
+        
+        if (pending && container) {
+            container.innerHTML = `
+                <div class="review-prompt" onclick="NotificationsModule.openReviewModal('${pending.id}')">
+                    <div class="review-prompt-icon">⭐</div>
+                    <div class="review-prompt-text">
+                        <strong>Avalie seu pedido!</strong>
+                        <span>Conte como foi sua experiência</span>
+                    </div>
+                    <div class="review-prompt-arrow">›</div>
+                </div>
+            `;
+        } else if (container) {
+            container.innerHTML = '';
+        }
+    },
+    
+    openReviewModal(orderId) {
+        const order = orders.find(o => o.id === orderId);
+        if (!order) return;
+        
+        document.getElementById('reviewModalContent').innerHTML = `
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="font-size: 3rem; margin-bottom: 8px;">⭐</div>
+                <h3 style="margin-bottom: 4px;">${order.storeName}</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem;">Pedido #${orderId.slice(-6).toUpperCase()}</p>
+            </div>
+            
+            <div class="rating-stars" id="ratingStars">
+                ${[1,2,3,4,5].map(n => `
+                    <span class="star" data-rating="${n}" onclick="NotificationsModule.setRating(${n})">☆</span>
+                `).join('')}
+            </div>
+            
+            <div class="input-group" style="margin-top: 20px;">
+                <label>Comentário (opcional)</label>
+                <textarea class="input" id="reviewComment" rows="3" placeholder="Conte sua experiência..."></textarea>
+            </div>
+            
+            <button class="btn btn-primary" onclick="NotificationsModule.submitReview('${orderId}')" style="margin-top: 16px;">
+                Enviar avaliação
+            </button>
+        `;
+        
+        this.currentRating = 0;
+        openModal('reviewModal');
+    },
+    
+    currentRating: 0,
+    
+    setRating(rating) {
+        this.currentRating = rating;
+        document.querySelectorAll('#ratingStars .star').forEach((star, idx) => {
+            star.textContent = idx < rating ? '★' : '☆';
+            star.classList.toggle('active', idx < rating);
+        });
+    },
+    
+    async submitReview(orderId) {
+        if (this.currentRating === 0) {
+            showToast('Selecione uma nota!');
+            return;
+        }
+        
+        const order = orders.find(o => o.id === orderId);
+        if (!order) return;
+        
+        const review = {
+            orderId,
+            storeId: order.storeId,
+            storeName: order.storeName,
+            userId: currentUser.uid,
+            userName: currentUser.displayName || 'Cliente',
+            rating: this.currentRating,
+            comment: document.getElementById('reviewComment').value.trim(),
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        
+        try {
+            await db.collection('reviews').add(review);
+            await db.collection('orders').doc(orderId).update({ reviewed: true });
+            
+            // Atualiza local
+            const idx = orders.findIndex(o => o.id === orderId);
+            if (idx !== -1) orders[idx].reviewed = true;
+            
             closeModal('reviewModal');
-            showToast('Obrigado pela avaliação! ⭐');
-
-            // Verifica se há mais avaliações pendentes
             this.checkAndShowReviewPrompt();
-
+            showToast('Avaliação enviada! Obrigado! 🎉');
         } catch (err) {
             console.error('Erro ao enviar avaliação:', err);
             showToast('Erro ao enviar avaliação');
         }
     },
-
-    // Listener para mudanças de status do pedido
+    
+    updateNotificationBadge() {
+        // Placeholder para badge de notificações
+    },
+    
     setupOrderStatusListener() {
-        if (!currentUser) return;
-
-        db.collection('orders')
-            .where('userId', '==', currentUser.uid)
-            .onSnapshot(snapshot => {
-                snapshot.docChanges().forEach(change => {
-                    if (change.type === 'modified') {
-                        const order = { id: change.doc.id, ...change.doc.data() };
-                        
-                        // Verifica se foi entregue
-                        if (order.status === 'delivered' && !order.reviewed) {
-                            // Verifica se já não está na lista de pendentes
-                            if (!this.pendingReviews.some(r => r.orderId === order.id)) {
-                                this.addDeliveredOrder(order);
-                            }
-                        }
-                    }
-                });
-            });
+        // Listener já está no setupRealtimeListeners principal
     }
 };
-
-// Exportar para uso global
-window.NotificationsModule = NotificationsModule;
