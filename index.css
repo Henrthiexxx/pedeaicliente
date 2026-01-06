@@ -1649,3 +1649,77 @@ select.input {
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* Adicione ao final do seu index.css */
+
+/* ==================== ADDONS ==================== */
+
+.addons-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+    min-height: 40px;
+}
+
+.addon-empty {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 12px;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+}
+
+.addon-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    cursor: grab;
+}
+
+.addon-item:active {
+    cursor: grabbing;
+    opacity: 0.8;
+}
+
+.addon-drag {
+    color: var(--text-muted);
+    font-size: 14px;
+    cursor: grab;
+    user-select: none;
+}
+
+.addon-item .addon-name {
+    flex: 1;
+    min-width: 0;
+}
+
+.addon-item .addon-price {
+    width: 80px;
+    text-align: right;
+}
+
+.addon-item .btn-danger {
+    padding: 4px 10px;
+    font-size: 16px;
+}
+
+.addon-add-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.addon-add-row .form-input:first-child {
+    flex: 1;
+}
+
+.addon-add-row .btn {
+    padding: 8px 14px;
+    font-size: 18px;
+    font-weight: bold;
+}
