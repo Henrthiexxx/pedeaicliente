@@ -525,21 +525,43 @@ function populateNeighborhoodSelect() {
 
 // ==================== CART ====================
 
+// Variável para guardar addon selecionado
+let selectedAddon = null;
+let deliveryMode = 'delivery'; // 'delivery' ou 'pickup'
+
+function selectAddon(addon) {
+    selectedAddon = addon;
+    document.querySelectorAll('.addon-option').forEach(el => {
+        el.classList.toggle('selected', el.querySelector('input').checked);
+    });
+    updateModalPrice();
+}
+
+function updateModalPrice() {
+    if (!selectedProduct) return;
+    const addonPrice = selectedAddon?.price || 0;
+    const unitPrice = selectedProduct.price + addonPrice;
+    document.getElementById('modalProductPrice').textContent = formatCurrency(unitPrice * modalQty);
+}
+
 function addToCart(product, qty = 1) {
+    // Bloqueia mistura de lojas
     if (cart.length > 0 && cart[0].storeId !== selectedStore.id) {
-        if (!confirm(`Limpar carrinho de ${cart[0].storeName} e adicionar de ${selectedStore.name}?`)) {
-            return;
-        }
-        cart = [];
-        appliedCoupon = null;
+        showToast(`Finalize o pedido de ${cart[0].storeName} primeiro!`);
+        return;
     }
     
-    const existing = cart.find(item => item.id === product.id);
+    // Cria identificador único incluindo addon
+    const addonKey = selectedAddon ? `-${selectedAddon.name}` : '';
+    const itemKey = `${product.id}${addonKey}`;
+    
+    const existing = cart.find(item => item.itemKey === itemKey);
     
     if (existing) {
         existing.qty += qty;
     } else {
         cart.push({
+            itemKey,
             id: product.id,
             name: product.name,
             price: product.price,
@@ -547,14 +569,15 @@ function addToCart(product, qty = 1) {
             imageUrl: product.imageUrl || null,
             storeId: selectedStore.id,
             storeName: selectedStore.name,
-            qty
+            qty,
+            addons: selectedAddon ? [selectedAddon] : []
         });
     }
     
+    selectedAddon = null;
     saveCart();
     showToast(`${product.name} adicionado!`);
 }
-
 function updateCartQty(index, delta) {
     cart[index].qty += delta;
     
