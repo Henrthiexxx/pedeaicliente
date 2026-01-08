@@ -304,27 +304,43 @@ async function loadStoreData() {
 }
 
 function updateStoreUI() {
-    document.getElementById('sidebarStoreName').textContent = currentStore.name || 'Minha Loja';
-    document.getElementById('sidebarAvatar').innerHTML = currentStore.imageUrl 
+    const sidebarName = document.getElementById('sidebarStoreName');
+    const sidebarAvatar = document.getElementById('sidebarAvatar');
+    const sidebarStatus = document.getElementById('sidebarStatus');
+    const storeToggle = document.getElementById('storeToggle');
+    
+    if (sidebarName) sidebarName.textContent = currentStore.name || 'Minha Loja';
+    if (sidebarAvatar) sidebarAvatar.innerHTML = currentStore.imageUrl 
         ? `<img src="${currentStore.imageUrl}" alt="Logo">`
         : (currentStore.emoji || '🏪');
     
     const isOpen = currentStore.open !== false;
-    document.getElementById('sidebarStatus').textContent = isOpen ? '🟢 Aberto' : '🔴 Fechado';
-    document.getElementById('sidebarStatus').className = 'store-status' + (isOpen ? '' : ' closed');
-    document.getElementById('storeToggle').className = 'toggle' + (isOpen ? ' active' : '');
+    if (sidebarStatus) {
+        sidebarStatus.textContent = isOpen ? '🟢 Aberto' : '🔴 Fechado';
+        sidebarStatus.className = 'store-status' + (isOpen ? '' : ' closed');
+    }
+    if (storeToggle) storeToggle.className = 'toggle' + (isOpen ? ' active' : '');
     
-    document.getElementById('storeName').value = currentStore.name || '';
-    document.getElementById('storeCategory').value = currentStore.category || 'Hambúrgueres';
-    document.getElementById('storeDescription').value = currentStore.description || '';
-    document.getElementById('storeDeliveryTime').value = currentStore.deliveryTime || '';
-    document.getElementById('storeDeliveryFee').value = currentStore.deliveryFee || '';
-    document.getElementById('storeAddress').value = currentStore.address || '';
-    document.getElementById('storePhone').value = currentStore.phone || '';
+    // Form fields (podem não existir se não estiver na página)
+    const fields = {
+        storeName: currentStore.name || '',
+        storeCategory: currentStore.category || 'Hambúrgueres',
+        storeDescription: currentStore.description || '',
+        storeDeliveryTime: currentStore.deliveryTime || '',
+        storeDeliveryFee: currentStore.deliveryFee || '',
+        storeAddress: currentStore.address || '',
+        storePhone: currentStore.phone || ''
+    };
     
-    if (currentStore.imageUrl) {
-        document.getElementById('storeImageUpload').classList.add('has-image');
-        document.getElementById('storeImageUpload').innerHTML = `<img src="${currentStore.imageUrl}" alt="Logo"><input type="file" id="storeImageInput" accept="image/*" onchange="handleStoreImageUpload(event)">`;
+    Object.entries(fields).forEach(([id, value]) => {
+        const el = document.getElementById(id);
+        if (el) el.value = value;
+    });
+    
+    const storeImageUpload = document.getElementById('storeImageUpload');
+    if (currentStore.imageUrl && storeImageUpload) {
+        storeImageUpload.classList.add('has-image');
+        storeImageUpload.innerHTML = `<img src="${currentStore.imageUrl}" alt="Logo"><input type="file" id="storeImageInput" accept="image/*" onchange="handleStoreImageUpload(event)">`;
     }
     
     selectDeliveryType(currentStore.deliveryType || 'app', false);
@@ -736,9 +752,10 @@ function renderProducts() {
 function filterProductsList() { renderProducts(); }
 
 function initEmojiPicker() {
-    document.getElementById('emojiPicker').innerHTML = foodEmojis.map(e => `<div class="emoji-item ${e === selectedEmoji ? 'selected' : ''}" onclick="selectEmoji('${e}')">${e}</div>`).join('');
+    const picker = document.getElementById('emojiPicker');
+    if (!picker) return;
+    picker.innerHTML = foodEmojis.map(e => `<div class="emoji-item ${e === selectedEmoji ? 'selected' : ''}" onclick="selectEmoji('${e}')">${e}</div>`).join('');
 }
-
 function selectEmoji(emoji) {
     selectedEmoji = emoji;
     document.querySelectorAll('.emoji-item').forEach(el => el.classList.toggle('selected', el.textContent === emoji));
@@ -1002,9 +1019,14 @@ async function toggleStoreStatus() {
 // ==================== SETTINGS ====================
 
 function selectDeliveryType(type, save = true) {
-    ['deliveryApp', 'deliveryOwn', 'deliveryBoth'].forEach(id => document.getElementById(id).classList.remove('selected'));
-    document.getElementById(type === 'app' ? 'deliveryApp' : type === 'own' ? 'deliveryOwn' : 'deliveryBoth').classList.add('selected');
-    if (save) currentStore.deliveryType = type;
+    ['deliveryApp', 'deliveryOwn', 'deliveryBoth'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('selected');
+    });
+    const targetId = type === 'app' ? 'deliveryApp' : type === 'own' ? 'deliveryOwn' : 'deliveryBoth';
+    const target = document.getElementById(targetId);
+    if (target) target.classList.add('selected');
+    if (save && currentStore) currentStore.deliveryType = type;
 }
 
 function toggleSetting(setting) { document.getElementById(`${setting}Toggle`).classList.toggle('active'); }
