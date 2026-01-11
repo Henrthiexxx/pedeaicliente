@@ -410,12 +410,13 @@
                     document.getElementById('aboutSection').style.display = 'none';
                 }
                 
-                // Telefone
+                // Telefone (CORRIGIDO - funciona em web e mobile)
                 if (store.phone) {
                     document.getElementById('phoneRow').style.display = 'flex';
                     document.getElementById('storePhone').textContent = store.phone;
                     const cleanPhone = store.phone.replace(/\D/g, '');
-                    document.getElementById('whatsappLink').href = `https://wa.me/55${cleanPhone}`;
+                    const message = encodeURIComponent(`Olá! Vi a loja ${store.name} no Pedra Delivery.`);
+                    document.getElementById('whatsappLink').href = `https://api.whatsapp.com/send?phone=55${cleanPhone}&text=${message}`;
                 }
                 
                 // Endereço
