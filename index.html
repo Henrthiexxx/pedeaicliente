@@ -7,8 +7,67 @@
     <meta name="theme-color" content="#000000">
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="client-review-modal.css">
+    
+    <style>
+        /* CSS adicional para botão de avaliações pendentes */
+        .profile-menu-content {
+            flex: 1;
+        }
+        
+        .profile-menu-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+        }
+        
+        .profile-menu-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        .profile-menu-badge {
+            min-width: 24px;
+            height: 24px;
+            background: var(--primary);
+            color: #000;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 8px;
+        }
+        
+        .profile-menu-badge:empty {
+            display: none;
+        }
+        
+        /* FIX: Limita scroll das páginas */
+        .page {
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            max-height: calc(100vh - 120px) !important;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* FIX: Garante que profile-menu é visível */
+        .profile-menu {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0 !important;
+        }
+        
+        .profile-menu-item {
+            display: flex !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+    </style>
 </head>
 <body>
+      
     <div class="offline-banner" id="offlineBanner">Você está offline</div>
     <div class="toast" id="toast"></div>
     
@@ -66,14 +125,27 @@
                     ◎
                     <span class="cart-badge" id="cartBadge"></span>
                 </button>
+                <button class="header-btn notification-badge-btn" id="notificationBadge" onclick="openNotifications()">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M18 16V11a6 6 0 1 0-12 0v5l-2 2h16l-2-2Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                        <path d="M12 22a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2Z" fill="currentColor"/>
+                    </svg>
+                    <span class="notification-badge-count" id="notificationBadgeCount"></span>
+                </button>
             </div>
         </header>
         
+        <!-- Notifications Page -->
+        <div id="notificationsPage" class="page">
+            <h2 style="margin-bottom:24px;font-weight:400;letter-spacing:1px;">Notificações</h2>
+            <div id="notificationsList"></div>
+            <button class="btn btn-secondary" onclick="NotificationSync.clearAll(); NotificationSync.renderHistory('notificationsList')">
+                Limpar tudo
+            </button>
+        </div>
+
         <!-- Home Page -->
-        <div id="homePage" class="page active">
-            <!-- Review Prompt Container -->
-            <div id="reviewPromptContainer"></div>
-            
+        <div id="homePage" class="page active">            
             <div id="storeSelection">
                 <h2 style="margin-bottom: 8px; font-weight: 400; letter-spacing: 1px;">Escolha uma loja</h2>
                 <p style="color: var(--text-muted); margin-bottom: 24px; font-size: 0.85rem;">Selecione onde você quer pedir</p>
@@ -146,16 +218,43 @@
             </div>
             
             <div class="profile-menu">
+                <!-- BOTÃO DE AVALIAÇÕES (COM !important PARA GARANTIR) -->
+                <div class="profile-menu-item" 
+                     onclick="window.location.href='pending-reviews.html'" 
+                     style="display:flex !important;align-items:center;gap:12px;padding:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;cursor:pointer;margin-bottom:12px;opacity:1 !important;visibility:visible !important;">
+                    
+                    <div style="font-size:1.3rem;width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border-radius:10px;">
+                        ⭐
+                    </div>
+                    
+                    <div style="flex:1;">
+                        <div style="font-weight:600;font-size:0.95rem;margin-bottom:2px;">
+                            Avaliações Pendentes
+                        </div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);">
+                            Avalie seus pedidos entregues
+                        </div>
+                    </div>
+                    
+                    <div id="pendingReviewsBadge" style="min-width:24px;height:24px;background:var(--primary);color:#000;border-radius:12px;font-size:0.75rem;font-weight:600;display:none;align-items:center;justify-content:center;padding:0 8px;">
+                    </div>
+                    
+                    <div style="font-size:1.2rem;color:var(--text-muted);">›</div>
+                </div>
+                
+                <!-- OUTROS BOTÕES DO MENU -->
                 <div class="profile-menu-item" onclick="showPage('addresses')">
                     <div class="profile-menu-icon">◎</div>
                     <div class="profile-menu-text">Meus endereços</div>
                     <div class="profile-menu-arrow">›</div>
                 </div>
+                
                 <div class="profile-menu-item" onclick="showPage('orders')">
                     <div class="profile-menu-icon">≡</div>
                     <div class="profile-menu-text">Histórico de pedidos</div>
                     <div class="profile-menu-arrow">›</div>
                 </div>
+                
                 <div class="profile-menu-item" onclick="handleLogout()">
                     <div class="profile-menu-icon">→</div>
                     <div class="profile-menu-text" style="color: var(--text-muted);">Sair</div>
@@ -217,98 +316,98 @@
         </div>
     </div>
     
-<!-- Checkout Modal -->
-<div class="modal" id="checkoutModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <div class="modal-title">Finalizar Pedido</div>
-            <button class="modal-close" onclick="closeModal('checkoutModal')">×</button>
-        </div>
-        <div class="modal-body">
-            <h3 style="margin-bottom: 12px; font-weight: 400; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Tipo de pedido</h3>
-            <div class="delivery-mode-selector" style="display:flex;gap:8px;margin-bottom:24px;">
-                <div class="mode-option selected" id="modeDelivery" onclick="setDeliveryMode('delivery')">
-                    <span>🛵</span> Entrega
-                </div>
-                <div class="mode-option" id="modePickup" onclick="setDeliveryMode('pickup')">
-                    <span>🏪</span> Retirar na Loja
-                </div>
+    <!-- Checkout Modal -->
+    <div class="modal" id="checkoutModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Finalizar Pedido</div>
+                <button class="modal-close" onclick="closeModal('checkoutModal')">×</button>
             </div>
+            <div class="modal-body">
+                <h3 style="margin-bottom: 12px; font-weight: 400; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Tipo de pedido</h3>
+                <div class="delivery-mode-selector" style="display:flex;gap:8px;margin-bottom:24px;">
+                    <div class="mode-option selected" id="modeDelivery" onclick="setDeliveryMode('delivery')">
+                        <span>🛵</span> Entrega
+                    </div>
+                    <div class="mode-option" id="modePickup" onclick="setDeliveryMode('pickup')">
+                        <span>🏪</span> Retirar na Loja
+                    </div>
+                </div>
 
-            <div id="addressSection">
-                <h3 style="margin-bottom: 12px; font-weight: 400; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Endereço de entrega</h3>
-                <div id="checkoutAddresses"></div>
-                <button class="btn btn-secondary btn-sm" onclick="showAddAddressModal()" style="margin-bottom: 24px;">
-                    + Adicionar novo endereço
+                <div id="addressSection">
+                    <h3 style="margin-bottom: 12px; font-weight: 400; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Endereço de entrega</h3>
+                    <div id="checkoutAddresses"></div>
+                    <button class="btn btn-secondary btn-sm" onclick="showAddAddressModal()" style="margin-bottom: 24px;">
+                        + Adicionar novo endereço
+                    </button>
+                </div>
+
+                <h3 style="margin-bottom: 12px; font-weight: 400; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Cupom de desconto</h3>
+                <div class="coupon-box">
+                    <input type="text" class="input" id="couponInput" placeholder="Digite o código">
+                    <button class="btn btn-secondary btn-sm" onclick="applyCoupon()">Aplicar</button>
+                </div>
+                <div id="couponStatus" class="coupon-status"></div>
+
+                <h3 style="margin-bottom: 12px; font-weight: 400; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Forma de pagamento</h3>
+                <div class="payment-options" id="paymentOptions">
+                    <label class="payment-option selected">
+                        <input type="radio" name="payment" value="pix" checked onchange="selectPayment(this)">
+                        <span class="payment-icon">◉</span>
+                        <span class="payment-info"><span class="payment-name">PIX</span><span class="payment-desc">Pagamento instantâneo</span></span>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="payment" value="credit" onchange="selectPayment(this)">
+                        <span class="payment-icon">💳</span>
+                        <span class="payment-info"><span class="payment-name">Crédito</span><span class="payment-desc">Cartão de crédito</span></span>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="payment" value="debit" onchange="selectPayment(this)">
+                        <span class="payment-icon">💳</span>
+                        <span class="payment-info"><span class="payment-name">Débito</span><span class="payment-desc">Cartão de débito</span></span>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="payment" value="cash" onchange="selectPayment(this)">
+                        <span class="payment-icon">💵</span>
+                        <span class="payment-info"><span class="payment-name">Dinheiro</span><span class="payment-desc">Pagar na entrega/retirada</span></span>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="payment" value="picpay" onchange="selectPayment(this)">
+                        <span class="payment-icon">📱</span>
+                        <span class="payment-info"><span class="payment-name">PicPay</span><span class="payment-desc">Carteira digital</span></span>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="payment" value="alimentacao" onchange="selectPayment(this)">
+                        <span class="payment-icon">🍽️</span>
+                        <span class="payment-info"><span class="payment-name">Alimentação</span><span class="payment-desc">Vale alimentação/refeição</span></span>
+                    </label>
+                </div>
+
+                <div class="card">
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span id="checkoutSubtotal">R$ 0,00</span>
+                    </div>
+                    <div class="summary-row" id="checkoutDiscountRow" style="display:none; color: var(--primary);">
+                        <span>Desconto</span>
+                        <span id="checkoutDiscount">- R$ 0,00</span>
+                    </div>
+                    <div class="summary-row" id="checkoutDeliveryRow">
+                        <span>Entrega (<span id="checkoutNeighborhood">-</span>)</span>
+                        <span id="checkoutDelivery">R$ 0,00</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total</span>
+                        <span id="checkoutTotal">R$ 0,00</span>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="submitOrder()" style="margin-top: 16px;">
+                    Confirmar pedido
                 </button>
             </div>
-
-            <h3 style="margin-bottom: 12px; font-weight: 400; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Cupom de desconto</h3>
-            <div class="coupon-box">
-                <input type="text" class="input" id="couponInput" placeholder="Digite o código">
-                <button class="btn btn-secondary btn-sm" onclick="applyCoupon()">Aplicar</button>
-            </div>
-            <div id="couponStatus" class="coupon-status"></div>
-
-            <h3 style="margin-bottom: 12px; font-weight: 400; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Forma de pagamento</h3>
-            <div class="payment-options" id="paymentOptions">
-                <label class="payment-option selected">
-                    <input type="radio" name="payment" value="pix" checked onchange="selectPayment(this)">
-                    <span class="payment-icon">◉</span>
-                    <span class="payment-info"><span class="payment-name">PIX</span><span class="payment-desc">Pagamento instantâneo</span></span>
-                </label>
-                <label class="payment-option">
-                    <input type="radio" name="payment" value="credit" onchange="selectPayment(this)">
-                    <span class="payment-icon">💳</span>
-                    <span class="payment-info"><span class="payment-name">Crédito</span><span class="payment-desc">Cartão de crédito</span></span>
-                </label>
-                <label class="payment-option">
-                    <input type="radio" name="payment" value="debit" onchange="selectPayment(this)">
-                    <span class="payment-icon">💳</span>
-                    <span class="payment-info"><span class="payment-name">Débito</span><span class="payment-desc">Cartão de débito</span></span>
-                </label>
-                <label class="payment-option">
-                    <input type="radio" name="payment" value="cash" onchange="selectPayment(this)">
-                    <span class="payment-icon">💵</span>
-                    <span class="payment-info"><span class="payment-name">Dinheiro</span><span class="payment-desc">Pagar na entrega/retirada</span></span>
-                </label>
-                <label class="payment-option">
-                    <input type="radio" name="payment" value="picpay" onchange="selectPayment(this)">
-                    <span class="payment-icon">📱</span>
-                    <span class="payment-info"><span class="payment-name">PicPay</span><span class="payment-desc">Carteira digital</span></span>
-                </label>
-                <label class="payment-option">
-                    <input type="radio" name="payment" value="alimentacao" onchange="selectPayment(this)">
-                    <span class="payment-icon">🍽️</span>
-                    <span class="payment-info"><span class="payment-name">Alimentação</span><span class="payment-desc">Vale alimentação/refeição</span></span>
-                </label>
-            </div>
-
-            <div class="card">
-                <div class="summary-row">
-                    <span>Subtotal</span>
-                    <span id="checkoutSubtotal">R$ 0,00</span>
-                </div>
-                <div class="summary-row" id="checkoutDiscountRow" style="display:none; color: var(--primary);">
-                    <span>Desconto</span>
-                    <span id="checkoutDiscount">- R$ 0,00</span>
-                </div>
-                <div class="summary-row" id="checkoutDeliveryRow">
-                    <span>Entrega (<span id="checkoutNeighborhood">-</span>)</span>
-                    <span id="checkoutDelivery">R$ 0,00</span>
-                </div>
-                <div class="summary-row total">
-                    <span>Total</span>
-                    <span id="checkoutTotal">R$ 0,00</span>
-                </div>
-            </div>
-
-            <button class="btn btn-primary" onclick="submitOrder()" style="margin-top: 16px;">
-                Confirmar pedido
-            </button>
         </div>
     </div>
-</div>
     
     <!-- Add Address Modal -->
     <div class="modal" id="addressModal">
@@ -374,17 +473,7 @@
         </div>
     </div>
     
-    <!-- Review Modal -->
-    <div class="modal" id="reviewModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">Avaliar Pedido</div>
-                <button class="modal-close" onclick="closeModal('reviewModal')">×</button>
-            </div>
-            <div class="modal-body" id="reviewModalContent"></div>
-        </div>
-    </div>
-
+    <!-- Scripts do Firebase e módulos -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -395,5 +484,71 @@
     <script src="modules/tracking.js"></script>
     <script src="index.js"></script>
     
+    <!-- SCRIPT DE AVALIAÇÕES - DEVE VIR DEPOIS DO INDEX.JS -->
+    <script>
+    window.addEventListener('load', function() {
+        console.log('🔧 Inicializando sistema de avaliações pendentes...');
+        
+        window.updatePendingReviewsBadge = async function() {
+            if (!window.currentUser) {
+                console.log('⚠️ currentUser ainda não disponível');
+                return;
+            }
+            
+            try {
+                const snapshot = await db.collection('orders')
+                    .where('userId', '==', window.currentUser.uid)
+                    .where('status', '==', 'delivered')
+                    .where('reviewed', '==', false)
+                    .get();
+                
+                const count = snapshot.size;
+                const badge = document.getElementById('pendingReviewsBadge');
+                
+                if (badge) {
+                    badge.textContent = count;
+                    badge.style.display = count > 0 ? 'flex' : 'none';
+                    console.log(`✅ Badge atualizado: ${count} avaliações pendentes`);
+                } else {
+                    console.error('❌ Badge não encontrado no DOM');
+                }
+                
+            } catch (err) {
+                console.error('❌ Erro ao contar avaliações pendentes:', err);
+            }
+        };
+        
+        const _originalShowPage = window.showPage;
+        
+        if (typeof _originalShowPage === 'function') {
+            window.showPage = function(pageId) {
+                _originalShowPage(pageId);
+                
+                if (pageId === 'profile' && window.currentUser) {
+                    setTimeout(window.updatePendingReviewsBadge, 500);
+                }
+            };
+            
+            console.log('✅ showPage interceptado com sucesso');
+        } else {
+            console.error('❌ showPage não está definido. Tentando novamente em 1s...');
+            setTimeout(arguments.callee, 1000);
+            return;
+        }
+        
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && window.currentUser) {
+                const profilePage = document.getElementById('profilePage');
+                if (profilePage && profilePage.classList.contains('active')) {
+                    window.updatePendingReviewsBadge();
+                }
+            }
+        });
+        
+        console.log('✅ Sistema de avaliações inicializado');
+    });
+    </script>
+    <script src="modules/polish.js"></script>
+    <script src="modules/orders-lazy-loading.js"></script>
 </body>
 </html>

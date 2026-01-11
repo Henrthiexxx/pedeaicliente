@@ -43,6 +43,7 @@ auth.onAuthStateChanged(async (user) => {
         await loadUserData();
         showMainApp();
         
+        
         if (typeof StoresModule !== 'undefined') StoresModule.init();
         if (typeof ProfileModule !== 'undefined') ProfileModule.init();
         if (typeof NotificationsModule !== 'undefined') {
@@ -58,6 +59,166 @@ auth.onAuthStateChanged(async (user) => {
     } else {
         currentUser = null;
         showAuthPage();
+    }
+});
+
+const NotificationSync = {
+    
+    // Chame após login do usuário
+    async syncNotifications() {
+        if (!currentUser) return;
+        
+        try {
+            // Busca notificações pendentes do Firestore
+            const userDoc = await db.collection('users').doc(currentUser.uid).get();
+            const pendingNotifications = userDoc.data()?.pendingNotifications || [];
+            
+            if (pendingNotifications.length === 0) return;
+            
+            // Pega notificações já salvas no localStorage
+            const localNotifs = JSON.parse(localStorage.getItem('notifications') || '[]');
+            
+            // Adiciona apenas novas (evita duplicatas)
+            const existingIds = new Set(localNotifs.map(n => n.id));
+            const newNotifs = pendingNotifications.filter(n => !existingIds.has(n.id));
+            
+            if (newNotifs.length > 0) {
+                // Salva no localStorage
+                const updated = [...newNotifs, ...localNotifs].slice(0, 50); // Max 50
+                localStorage.setItem('notifications', JSON.stringify(updated));
+                
+                // Mostra popup da mais recente
+                this.showPopup(newNotifs[0]);
+                
+                // Limpa do Firestore (já sincronizado)
+                await db.collection('users').doc(currentUser.uid).update({
+                    pendingNotifications: []
+                });
+            }
+            
+        } catch (err) {
+            console.error('Erro ao sincronizar notificações:', err);
+        }
+    },
+    
+    // Mostra popup de notificação
+    showPopup(notification) {
+        // Cria elemento temporário
+        const popup = document.createElement('div');
+        popup.className = 'notification-popup';
+        popup.innerHTML = `
+            <div class="notification-popup-content">
+                <div class="notification-popup-icon">📢</div>
+                <div class="notification-popup-text">
+                    <div class="notification-popup-title">${notification.title}</div>
+                    <div class="notification-popup-message">${notification.message}</div>
+                </div>
+                <button class="notification-popup-close" onclick="this.parentElement.parentElement.remove()">×</button>
+            </div>
+        `;
+        
+        document.body.appendChild(popup);
+        
+        // Anima entrada
+        setTimeout(() => popup.classList.add('show'), 100);
+        
+        // Auto-remove após 5s
+        setTimeout(() => {
+            popup.classList.remove('show');
+            setTimeout(() => popup.remove(), 300);
+        }, 5000);
+        
+        // Vibra
+        if (navigator.vibrate) {
+            navigator.vibrate([200, 100, 200]);
+        }
+    },
+    
+    // Pega histórico de notificações
+    getHistory() {
+        return JSON.parse(localStorage.getItem('notifications') || '[]');
+    },
+    
+    // Marca como lida
+    markAsRead(notificationId) {
+        const notifs = this.getHistory();
+        const updated = notifs.map(n => 
+            n.id === notificationId ? {...n, read: true} : n
+        );
+        localStorage.setItem('notifications', JSON.stringify(updated));
+    },
+    
+    // Deleta notificação
+    deleteNotification(notificationId) {
+        const notifs = this.getHistory();
+        const filtered = notifs.filter(n => n.id !== notificationId);
+        localStorage.setItem('notifications', JSON.stringify(filtered));
+    },
+    
+    // Limpa todas
+    clearAll() {
+        localStorage.setItem('notifications', '[]');
+    },
+    
+    // Renderiza histórico (chamado em página de notificações)
+    renderHistory(containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        const notifs = this.getHistory();
+        
+        if (notifs.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">🔔</div>
+                    <div class="empty-state-title">Nenhuma notificação</div>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = notifs.map(n => {
+            const date = new Date(n.createdAt);
+            const isUnread = !n.read;
+            
+            return `
+                <div class="notification-item ${isUnread ? 'unread' : ''}" 
+                     onclick="NotificationSync.markAsRead('${n.id}')">
+                    <div class="notification-item-icon">${isUnread ? '🔵' : '⚪'}</div>
+                    <div class="notification-item-content">
+                        <div class="notification-item-title">${n.title}</div>
+                        <div class="notification-item-message">${n.message}</div>
+                        <div class="notification-item-time">${date.toLocaleString('pt-BR')}</div>
+                    </div>
+                    <button class="notification-item-delete" 
+                            onclick="event.stopPropagation(); NotificationSync.deleteNotification('${n.id}'); NotificationSync.renderHistory('${containerId}')">
+                        🗑️
+                    </button>
+                </div>
+            `;
+        }).join('');
+        // Abre a tela/página de notificações e renderiza o histórico
+window.openNotifications = function () {
+  // se você tiver uma página "notifications"
+  showPage('notifications');
+
+  // renderiza dentro do container da página (ajuste o ID!)
+  NotificationSync.renderHistory('notificationsList'); 
+};
+
+    }
+
+};
+
+// INTEGRAÇÃO: Chame após login
+firebase.auth().onAuthStateChanged(async (user) => {
+    if (user) {
+        currentUser = user;
+        
+        // ... seu código existente de login ...
+        
+        // ADICIONAR: Sincroniza notificações
+        await NotificationSync.syncNotifications();
     }
 });
 
@@ -1409,3 +1570,126 @@ document.querySelectorAll('.modal').forEach(modal => {
         if (e.target === modal) modal.classList.remove('active');
     });
 });
+window.openNotifications = function () {
+  showPage('notifications');
+  NotificationSync.renderHistory('notificationsList');
+  if (typeof NotificationsModule !== 'undefined') NotificationsModule.updateNotificationBadge?.();
+};
+// === FIX PERMANENTE: BOTÃO DE AVALIAÇÕES ===
+(function setupReviewButton() {
+    console.log('🔧 Configurando botão de avaliações...');
+    
+    // Função para criar/injetar o botão
+    function injectReviewButton() {
+        const menu = document.querySelector('#profilePage .profile-menu');
+        if (!menu) {
+            console.log('⚠️ Menu não encontrado ainda');
+            return false;
+        }
+        
+        // Verifica se já existe
+        const hasButton = Array.from(menu.children).some(el => 
+            el.textContent.includes('Avaliações')
+        );
+        
+        if (hasButton) {
+            console.log('✅ Botão já existe');
+            return true;
+        }
+        
+        // Cria o botão
+        const btn = document.createElement('div');
+        btn.className = 'profile-menu-item review-button-injected';
+        btn.style.cssText = 'display:flex !important;align-items:center;gap:12px;padding:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;cursor:pointer;margin-bottom:12px;opacity:1 !important;visibility:visible !important;';
+        
+        btn.innerHTML = `
+            <div style="font-size:1.3rem;width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border-radius:10px;">⭐</div>
+            <div style="flex:1;">
+                <div style="font-weight:600;font-size:0.95rem;margin-bottom:2px;">Avaliações Pendentes</div>
+                <div style="font-size:0.75rem;color:var(--text-muted);">Avalie seus pedidos entregues</div>
+            </div>
+            <div id="pendingReviewsBadge" style="min-width:24px;height:24px;background:var(--primary);color:#000;border-radius:12px;font-size:0.75rem;font-weight:600;display:none;align-items:center;justify-content:center;padding:0 8px;"></div>
+            <div style="font-size:1.2rem;color:var(--text-muted);">›</div>
+        `;
+        
+        btn.onclick = function() {
+            window.location.href = 'pending-reviews.html';
+        };
+        
+        // Insere no topo do menu
+        menu.insertBefore(btn, menu.firstChild);
+        console.log('✅ Botão de avaliações injetado!');
+        
+        // Atualiza badge se função existir
+        if (typeof updatePendingReviewsBadge === 'function') {
+            setTimeout(updatePendingReviewsBadge, 500);
+        }
+        
+        return true;
+    }
+    
+    // Intercepta showPage
+    const _originalShowPage = window.showPage;
+    
+    window.showPage = function(page) {
+        // Chama original primeiro
+        if (_originalShowPage) {
+            _originalShowPage(page);
+        }
+        
+        // Se for perfil, injeta botão
+        if (page === 'profile') {
+            console.log('📱 Abrindo perfil, injetando botão...');
+            
+            // Tenta injetar imediatamente
+            setTimeout(() => {
+                const success = injectReviewButton();
+                
+                // Se falhou, tenta mais vezes
+                if (!success) {
+                    let attempts = 0;
+                    const retry = setInterval(() => {
+                        attempts++;
+                        if (injectReviewButton() || attempts >= 5) {
+                            clearInterval(retry);
+                        }
+                    }, 500);
+                }
+            }, 300);
+        }
+    };
+    
+    // Observer: detecta quando .profile-menu aparece no DOM
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => {
+                if (node.nodeType === 1) {
+                    if (node.classList?.contains('profile-menu') || 
+                        node.querySelector?.('.profile-menu')) {
+                        console.log('🔍 Menu de perfil detectado pelo observer');
+                        setTimeout(injectReviewButton, 200);
+                    }
+                }
+            });
+        });
+    });
+    
+    // Observa mudanças no profilePage
+    const profilePage = document.getElementById('profilePage');
+    if (profilePage) {
+        observer.observe(profilePage, {
+            childList: true,
+            subtree: true
+        });
+    }
+    
+    // Tenta injetar na carga inicial (caso já esteja no perfil)
+    setTimeout(() => {
+        const profilePage = document.getElementById('profilePage');
+        if (profilePage?.classList.contains('active')) {
+            injectReviewButton();
+        }
+    }, 1000);
+    
+    console.log('✅ Sistema de botão configurado');
+})();

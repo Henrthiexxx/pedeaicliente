@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informações da Loja</title>
+    <link rel="stylesheet" href="index.css">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg);
+        }
+        
+        .store-info-page {
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+        
+        .store-info-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 0 20px;
+            z-index: 100;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .back-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .back-btn:hover {
+            border-color: var(--primary);
+        }
+        
+        .store-info-title {
+            font-size: 1rem;
+            font-weight: 300;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+        
+        .store-info-content {
+            padding-top: 70px;
+            padding: 70px 16px 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .store-banner {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .store-logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 16px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            overflow: hidden;
+        }
+        
+        .store-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .store-name-big {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .store-category {
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+        
+        .store-rating-big {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 1.2rem;
+        }
+        
+        .section-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-icon {
+            font-size: 1.5rem;
+            width: 40px;
+            text-align: center;
+        }
+        
+        .info-content {
+            flex: 1;
+        }
+        
+        .info-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        
+        .info-value {
+            font-weight: 500;
+        }
+        
+        .info-action {
+            background: var(--primary);
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 0.9rem;
+        }
+        
+        .review-item {
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .review-item:last-child {
+            border-bottom: none;
+        }
+        
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .review-author {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        .review-date {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        .review-stars {
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        
+        .review-comment {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .empty-reviews {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+        
+        .empty-reviews-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <div class="store-info-page">
+        <div class="store-info-header">
+            <button class="back-btn" onclick="goBack()">←</button>
+            <div class="store-info-title">Informações</div>
+        </div>
+        
+        <div class="store-info-content">
+            <!-- Banner da Loja -->
+            <div class="store-banner">
+                <div class="store-logo" id="storeLogo">🏪</div>
+                <div class="store-name-big" id="storeName">Carregando...</div>
+                <div class="store-category" id="storeCategory">-</div>
+                <div class="store-rating-big" id="storeRating">
+                    <span>⭐</span>
+                    <span id="ratingValue">-</span>
+                    <span id="reviewCount" style="color: var(--text-muted);">(0 avaliações)</span>
+                </div>
+            </div>
+            
+            <!-- Sobre -->
+            <div class="section-card" id="aboutSection">
+                <div class="section-title">📝 Sobre</div>
+                <p id="storeDescription" style="color: var(--text-muted); line-height: 1.6;">-</p>
+            </div>
+            
+            <!-- Contato -->
+            <div class="section-card">
+                <div class="section-title">📞 Contato</div>
+                
+                <div class="info-row" id="phoneRow" style="display:none;">
+                    <div class="info-icon">📱</div>
+                    <div class="info-content">
+                        <div class="info-label">Telefone</div>
+                        <div class="info-value" id="storePhone">-</div>
+                    </div>
+                    <a class="info-action" id="whatsappLink" target="_blank">WhatsApp</a>
+                </div>
+                
+                <div class="info-row" id="addressRow" style="display:none;">
+                    <div class="info-icon">📍</div>
+                    <div class="info-content">
+                        <div class="info-label">Endereço</div>
+                        <div class="info-value" id="storeAddress">-</div>
+                    </div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-icon">🕐</div>
+                    <div class="info-content">
+                        <div class="info-label">Horário de Funcionamento</div>
+                        <div class="info-value" id="storeHours">Consulte a loja</div>
+                    </div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-icon">🛵</div>
+                    <div class="info-content">
+                        <div class="info-label">Tempo de entrega</div>
+                        <div class="info-value" id="deliveryTime">-</div>
+                    </div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-icon">💰</div>
+                    <div class="info-content">
+                        <div class="info-label">Taxa de entrega</div>
+                        <div class="info-value" id="deliveryFee">-</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Avaliações -->
+            <div class="section-card">
+                <div class="section-title">⭐ Avaliações</div>
+                <div id="reviewsList">
+                    <div class="empty-reviews">
+                        <div class="empty-reviews-icon">⏳</div>
+                        <div>Carregando avaliações...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",
+            authDomain: "pedrad-814d0.firebaseapp.com",
+            projectId: "pedrad-814d0",
+            storageBucket: "pedrad-814d0.firebasestorage.app",
+            messagingSenderId: "293587190550",
+            appId: "1:293587190550:web:80c9399f82847c80e20637"
+        };
+        
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        
+        const db = firebase.firestore();
+        
+        // Pega storeId da URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const storeId = urlParams.get('id');
+        
+        if (!storeId) {
+            alert('Loja não encontrada');
+            goBack();
+        }
+        
+        function goBack() {
+            if (document.referrer && document.referrer.includes(window.location.host)) {
+                window.history.back();
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+        
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', { 
+                style: 'currency', 
+                currency: 'BRL' 
+            }).format(value || 0);
+        }
+        
+        function formatDate(timestamp) {
+            if (!timestamp) return '';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+        
+        function renderStars(rating) {
+            const full = Math.floor(rating);
+            const half = rating % 1 >= 0.5 ? 1 : 0;
+            const empty = 5 - full - half;
+            
+            return '★'.repeat(full) + 
+                   (half ? '⯨' : '') + 
+                   '☆'.repeat(empty);
+        }
+        
+        async function loadStoreInfo() {
+            try {
+                const storeDoc = await db.collection('stores').doc(storeId).get();
+                
+                if (!storeDoc.exists) {
+                    alert('Loja não encontrada');
+                    goBack();
+                    return;
+                }
+                
+                const store = storeDoc.data();
+                
+                // Logo
+                const logo = document.getElementById('storeLogo');
+                if (store.imageUrl) {
+                    logo.innerHTML = `<img src="${store.imageUrl}" alt="${store.name}">`;
+                } else {
+                    logo.textContent = store.emoji || '🏪';
+                }
+                
+                // Nome e categoria
+                document.getElementById('storeName').textContent = store.name || 'Loja';
+                document.getElementById('storeCategory').textContent = store.category || '';
+                
+                // Rating
+                const rating = store.rating || 0;
+                const reviewCount = store.reviewCount || 0;
+                document.getElementById('ratingValue').textContent = rating.toFixed(1);
+                document.getElementById('reviewCount').textContent = `(${reviewCount} ${reviewCount === 1 ? 'avaliação' : 'avaliações'})`;
+                
+                // Descrição
+                if (store.description) {
+                    document.getElementById('storeDescription').textContent = store.description;
+                } else {
+                    document.getElementById('aboutSection').style.display = 'none';
+                }
+                
+                // Telefone
+                if (store.phone) {
+                    document.getElementById('phoneRow').style.display = 'flex';
+                    document.getElementById('storePhone').textContent = store.phone;
+                    const cleanPhone = store.phone.replace(/\D/g, '');
+                    document.getElementById('whatsappLink').href = `https://wa.me/55${cleanPhone}`;
+                }
+                
+                // Endereço
+                if (store.address) {
+                    document.getElementById('addressRow').style.display = 'flex';
+                    document.getElementById('storeAddress').textContent = store.address;
+                }
+                
+                // Horário
+                if (store.settings?.weekdayOpen) {
+                    const hours = `Seg-Sex: ${store.settings.weekdayOpen} às ${store.settings.weekdayClose} | Sáb-Dom: ${store.settings.weekendOpen} às ${store.settings.weekendClose}`;
+                    document.getElementById('storeHours').textContent = hours;
+                }
+                
+                // Tempo de entrega
+                document.getElementById('deliveryTime').textContent = store.deliveryTime || 'Consulte a loja';
+                
+                // Taxa de entrega
+                document.getElementById('deliveryFee').textContent = formatCurrency(store.deliveryFee || 0);
+                
+            } catch (err) {
+                console.error('Erro ao carregar loja:', err);
+                alert('Erro ao carregar informações');
+                goBack();
+            }
+        }
+        
+        async function loadReviews() {
+            try {
+                const reviewsSnapshot = await db.collection('reviews')
+                    .where('storeId', '==', storeId)
+                    .where('type', '==', 'order')
+                    .orderBy('createdAt', 'desc')
+                    .limit(20)
+                    .get();
+                
+                const reviews = reviewsSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                
+                const container = document.getElementById('reviewsList');
+                
+                if (reviews.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-reviews">
+                            <div class="empty-reviews-icon">⭐</div>
+                            <div>Ainda não há avaliações</div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = reviews.map(review => `
+                    <div class="review-item">
+                        <div class="review-header">
+                            <div class="review-author">${review.userName || 'Cliente'}</div>
+                            <div class="review-date">${formatDate(review.createdAt)}</div>
+                        </div>
+                        <div class="review-stars">${renderStars(review.storeRating)}</div>
+                        ${review.comment ? `
+                            <div class="review-comment">${review.comment}</div>
+                        ` : ''}
+                    </div>
+                `).join('');
+                
+            } catch (err) {
+                console.error('Erro ao carregar avaliações:', err);
+                document.getElementById('reviewsList').innerHTML = `
+                    <div class="empty-reviews">
+                        <div class="empty-reviews-icon">❌</div>
+                        <div>Erro ao carregar avaliações</div>
+                    </div>
+                `;
+            }
+        }
+        
+        // Carrega tudo ao iniciar
+        (async () => {
+            await loadStoreInfo();
+            await loadReviews();
+        })();
+    </script>
+</body>
+</html>

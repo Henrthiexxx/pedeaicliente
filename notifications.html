@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notificações - Pedrad</title>
+    
+    <!-- Referencia CSS existente do projeto -->
+    <link rel="stylesheet" href="index.css">
+    
+    <style>
+        /* CSS específico da página de notificações */
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        
+        .notifications-page {
+            min-height: 100vh;
+            background: var(--bg);
+            padding-bottom: 20px;
+        }
+        
+        .notifications-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 100;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .back-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .back-btn:hover {
+            border-color: var(--primary);
+        }
+        
+        .notifications-title {
+            font-size: 1rem;
+            font-weight: 300;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+        
+        .clear-all-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .clear-all-btn:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+        
+        .notifications-content {
+            padding-top: 70px;
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+        
+        .notification-item {
+            display: flex;
+            gap: 12px;
+            padding: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .notification-item:hover {
+            background: rgba(255,255,255,0.03);
+            border-color: var(--text-muted);
+        }
+        
+        .notification-item.unread {
+            background: rgba(255,255,255,0.05);
+            border-left: 3px solid var(--primary);
+        }
+        
+        .notification-icon {
+            font-size: 0.9rem;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+        
+        .notification-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 0.95rem;
+        }
+        
+        .notification-message {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        
+        .notification-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        .notification-delete {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: all 0.2s;
+            padding: 4px 8px;
+            flex-shrink: 0;
+        }
+        
+        .notification-delete:hover {
+            opacity: 1;
+            color: var(--danger);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+        
+        .empty-state-title {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .empty-state-text {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="notifications-page">
+        <!-- Header -->
+        <div class="notifications-header">
+            <button class="back-btn" onclick="goBack()">←</button>
+            <div class="notifications-title">Notificações</div>
+            <button class="clear-all-btn" onclick="clearAll()">🗑️</button>
+        </div>
+        
+        <!-- Lista de Notificações -->
+        <div class="notifications-content" id="notificationsList">
+            <!-- Renderizado pelo JS -->
+        </div>
+    </div>
+    
+    <script>
+        // ==================== FUNÇÕES ====================
+        
+        function goBack() {
+            // Tenta voltar no histórico
+            if (document.referrer && document.referrer !== '') {
+                window.history.back();
+            } else {
+                // Se não tem histórico, vai para index
+                window.location.href = 'index.html';
+            }
+        }
+        
+        function getNotifications() {
+            try {
+                return JSON.parse(localStorage.getItem('notifications') || '[]');
+            } catch (e) {
+                console.error('Erro ao carregar notificações:', e);
+                return [];
+            }
+        }
+        
+        function saveNotifications(notifications) {
+            localStorage.setItem('notifications', JSON.stringify(notifications));
+        }
+        
+        function markAsRead(notificationId) {
+            const notifications = getNotifications();
+            const updated = notifications.map(n => 
+                n.id === notificationId ? {...n, read: true} : n
+            );
+            saveNotifications(updated);
+            renderNotifications();
+        }
+        
+        function deleteNotification(notificationId, event) {
+            event.stopPropagation();
+            
+            if (!confirm('Deletar esta notificação?')) return;
+            
+            const notifications = getNotifications();
+            const filtered = notifications.filter(n => n.id !== notificationId);
+            saveNotifications(filtered);
+            renderNotifications();
+        }
+        
+        function clearAll() {
+            const notifications = getNotifications();
+            
+            if (notifications.length === 0) {
+                alert('Não há notificações para limpar');
+                return;
+            }
+            
+            if (!confirm(`Deletar todas as ${notifications.length} notificações?`)) return;
+            
+            saveNotifications([]);
+            renderNotifications();
+        }
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diff = now - date;
+            
+            // Menos de 1 minuto
+            if (diff < 60000) {
+                return 'Agora';
+            }
+            
+            // Menos de 1 hora
+            if (diff < 3600000) {
+                const minutes = Math.floor(diff / 60000);
+                return `${minutes}m atrás`;
+            }
+            
+            // Menos de 24 horas
+            if (diff < 86400000) {
+                const hours = Math.floor(diff / 3600000);
+                return `${hours}h atrás`;
+            }
+            
+            // Menos de 7 dias
+            if (diff < 604800000) {
+                const days = Math.floor(diff / 86400000);
+                return `${days}d atrás`;
+            }
+            
+            // Mais de 7 dias - mostra data
+            return date.toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: '2-digit'
+            });
+        }
+        
+        function renderNotifications() {
+            const container = document.getElementById('notificationsList');
+            const notifications = getNotifications();
+            
+            if (notifications.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔔</div>
+                        <div class="empty-state-title">Nenhuma notificação</div>
+                        <div class="empty-state-text">Você será notificado aqui quando houver novidades</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = notifications.map(n => {
+                const isUnread = !n.read;
+                const icon = isUnread ? '🔵' : '⚪';
+                
+                return `
+                    <div class="notification-item ${isUnread ? 'unread' : ''}" 
+                         onclick="markAsRead('${n.id}')">
+                        <div class="notification-icon">${icon}</div>
+                        <div class="notification-content">
+                            <div class="notification-title">${n.title}</div>
+                            <div class="notification-message">${n.message}</div>
+                            <div class="notification-time">${formatDate(n.createdAt)}</div>
+                        </div>
+                        <button class="notification-delete" onclick="deleteNotification('${n.id}', event)">
+                            🗑️
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // ==================== INIT ====================
+        
+        // Renderiza ao carregar
+        renderNotifications();
+        
+        // Atualiza a cada 30 segundos (caso tenha novas notificações)
+        setInterval(renderNotifications, 30000);
+    </script>
+    
+</body>
+</html>

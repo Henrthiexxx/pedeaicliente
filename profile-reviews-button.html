@@ -1,0 +1,154 @@
+<!-- ==================== BOTÃO DE AVALIAÇÕES PENDENTES ==================== -->
+<!-- Cole no menu de perfil do cliente -->
+
+<style>
+.profile-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 12px;
+}
+
+.profile-menu-item:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: var(--text-muted);
+}
+
+.profile-menu-icon {
+    font-size: 1.3rem;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+}
+
+.profile-menu-content {
+    flex: 1;
+}
+
+.profile-menu-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+}
+
+.profile-menu-subtitle {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.profile-menu-badge {
+    min-width: 24px;
+    height: 24px;
+    background: var(--primary);
+    color: #000;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+}
+
+.profile-menu-badge:empty {
+    display: none;
+}
+
+.profile-menu-arrow {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+}
+</style>
+
+<!-- BOTÃO -->
+<div class="profile-menu-item" onclick="window.location.href='pending-reviews.html'">
+    <div class="profile-menu-icon">⭐</div>
+    <div class="profile-menu-content">
+        <div class="profile-menu-title">Avaliações Pendentes</div>
+        <div class="profile-menu-subtitle">Avalie seus pedidos entregues</div>
+    </div>
+    <div class="profile-menu-badge" id="pendingReviewsBadge"></div>
+    <div class="profile-menu-arrow">›</div>
+</div>
+
+<!-- SCRIPT (cole antes do </body>) -->
+<script>
+async function updatePendingReviewsBadge() {
+    if (!currentUser) return;
+    
+    try {
+        const snapshot = await db.collection('orders')
+            .where('userId', '==', currentUser.uid)
+            .where('status', '==', 'delivered')
+            .where('reviewed', '==', false)
+            .get();
+        
+        const count = snapshot.size;
+        const badge = document.getElementById('pendingReviewsBadge');
+        
+        if (badge) {
+            badge.textContent = count > 0 ? count : '';
+        }
+        
+    } catch (err) {
+        console.error('Erro ao contar avaliações pendentes:', err);
+    }
+}
+
+// Atualizar ao carregar perfil
+if (typeof currentUser !== 'undefined' && currentUser) {
+    updatePendingReviewsBadge();
+}
+
+// Atualizar quando mudar de página/tab
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && currentUser) {
+        updatePendingReviewsBadge();
+    }
+});
+</script>
+
+<!-- ==================== EXEMPLO DE MENU COMPLETO ==================== -->
+<!--
+<div class="profile-menu">
+    
+    [COLE O CÓDIGO ACIMA AQUI]
+    
+    <div class="profile-menu-item" onclick="showPage('orders')">
+        <div class="profile-menu-icon">📦</div>
+        <div class="profile-menu-content">
+            <div class="profile-menu-title">Meus Pedidos</div>
+            <div class="profile-menu-subtitle">Acompanhe suas compras</div>
+        </div>
+        <div class="profile-menu-arrow">›</div>
+    </div>
+    
+    <div class="profile-menu-item" onclick="showPage('addresses')">
+        <div class="profile-menu-icon">📍</div>
+        <div class="profile-menu-content">
+            <div class="profile-menu-title">Endereços</div>
+            <div class="profile-menu-subtitle">Gerencie seus endereços</div>
+        </div>
+        <div class="profile-menu-arrow">›</div>
+    </div>
+    
+    <div class="profile-menu-item" onclick="logout()">
+        <div class="profile-menu-icon">🚪</div>
+        <div class="profile-menu-content">
+            <div class="profile-menu-title">Sair</div>
+            <div class="profile-menu-subtitle">Desconectar da conta</div>
+        </div>
+        <div class="profile-menu-arrow">›</div>
+    </div>
+</div>
+-->

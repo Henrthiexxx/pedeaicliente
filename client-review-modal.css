@@ -1,0 +1,145 @@
+/* Review Modal - Cliente */
+
+.review-prompt-card {
+    background: var(--bg-card);
+    border: 1px solid var(--primary);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 20px;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.review-prompt-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.review-prompt-icon {
+    font-size: 1.5rem;
+}
+
+.review-prompt-title {
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.review-prompt-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.review-prompt-close {
+    margin-left: auto;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.review-prompt-close:hover {
+    border-color: var(--primary);
+}
+
+.review-prompt-items {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Review Modal Content */
+
+.review-store-name {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--primary);
+    margin-bottom: 4px;
+}
+
+.review-items {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.review-section {
+    margin-bottom: 24px;
+}
+
+.review-section h4 {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.review-section-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+.emoji-rating {
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+}
+
+.emoji-option {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 8px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.emoji-option:hover {
+    border-color: var(--text-muted);
+}
+
+.emoji-option.selected {
+    border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.emoji-option .emoji {
+    font-size: 1.5rem;
+    transition: transform 0.2s;
+}
+
+.emoji-option:hover .emoji,
+.emoji-option.selected .emoji {
+    transform: scale(1.15);
+}
+
+.emoji-option .emoji-label {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.review-comment {
+    resize: none;
+}

@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avaliações Pendentes</title>
+    <link rel="stylesheet" href="index.css">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        
+        .reviews-page {
+            min-height: 100vh;
+            background: var(--bg);
+            padding-bottom: 80px;
+        }
+        
+        .reviews-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 0 20px;
+            z-index: 100;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .back-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .back-btn:hover {
+            border-color: var(--primary);
+        }
+        
+        .reviews-title {
+            font-size: 1rem;
+            font-weight: 300;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+        
+        .reviews-content {
+            padding-top: 70px;
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+        
+        .pending-review-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .review-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        
+        .review-store-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+        
+        .review-order-date {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        .review-order-id {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            background: rgba(255,255,255,0.05);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        
+        .review-products {
+            margin: 12px 0;
+            padding: 12px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 8px;
+        }
+        
+        .review-product-item {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        
+        .review-product-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .review-action-btn {
+            width: 100%;
+            background: var(--primary);
+            color: #000;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 12px;
+        }
+        
+        .review-action-btn:hover {
+            transform: scale(1.02);
+            opacity: 0.9;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+        
+        .empty-state-title {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .empty-state-text {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        
+        /* Modal de avaliação */
+        .review-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.2s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .review-modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -20px);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+        
+        .review-modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .review-modal-title {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .review-modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .review-modal-close:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .review-modal-body {
+            padding: 20px;
+        }
+        
+        .review-section {
+            margin-bottom: 24px;
+        }
+        
+        .review-section-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text-muted);
+        }
+        
+        .star-rating {
+            display: flex;
+            gap: 8px;
+            font-size: 2rem;
+        }
+        
+        .star {
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        
+        .star:hover {
+            transform: scale(1.2);
+        }
+        
+        .review-comment {
+            width: 100%;
+            min-height: 80px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+        
+        .review-comment:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .review-submit-btn {
+            width: 100%;
+            background: var(--primary);
+            color: #000;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 20px;
+        }
+        
+        .review-submit-btn:hover {
+            transform: scale(1.02);
+        }
+        
+        .review-submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="reviews-page">
+        <div class="reviews-header">
+            <button class="back-btn" onclick="goBack()">←</button>
+            <div class="reviews-title">Avaliações Pendentes</div>
+        </div>
+        
+        <div class="reviews-content" id="pendingReviewsList">
+            <div class="empty-state">
+                <div class="empty-state-icon">⏳</div>
+                <div class="empty-state-title">Carregando...</div>
+            </div>
+        </div>
+        
+        <!-- Toast Global -->
+        <div id="globalToast" style="display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#51cf66;color:#fff;padding:12px 24px;border-radius:8px;z-index:9999;font-weight:500;box-shadow:0 4px 12px rgba(0,0,0,0.3);"></div>
+    </div>
+    
+    <!-- Modal de Avaliação -->
+    <div id="reviewModal" style="display: none;">
+        <!-- Renderizado pelo JS -->
+    </div>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <script>
+        // ==================== FIREBASE CONFIG (CORRETO) ====================
+        const firebaseConfig = {
+            apiKey: "AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",
+            authDomain: "pedrad-814d0.firebaseapp.com",
+            projectId: "pedrad-814d0",
+            storageBucket: "pedrad-814d0.firebasestorage.app",
+            messagingSenderId: "293587190550",
+            appId: "1:293587190550:web:80c9399f82847c80e20637"
+        };
+        
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        let currentUser = null;
+        
+        // ==================== STATE ====================
+        let pendingOrders = [];
+        let currentReviewingOrder = null;
+        let currentRatings = {
+            store: 0,
+            driver: 0,
+            products: {}
+        };
+        
+        // ==================== FUNÇÕES ====================
+        
+        function goBack() {
+            if (document.referrer && document.referrer.includes(window.location.host)) {
+                window.history.back();
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+        
+        function formatDate(timestamp) {
+            if (!timestamp) return '-';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+        
+        async function loadPendingReviews() {
+            if (!currentUser) {
+                console.log('⚠️ Usuário não autenticado');
+                return;
+            }
+            
+            try {
+                console.log('🔍 Buscando pedidos pendentes...');
+                
+                // SEM orderBy para evitar erro de índice
+                const ordersSnapshot = await db.collection('orders')
+                    .where('userId', '==', currentUser.uid)
+                    .where('status', '==', 'delivered')
+                    .get();
+                
+                console.log(`📦 ${ordersSnapshot.size} pedidos entregues encontrados`);
+                
+                // Filtra apenas não avaliados
+                pendingOrders = ordersSnapshot.docs
+                    .map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }))
+                    .filter(order => order.reviewed !== true)
+                    .sort((a, b) => {
+                        const dateA = a.createdAt?.toDate?.() || new Date(0);
+                        const dateB = b.createdAt?.toDate?.() || new Date(0);
+                        return dateB - dateA;
+                    });
+                
+                console.log(`⭐ ${pendingOrders.length} pedidos pendentes de avaliação`);
+                
+                renderPendingReviews();
+                
+            } catch (err) {
+                console.error('❌ Erro ao carregar pedidos:', err);
+                const container = document.getElementById('pendingReviewsList');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">❌</div>
+                            <div class="empty-state-title">Erro ao carregar</div>
+                            <div class="empty-state-text">${err.message}</div>
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        function renderPendingReviews() {
+            const container = document.getElementById('pendingReviewsList');
+            
+            if (pendingOrders.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⭐</div>
+                        <div class="empty-state-title">Nenhuma avaliação pendente</div>
+                        <div class="empty-state-text">Você avaliou todos os seus pedidos!</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            console.log(`🎨 Renderizando ${pendingOrders.length} cards`);
+            
+            container.innerHTML = pendingOrders.map(order => `
+                <div class="pending-review-card">
+                    <div class="review-card-header">
+                        <div>
+                            <div class="review-store-name">${order.storeName || 'Loja'}</div>
+                            <div class="review-order-date">${formatDate(order.createdAt)}</div>
+                        </div>
+                        <div class="review-order-id">#${order.id.slice(-6).toUpperCase()}</div>
+                    </div>
+                    
+                    <div class="review-products">
+                        ${order.items.slice(0, 3).map(item => `
+                            <div class="review-product-item">
+                                ${item.qty || item.quantity || 1}x ${item.name}
+                            </div>
+                        `).join('')}
+                        ${order.items.length > 3 ? `
+                            <div class="review-product-item">
+                                +${order.items.length - 3} ${order.items.length - 3 === 1 ? 'item' : 'itens'}
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <button class="review-action-btn" onclick="openReviewModal('${order.id}')">
+                        Avaliar Agora
+                    </button>
+                </div>
+            `).join('');
+        }
+        
+        function openReviewModal(orderId) {
+            currentReviewingOrder = pendingOrders.find(o => o.id === orderId);
+            if (!currentReviewingOrder) return;
+            
+            // Inicializa ratings com índices dos produtos
+            currentRatings = {
+                store: 0,
+                driver: 0,
+                products: {}
+            };
+            
+            const modal = document.getElementById('reviewModal');
+            modal.style.display = 'flex';
+            modal.className = 'review-modal-overlay';
+            
+            modal.innerHTML = `
+                <div class="review-modal">
+                    <div class="review-modal-header">
+                        <div class="review-modal-title">Avaliar Pedido</div>
+                        <button class="review-modal-close" onclick="closeReviewModal()">×</button>
+                    </div>
+                    
+                    <div class="review-modal-body">
+                        <!-- Toast -->
+                        <div id="reviewToast" style="display:none;position:fixed;top:80px;left:50%;transform:translateX(-50%);background:#ff6b6b;color:#fff;padding:12px 24px;border-radius:8px;z-index:10000;font-weight:500;box-shadow:0 4px 12px rgba(0,0,0,0.4);animation:slideDown 0.3s ease;"></div>
+                        
+                        <!-- Avaliação da Loja -->
+                        <div class="review-section">
+                            <div class="review-section-title">Como foi sua experiência com ${currentReviewingOrder.storeName}?</div>
+                            <div class="star-rating" id="storeRating">
+                                ${[1,2,3,4,5].map(n => `<span class="star" onclick="setRating('store', ${n})">☆</span>`).join('')}
+                            </div>
+                        </div>
+                        
+                        <!-- Avaliação do Entregador -->
+                        <div class="review-section">
+                            <div class="review-section-title">Como foi a entrega?</div>
+                            <div class="star-rating" id="driverRating">
+                                ${[1,2,3,4,5].map(n => `<span class="star" onclick="setRating('driver', ${n})">☆</span>`).join('')}
+                            </div>
+                        </div>
+                        
+                        <!-- Avaliação dos Produtos -->
+                        <div class="review-section">
+                            <div class="review-section-title">Como estavam os produtos?</div>
+                            ${currentReviewingOrder.items.map((item, idx) => `
+                                <div style="margin-bottom: 16px;">
+                                    <div style="font-size: 0.85rem; margin-bottom: 8px;">${item.name}</div>
+                                    <div class="star-rating" id="productRating${idx}">
+                                        ${[1,2,3,4,5].map(n => `<span class="star" onclick="setRating('product', ${n}, ${idx})">☆</span>`).join('')}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <!-- Comentário -->
+                        <div class="review-section">
+                            <div class="review-section-title">Comentário (opcional)</div>
+                            <textarea class="review-comment" id="reviewComment" placeholder="Conte-nos sobre sua experiência..."></textarea>
+                        </div>
+                        
+                        <button class="review-submit-btn" onclick="submitReview()">
+                            Enviar Avaliação
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function closeReviewModal() {
+            document.getElementById('reviewModal').style.display = 'none';
+            currentReviewingOrder = null;
+        }
+        
+        function setRating(type, rating, productIndex = null) {
+            if (type === 'store') {
+                currentRatings.store = rating;
+                updateStars('storeRating', rating);
+            } else if (type === 'driver') {
+                currentRatings.driver = rating;
+                updateStars('driverRating', rating);
+            } else if (type === 'product') {
+                // Usa índice numérico do array de items
+                currentRatings.products[productIndex] = rating;
+                updateStars(`productRating${productIndex}`, rating);
+            }
+        }
+        
+        function updateStars(containerId, rating) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            const stars = container.querySelectorAll('.star');
+            stars.forEach((star, idx) => {
+                star.textContent = idx < rating ? '★' : '☆';
+            });
+        }
+        
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('reviewToast');
+            if (!toast) return;
+            
+            toast.textContent = message;
+            toast.style.background = isError ? '#ff6b6b' : '#51cf66';
+            toast.style.display = 'block';
+            
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+        
+        async function submitReview() {
+            if (currentRatings.store === 0) {
+                showToast('Por favor, avalie a loja', true);
+                return;
+            }
+            
+            if (currentRatings.driver === 0) {
+                showToast('Por favor, avalie a entrega', true);
+                return;
+            }
+            
+            // Cria array de ratings usando índices
+            const productRatings = currentReviewingOrder.items.map((item, idx) => ({
+                productId: item.id || `prod-${idx}`,
+                productName: item.name,
+                rating: currentRatings.products[idx] || 0
+            }));
+            
+            // Verifica se todos os produtos foram avaliados
+            const unratedProducts = productRatings.filter(p => p.rating === 0);
+            if (unratedProducts.length > 0) {
+                showToast('Por favor, avalie todos os produtos', true);
+                return;
+            }
+            
+            const comment = document.getElementById('reviewComment')?.value?.trim() || '';
+            
+            try {
+                console.log('💾 Salvando avaliação...');
+                
+                // Salva avaliação
+                await db.collection('reviews').add({
+                    orderId: currentReviewingOrder.id,
+                    storeId: currentReviewingOrder.storeId,
+                    driverId: currentReviewingOrder.driverId || null,
+                    userId: currentUser.uid,
+                    userName: currentUser.displayName || 'Cliente',
+                    storeRating: currentRatings.store,
+                    driverRating: currentRatings.driver,
+                    productRatings: productRatings,
+                    comment: comment,
+                    type: 'order',
+                    purchasedAction: null,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Marca pedido como avaliado
+                await db.collection('orders').doc(currentReviewingOrder.id).update({
+                    reviewed: true
+                });
+                
+                // Atualiza rating médio da loja (OTIMIZADO - incremental)
+                await updateStoreRatingOptimized(currentReviewingOrder.storeId, currentRatings.store);
+                
+                console.log('✅ Avaliação salva!');
+                showToast('Avaliação enviada com sucesso!', false);
+                
+                setTimeout(() => {
+                    closeReviewModal();
+                    
+                    // Remove da lista
+                    pendingOrders = pendingOrders.filter(o => o.id !== currentReviewingOrder.id);
+                    renderPendingReviews();
+                }, 1500);
+                
+            } catch (err) {
+                console.error('❌ Erro ao enviar avaliação:', err);
+                showToast('Erro ao enviar. Tente novamente.', true);
+            }
+        }
+        
+        async function updateStoreRatingOptimized(storeId, newRating) {
+            const storeRef = db.collection('stores').doc(storeId);
+            
+            try {
+                await db.runTransaction(async (transaction) => {
+                    const storeDoc = await transaction.get(storeRef);
+                    
+                    if (!storeDoc.exists) {
+                        // Loja não existe, cria com primeira avaliação
+                        transaction.set(storeRef, {
+                            rating: newRating,
+                            reviewCount: 1
+                        }, { merge: true });
+                        console.log(`✅ Primeira avaliação da loja: ${newRating}`);
+                        return;
+                    }
+                    
+                    const current = storeDoc.data();
+                    const currentRating = current.rating || 0;
+                    const currentCount = current.reviewCount || 0;
+                    
+                    // Agregação incremental: (rating_atual × count_atual + novo_rating) ÷ (count_atual + 1)
+                    const totalRating = (currentRating * currentCount) + newRating;
+                    const newCount = currentCount + 1;
+                    const newAvgRating = totalRating / newCount;
+                    
+                    transaction.update(storeRef, {
+                        rating: newAvgRating,
+                        reviewCount: newCount
+                    });
+                    
+                    console.log(`✅ Rating atualizado: ${currentRating.toFixed(1)} → ${newAvgRating.toFixed(1)} (${newCount} reviews)`);
+                });
+                
+            } catch (err) {
+                console.error('❌ Erro ao atualizar rating:', err);
+                // Não bloqueia o envio da avaliação
+            }
+        }
+        
+        // ==================== INIT ====================
+        
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                console.log('✅ Usuário autenticado:', user.email);
+                currentUser = user;
+                await loadPendingReviews();
+            } else {
+                console.log('❌ Usuário não autenticado, redirecionando...');
+                // FIX: Redireciona para index.html, NÃO para pending-reviews.html
+                window.location.href = 'index.html';
+            }
+        });
+        
+    </script>
+</body>
+</html>
