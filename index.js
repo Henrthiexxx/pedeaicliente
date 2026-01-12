@@ -1,3 +1,13 @@
+function showPage(page) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const target = document.getElementById(page + 'Page');
+    if (target) target.classList.add('active');
+    
+    if (page === 'orders' && window.currentUser) {
+        loadOrders?.();
+    }
+}
+
 // Firebase Config
 const firebaseConfig = {
     apiKey: "AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",
