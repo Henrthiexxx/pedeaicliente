@@ -97,20 +97,33 @@
         .store-name-big {
             font-size: 1.5rem;
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
         
         .store-category {
             color: var(--text-muted);
-            margin-bottom: 12px;
+            font-size: 0.9rem;
+            margin-bottom: 16px;
         }
         
         .store-rating-big {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            gap: 8px;
-            font-size: 1.2rem;
+            gap: 4px;
+        }
+        
+        .rating-stars-value {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .rating-count {
+            font-size: 0.85rem;
+            color: var(--text-muted);
         }
         
         .section-card {
@@ -237,10 +250,12 @@
                 <div class="store-logo" id="storeLogo">🏪</div>
                 <div class="store-name-big" id="storeName">Carregando...</div>
                 <div class="store-category" id="storeCategory">-</div>
-                <div class="store-rating-big" id="storeRating">
-                    <span>⭐</span>
-                    <span id="ratingValue">-</span>
-                    <span id="reviewCount" style="color: var(--text-muted);">(0 avaliações)</span>
+                <div class="store-rating-big">
+                    <div class="rating-stars-value">
+                        <span>⭐</span>
+                        <span id="ratingValue">-</span>
+                    </div>
+                    <div class="rating-count" id="reviewCount">(0 avaliações)</div>
                 </div>
             </div>
             
@@ -260,7 +275,7 @@
                         <div class="info-label">Telefone</div>
                         <div class="info-value" id="storePhone">-</div>
                     </div>
-                    <button class="info-action" id="whatsappBtn" onclick="openWhatsApp()">WhatsApp</button>
+                    <button class="info-action" id="whatsappBtn" onclick="openWhatsApp()">Copiar</button>
                 </div>
                 
                 <div class="info-row" id="addressRow" style="display:none;">
@@ -347,20 +362,24 @@
                 return;
             }
             
+            // Copia número para clipboard
             const cleanPhone = storePhone.replace(/\D/g, '');
-            const message = encodeURIComponent(`Olá! Vi a loja ${storeName} no Pedra Delivery.`);
+            const formattedPhone = `55${cleanPhone}`;
             
-            // Tenta abrir app nativo primeiro (mobile)
-            const appUrl = `whatsapp://send?phone=55${cleanPhone}&text=${message}`;
-            const webUrl = `https://api.whatsapp.com/send?phone=55${cleanPhone}&text=${message}`;
-            
-            // Tenta abrir app
-            window.location.href = appUrl;
-            
-            // Fallback para web após 1 segundo (se app não abrir)
-            setTimeout(() => {
-                window.open(webUrl, '_blank');
-            }, 1000);
+            navigator.clipboard.writeText(formattedPhone).then(() => {
+                alert(`Número copiado: ${formattedPhone}\n\nAbra o WhatsApp e cole o número!`);
+            }).catch(() => {
+                // Fallback se clipboard API não funcionar
+                const textarea = document.createElement('textarea');
+                textarea.value = formattedPhone;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert(`Número copiado: ${formattedPhone}\n\nAbra o WhatsApp e cole o número!`);
+            });
         }
         
         function goBack() {
@@ -410,10 +429,19 @@
                 
                 const store = storeDoc.data();
                 
-                // Logo
+                // Logo (corrigido)
                 const logo = document.getElementById('storeLogo');
+                logo.innerHTML = ''; // Limpa conteúdo
+                
                 if (store.imageUrl) {
-                    logo.innerHTML = `<img src="${store.imageUrl}" alt="${store.name}">`;
+                    const img = document.createElement('img');
+                    img.src = store.imageUrl;
+                    img.alt = store.name;
+                    img.onerror = function() {
+                        // Se imagem falhar, mostra emoji
+                        logo.textContent = store.emoji || '🏪';
+                    };
+                    logo.appendChild(img);
                 } else {
                     logo.textContent = store.emoji || '🏪';
                 }
@@ -470,17 +498,16 @@
         
         async function loadReviews() {
             try {
+                // Query simplificada (sem índice composto)
                 const reviewsSnapshot = await db.collection('reviews')
                     .where('storeId', '==', storeId)
-                    .where('type', '==', 'order')
                     .orderBy('createdAt', 'desc')
                     .limit(20)
                     .get();
                 
-                const reviews = reviewsSnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
+                const reviews = reviewsSnapshot.docs
+                    .map(doc => ({ id: doc.id, ...doc.data() }))
+                    .filter(review => review.type === 'order'); // Filtra apenas reviews de pedidos
                 
                 const container = document.getElementById('reviewsList');
                 
