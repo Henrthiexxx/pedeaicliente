@@ -1043,6 +1043,7 @@ async function submitOrder() {
         saveCart();
         closeModal('checkoutModal');
         showPage('orders');
+        
         await loadOrders();
         showToast('Pedido realizado!');
     } catch (err) {
@@ -1458,7 +1459,8 @@ function showPage(page) {
     
     if (page === 'cart') renderCart();
     if (page === 'orders') renderOrders();
-    loadOrders?.();
+     }
+   loadOrders();
     if (page === 'addresses') renderAddressesList();
     if (page === 'profile' && typeof ProfileModule !== 'undefined') ProfileModule.render();
     if (page === 'home' && typeof NotificationsModule !== 'undefined') NotificationsModule.checkAndShowReviewPrompt();
@@ -1787,15 +1789,10 @@ function renderOrders() {
 auth.onAuthStateChanged(async (user) => {
     if (user) {
         currentUser = user;
-        await loadOrders(); // ← ADICIONE ESTA LINHA
+        await loadOrders(); 
         showMainApp();
     }
 });
 
 // Procure showPage e adicione:
-function showPage(page) {
-    // ... código existente ...
-    if (page === 'orders' && currentUser) {
-        loadOrders(); // ← ADICIONE ESTA LINHA
-    }
-}
+
