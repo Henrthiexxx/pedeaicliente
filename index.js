@@ -44,6 +44,7 @@ let selectedPayment = 'pix';
 auth.onAuthStateChanged(async (user) => {
     if (user) {
         currentUser = user;
+        await loadOrders(); 
         window.currentUser = user;
         await loadUserData();
         showMainApp();
@@ -1458,14 +1459,14 @@ function showPage(page) {
     document.querySelectorAll('.nav-item')[navIndex[page]]?.classList.add('active');
     
     if (page === 'cart') renderCart();
-    if (page === 'orders') renderOrders();
-     }
-   loadOrders();
+    if (page === 'orders') {
+        renderOrders();
+        loadOrders();
+    }
     if (page === 'addresses') renderAddressesList();
     if (page === 'profile' && typeof ProfileModule !== 'undefined') ProfileModule.render();
     if (page === 'home' && typeof NotificationsModule !== 'undefined') NotificationsModule.checkAndShowReviewPrompt();
 }
-
 // ==================== UTILITIES ====================
 
 function formatCurrency(value) {
@@ -1783,16 +1784,4 @@ function renderOrders() {
     }).join('');
 }
 
-// ==================== MODIFIQUE ESTAS FUNÇÕES ====================
-
-// Procure auth.onAuthStateChanged e adicione:
-auth.onAuthStateChanged(async (user) => {
-    if (user) {
-        currentUser = user;
-        await loadOrders(); 
-        showMainApp();
-    }
-});
-
-// Procure showPage e adicione:
 
