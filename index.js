@@ -1712,8 +1712,7 @@ function renderProductAddons(product) {
     // código em INTEGRACAO-PRONTA.js
 }
 
-// ==================== ADICIONE NO TOPO ====================
-let orders = [];
+
 
 // ==================== ADICIONE APÓS OUTRAS FUNÇÕES ====================
 
