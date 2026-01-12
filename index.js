@@ -9,6 +9,8 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
+
+
 const auth = firebase.auth();
 const db = firebase.firestore();
 
@@ -1693,3 +1695,14 @@ window.openNotifications = function () {
     
     console.log('✅ Sistema de botão configurado');
 })();
+
+// Abre popup ao clicar "Finalizar"
+function openCheckout() {
+    localStorage.setItem('cart', JSON.stringify(cart));
+    window.open('modules/checkout-modal.html');
+}
+
+// Renderiza adicionais no modal
+function renderProductAddons(product) {
+    // código em INTEGRACAO-PRONTA.js
+}

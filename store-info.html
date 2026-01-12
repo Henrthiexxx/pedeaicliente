@@ -11,11 +11,40 @@
             margin: 0;
             padding: 0;
             background: var(--bg);
+            position: relative;
+        }
+        
+        /* Wallpaper de fundo com ícone da loja */
+        .store-wallpaper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 0;
+            opacity: 0.05;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            pointer-events: none;
+        }
+        
+        .store-wallpaper-emoji {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 20rem;
+            z-index: 0;
+            opacity: 0.03;
+            pointer-events: none;
         }
         
         .store-info-page {
             min-height: 100vh;
             padding-bottom: 80px;
+            position: relative;
+            z-index: 1;
         }
         
         .store-info-header {
@@ -64,46 +93,45 @@
             padding: 70px 16px 20px;
             max-width: 600px;
             margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
         
         .store-banner {
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 24px;
+            padding: 32px 24px;
             margin-bottom: 20px;
             text-align: center;
-        }
-        
-        .store-logo {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 16px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.05);
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            overflow: hidden;
+            position: relative;
+            z-index: 1;
         }
         
-        .store-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        /* Remove ícone circular - agora é wallpaper */
+        .store-logo {
+            display: none;
         }
         
         .store-name-big {
             font-size: 1.5rem;
             font-weight: 600;
             margin-bottom: 6px;
+            display: block !important;
+            width: 100%;
+            text-align: center;
         }
         
         .store-category {
             color: var(--text-muted);
             font-size: 0.9rem;
             margin-bottom: 16px;
+            display: block !important;
+            width: 100%;
+            text-align: center;
         }
         
         .store-rating-big {
@@ -132,6 +160,8 @@
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 16px;
+            position: relative;
+            z-index: 1;
         }
         
         .section-title {
@@ -238,6 +268,10 @@
     </style>
 </head>
 <body>
+    <!-- Wallpaper de fundo com ícone da loja -->
+    <div class="store-wallpaper" id="storeWallpaper"></div>
+    <div class="store-wallpaper-emoji" id="storeWallpaperEmoji"></div>
+    
     <div class="store-info-page">
         <div class="store-info-header">
             <button class="back-btn" onclick="goBack()">←</button>
@@ -429,21 +463,16 @@
                 
                 const store = storeDoc.data();
                 
-                // Logo (corrigido)
-                const logo = document.getElementById('storeLogo');
-                logo.innerHTML = ''; // Limpa conteúdo
-                
+                // Logo como wallpaper de fundo
                 if (store.imageUrl) {
-                    const img = document.createElement('img');
-                    img.src = store.imageUrl;
-                    img.alt = store.name;
-                    img.onerror = function() {
-                        // Se imagem falhar, mostra emoji
-                        logo.textContent = store.emoji || '🏪';
-                    };
-                    logo.appendChild(img);
+                    document.getElementById('storeWallpaper').style.backgroundImage = `url(${store.imageUrl})`;
+                    document.getElementById('storeWallpaperEmoji').style.display = 'none';
+                } else if (store.emoji) {
+                    document.getElementById('storeWallpaperEmoji').textContent = store.emoji;
+                    document.getElementById('storeWallpaper').style.display = 'none';
                 } else {
-                    logo.textContent = store.emoji || '🏪';
+                    document.getElementById('storeWallpaperEmoji').textContent = '🏪';
+                    document.getElementById('storeWallpaper').style.display = 'none';
                 }
                 
                 // Nome e categoria
@@ -498,6 +527,8 @@
         
         async function loadReviews() {
             try {
+                console.log('🔍 Carregando reviews para storeId:', storeId);
+                
                 // Query simplificada (sem índice composto)
                 const reviewsSnapshot = await db.collection('reviews')
                     .where('storeId', '==', storeId)
@@ -505,9 +536,14 @@
                     .limit(20)
                     .get();
                 
+                console.log('📊 Total de reviews encontrados:', reviewsSnapshot.size);
+                
                 const reviews = reviewsSnapshot.docs
                     .map(doc => ({ id: doc.id, ...doc.data() }))
                     .filter(review => review.type === 'order'); // Filtra apenas reviews de pedidos
+                
+                console.log('📊 Reviews após filtro (type=order):', reviews.length);
+                console.log('📋 Reviews:', reviews);
                 
                 const container = document.getElementById('reviewsList');
                 
@@ -534,8 +570,10 @@
                     </div>
                 `).join('');
                 
+                console.log('✅ Reviews renderizados com sucesso');
+                
             } catch (err) {
-                console.error('Erro ao carregar avaliações:', err);
+                console.error('❌ Erro ao carregar avaliações:', err);
                 document.getElementById('reviewsList').innerHTML = `
                     <div class="empty-reviews">
                         <div class="empty-reviews-icon">❌</div>
