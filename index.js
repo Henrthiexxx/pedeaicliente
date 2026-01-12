@@ -19,6 +19,7 @@ db.enablePersistence({ synchronizeTabs: true }).catch(err => console.log('Persis
 
 // State
 let currentUser = null;
+window.currentUser = null;
 let cart = [];
 let products = [];
 let categories = [];
@@ -43,6 +44,7 @@ let selectedPayment = 'pix';
 auth.onAuthStateChanged(async (user) => {
     if (user) {
         currentUser = user;
+        window.currentUser = user;
         await loadUserData();
         showMainApp();
         
@@ -61,6 +63,7 @@ auth.onAuthStateChanged(async (user) => {
         if (typeof ProfileModule !== 'undefined') ProfileModule.render();
     } else {
         currentUser = null;
+        window.currentUser = null;
         showAuthPage();
     }
 });
