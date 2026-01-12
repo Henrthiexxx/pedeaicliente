@@ -260,7 +260,7 @@
                         <div class="info-label">Telefone</div>
                         <div class="info-value" id="storePhone">-</div>
                     </div>
-                    <a class="info-action" id="whatsappLink" target="_blank">WhatsApp</a>
+                    <button class="info-action" id="whatsappBtn" onclick="openWhatsApp()">WhatsApp</button>
                 </div>
                 
                 <div class="info-row" id="addressRow" style="display:none;">
@@ -333,9 +333,34 @@
         const urlParams = new URLSearchParams(window.location.search);
         const storeId = urlParams.get('id');
         
+        let storePhone = '';
+        let storeName = '';
+        
         if (!storeId) {
             alert('Loja não encontrada');
             goBack();
+        }
+        
+        function openWhatsApp() {
+            if (!storePhone) {
+                alert('Telefone não disponível');
+                return;
+            }
+            
+            const cleanPhone = storePhone.replace(/\D/g, '');
+            const message = encodeURIComponent(`Olá! Vi a loja ${storeName} no Pedra Delivery.`);
+            
+            // Tenta abrir app nativo primeiro (mobile)
+            const appUrl = `whatsapp://send?phone=55${cleanPhone}&text=${message}`;
+            const webUrl = `https://api.whatsapp.com/send?phone=55${cleanPhone}&text=${message}`;
+            
+            // Tenta abrir app
+            window.location.href = appUrl;
+            
+            // Fallback para web após 1 segundo (se app não abrir)
+            setTimeout(() => {
+                window.open(webUrl, '_blank');
+            }, 1000);
         }
         
         function goBack() {
@@ -394,7 +419,8 @@
                 }
                 
                 // Nome e categoria
-                document.getElementById('storeName').textContent = store.name || 'Loja';
+                storeName = store.name || 'Loja';
+                document.getElementById('storeName').textContent = storeName;
                 document.getElementById('storeCategory').textContent = store.category || '';
                 
                 // Rating
@@ -410,13 +436,11 @@
                     document.getElementById('aboutSection').style.display = 'none';
                 }
                 
-                // Telefone (CORRIGIDO - funciona em web e mobile)
+                // Telefone (abre app nativo)
                 if (store.phone) {
+                    storePhone = store.phone;
                     document.getElementById('phoneRow').style.display = 'flex';
                     document.getElementById('storePhone').textContent = store.phone;
-                    const cleanPhone = store.phone.replace(/\D/g, '');
-                    const message = encodeURIComponent(`Olá! Vi a loja ${store.name} no Pedra Delivery.`);
-                    document.getElementById('whatsappLink').href = `https://api.whatsapp.com/send?phone=55${cleanPhone}&text=${message}`;
                 }
                 
                 // Endereço
