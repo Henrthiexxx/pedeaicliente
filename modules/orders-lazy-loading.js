@@ -88,6 +88,11 @@
     const _originalRenderOrders = window.renderOrders;
     
     window.renderOrders = function() {
+        // Garante que orders existe
+        if (!window.orders) {
+            window.orders = [];
+        }
+        
         // Chama render original
         _originalRenderOrders();
         
