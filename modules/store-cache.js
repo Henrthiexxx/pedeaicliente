@@ -1,17 +1,4 @@
-**
- * Sistema de cache inteligente para dados de lojas
- * 
- * FEATURES:
- * - Cache em localStorage com TTL (Time To Live)
- * - Invalidação automática após X minutos
- * - Fallback para servidor se cache expirou
- * - Versionamento para forçar atualização
- * - Imagens otimizadas
- * 
- * ECONOMIA:
- * - Sem cache: ~46k reads/mês
- * - Com cache: ~1.5k reads/mês (-97% redução!)
- */
+
 
 class StoreCache {
     constructor(ttlMinutes = 60) {
