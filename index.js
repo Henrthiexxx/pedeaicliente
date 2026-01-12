@@ -1706,3 +1706,92 @@ function openCheckout() {
 function renderProductAddons(product) {
     // código em INTEGRACAO-PRONTA.js
 }
+
+// ==================== ADICIONE NO TOPO ====================
+let orders = [];
+
+// ==================== ADICIONE APÓS OUTRAS FUNÇÕES ====================
+
+async function loadOrders() {
+    if (!currentUser) return;
+    
+    try {
+        const snapshot = await db.collection('orders')
+            .where('userId', '==', currentUser.uid)
+            .orderBy('createdAt', 'desc')
+            .get();
+        
+        orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (err) {
+        // Sem índice - tenta sem orderBy
+        const snapshot = await db.collection('orders')
+            .where('userId', '==', currentUser.uid)
+            .get();
+        
+        orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    }
+    
+    renderOrders();
+}
+
+function renderOrders() {
+    const container = document.getElementById('ordersList');
+    if (!container) return;
+    
+    if (orders.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:60px;color:#888;">📭<br>Nenhum pedido ainda</div>';
+        return;
+    }
+    
+    container.innerHTML = orders.map(order => {
+        const date = order.createdAt?.toDate?.() || new Date();
+        const statuses = {
+            pending: '🕐 Pendente', confirmed: '✅ Confirmado',
+            preparing: '👨‍🍳 Preparando', ready: '📦 Pronto',
+            delivering: '🛵 A caminho', delivered: '✅ Entregue',
+            cancelled: '❌ Cancelado'
+        };
+        
+        return `
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:12px;">
+                    <div>
+                        <div style="font-weight:600;font-size:1.1rem;">#${order.id.slice(-6).toUpperCase()}</div>
+                        <div style="color:var(--text-muted);font-size:0.85rem;">${date.toLocaleDateString('pt-BR')}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="padding:4px 12px;border-radius:20px;background:rgba(99,102,241,0.2);font-size:0.8rem;margin-bottom:8px;">${statuses[order.status]}</div>
+                        <div style="font-weight:600;font-size:1.1rem;">${formatCurrency(order.total)}</div>
+                    </div>
+                </div>
+                <div style="border-top:1px solid var(--border);padding-top:12px;">
+                    ${order.items.map(i => `
+                        <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.9rem;">
+                            <span>${i.qty}x ${i.name}</span>
+                            <span>${formatCurrency(i.price * i.qty)}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// ==================== MODIFIQUE ESTAS FUNÇÕES ====================
+
+// Procure auth.onAuthStateChanged e adicione:
+auth.onAuthStateChanged(async (user) => {
+    if (user) {
+        currentUser = user;
+        await loadOrders(); // ← ADICIONE ESTA LINHA
+        showMainApp();
+    }
+});
+
+// Procure showPage e adicione:
+function showPage(page) {
+    // ... código existente ...
+    if (page === 'orders' && currentUser) {
+        loadOrders(); // ← ADICIONE ESTA LINHA
+    }
+}
