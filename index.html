@@ -10,6 +10,33 @@
     <link rel="stylesheet" href="client-review-modal.css">
     
     <style>
+
+        /* Esconder a tela de login *\
+        body:not(.auth-ready) #authPage,
+body:not(.auth-ready) #mainApp {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Loading */
+.auth-loading {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    z-index: 9999;
+}
+
+body.auth-ready .auth-loading {
+    display: none;
+}
+
+/* Transição suave */
+#authPage,
+#mainApp {
+    transition: opacity 0.3s ease;
+}
         /* CSS adicional para botão de avaliações pendentes */
         .profile-menu-content {
             flex: 1;
@@ -68,6 +95,7 @@
 </head>
 <body>
       
+
     <div class="offline-banner" id="offlineBanner">Você está offline</div>
     <div class="toast" id="toast"></div>
     

@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finalizar Pedido</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #0a0a0a;
+            --bg-card: #111;
+            --bg-secondary: #1a1a1a;
+            --text: #fff;
+            --text-muted: #888;
+            --border: #222;
+            --primary: #6366f1;
+            --success: #22c55e;
+            --danger: #ef4444;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 0;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            position: sticky;
+            top: 0;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+        .header-title { font-size: 1.2rem; font-weight: 600; }
+        .btn-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+        }
+        
+        .content { padding: 20px; }
+        
+        .section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .section-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .cart-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .cart-item:last-child { border-bottom: none; }
+        .cart-item-info { flex: 1; }
+        .cart-item-name { font-weight: 500; margin-bottom: 4px; }
+        .cart-item-addons {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        .cart-item-obs {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+        .cart-item-price {
+            text-align: right;
+            white-space: nowrap;
+        }
+        .cart-item-qty {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        
+        .radio-cards {
+            display: grid;
+            gap: 12px;
+        }
+        .radio-card {
+            padding: 16px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .radio-card:hover { border-color: var(--primary); }
+        .radio-card.selected { border-color: var(--primary); background: rgba(99,102,241,0.1); }
+        .radio-card-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .radio-card-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        
+        .form-group { margin-bottom: 16px; }
+        .form-label {
+            display: block;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text);
+            font-size: 1rem;
+        }
+        .form-input:focus { outline: none; border-color: var(--primary); }
+        
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        .payment-method {
+            padding: 12px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .payment-method:hover { border-color: var(--primary); }
+        .payment-method.selected { border-color: var(--primary); background: rgba(99,102,241,0.1); }
+        
+        .totals {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 16px;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+        }
+        .total-row.main {
+            border-top: 1px solid var(--border);
+            margin-top: 8px;
+            padding-top: 16px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .btn {
+            padding: 16px 24px;
+            border-radius: 8px;
+            border: none;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+            width: 100%;
+        }
+        .btn-primary:hover { background: #5558e3; }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .footer {
+            position: sticky;
+            bottom: 0;
+            background: var(--bg);
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+        }
+        
+        .address-card {
+            padding: 12px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+        .address-card.selected { border-color: var(--primary); background: rgba(99,102,241,0.1); }
+        .address-label {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .address-text {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        .change-input {
+            margin-top: 12px;
+            display: none;
+        }
+        .change-input.show { display: block; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="header-title">Finalizar Pedido</h1>
+        <button class="btn-close" onclick="window.close()">×</button>
+    </div>
+    
+    <div class="content">
+        <!-- Resumo do Carrinho -->
+        <div class="section">
+            <div class="section-title">🛒 Seu Pedido</div>
+            <div id="cartItems"></div>
+        </div>
+        
+        <!-- Tipo de Entrega -->
+        <div class="section">
+            <div class="section-title">📍 Tipo de Entrega</div>
+            <div class="radio-cards">
+                <div class="radio-card selected" id="deliveryOption" onclick="selectDeliveryMode('delivery')">
+                    <div class="radio-card-title">🛵 Entrega</div>
+                    <div class="radio-card-desc">Receba em casa</div>
+                </div>
+                <div class="radio-card" id="pickupOption" onclick="selectDeliveryMode('pickup')">
+                    <div class="radio-card-title">🏃 Retirada</div>
+                    <div class="radio-card-desc">Buscar na loja</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Endereço (só aparece se entrega) -->
+        <div class="section" id="addressSection">
+            <div class="section-title">🏠 Endereço de Entrega</div>
+            <div id="addressList"></div>
+            <button class="btn btn-primary" onclick="alert('Adicionar endereço - implementar depois')" style="margin-top: 8px; padding: 10px;">+ Novo Endereço</button>
+        </div>
+        
+        <!-- Forma de Pagamento -->
+        <div class="section">
+            <div class="section-title">💳 Forma de Pagamento</div>
+            <div class="payment-methods">
+                <div class="payment-method selected" data-method="pix" onclick="selectPayment('pix')">💠 PIX</div>
+                <div class="payment-method" data-method="credit" onclick="selectPayment('credit')">💳 Crédito</div>
+                <div class="payment-method" data-method="debit" onclick="selectPayment('debit')">💳 Débito</div>
+                <div class="payment-method" data-method="cash" onclick="selectPayment('cash')">💵 Dinheiro</div>
+                <div class="payment-method" data-method="picpay" onclick="selectPayment('picpay')">💚 PicPay</div>
+                <div class="payment-method" data-method="food_voucher" onclick="selectPayment('food_voucher')">🎫 Vale</div>
+            </div>
+            
+            <div class="change-input" id="changeInput">
+                <div class="form-group">
+                    <label class="form-label">Troco para quanto?</label>
+                    <input type="number" class="form-input" id="changeFor" placeholder="R$ 0.00" step="1.00" min="0">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Observações -->
+        <div class="section">
+            <div class="form-group" style="margin: 0;">
+                <label class="form-label">📝 Observações (opcional)</label>
+                <textarea class="form-input" id="notes" placeholder="Ex: Sem cebola, tirar maionese..." style="min-height: 80px;"></textarea>
+            </div>
+        </div>
+        
+        <!-- Totais -->
+        <div class="section">
+            <div class="totals">
+                <div class="total-row">
+                    <span>Subtotal</span>
+                    <span id="subtotal">R$ 0,00</span>
+                </div>
+                <div class="total-row" id="deliveryFeeRow">
+                    <span>Taxa de entrega</span>
+                    <span id="deliveryFee">R$ 0,00</span>
+                </div>
+                <div class="total-row main">
+                    <span>Total</span>
+                    <span id="total">R$ 0,00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <button class="btn btn-primary" id="finishBtn" onclick="finishOrder()">
+            Finalizar Pedido
+        </button>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",
+            authDomain: "pedrad-814d0.firebaseapp.com",
+            projectId: "pedrad-814d0",
+            storageBucket: "pedrad-814d0.appspot.com",
+            messagingSenderId: "293587190550",
+            appId: "1:293587190550:web:80c9399f82847c80e20637"
+        };
+        
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        
+        let cart = [];
+        let store = null;
+        let user = null;
+        let addresses = [];
+        let deliveryMode = 'delivery';
+        let selectedAddress = null;
+        let selectedPayment = 'pix';
+        
+        window.addEventListener('DOMContentLoaded', init);
+        
+        async function init() {
+            // Recebe dados via query params ou localStorage
+            const params = new URLSearchParams(window.location.search);
+            const cartData = params.get('cart') || localStorage.getItem('cart');
+            const storeId = params.get('storeId') || localStorage.getItem('checkoutStoreId');
+            
+            if (cartData) {
+                cart = JSON.parse(cartData);
+            }
+            
+            if (storeId) {
+                await loadStore(storeId);
+            }
+            
+            // Usuário atual
+            auth.onAuthStateChanged(async (u) => {
+                user = u;
+                if (user) {
+                    await loadAddresses();
+                }
+            });
+            
+            renderCart();
+            updateTotals();
+        }
+        
+        async function loadStore(storeId) {
+            try {
+                const doc = await db.collection('stores').doc(storeId).get();
+                if (doc.exists) {
+                    store = { id: doc.id, ...doc.data() };
+                }
+            } catch (err) {
+                console.error('Erro ao carregar loja:', err);
+            }
+        }
+        
+        async function loadAddresses() {
+            try {
+                const snapshot = await db.collection('addresses')
+                    .where('userId', '==', user.uid)
+                    .get();
+                
+                addresses = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderAddresses();
+                
+                // Seleciona o primeiro por padrão
+                if (addresses.length > 0) {
+                    selectedAddress = addresses[0];
+                }
+            } catch (err) {
+                console.error('Erro ao carregar endereços:', err);
+            }
+        }
+        
+        function renderCart() {
+            const container = document.getElementById('cartItems');
+            if (cart.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px;">Carrinho vazio</div>';
+                return;
+            }
+            
+            container.innerHTML = cart.map(item => `
+                <div class="cart-item">
+                    <div class="cart-item-info">
+                        <div class="cart-item-name">${item.name}</div>
+                        ${item.addons?.length ? `
+                            <div class="cart-item-addons">+ ${item.addons.map(a => a.name).join(', ')}</div>
+                        ` : ''}
+                        ${item.observation ? `
+                            <div class="cart-item-obs">Obs: ${item.observation}</div>
+                        ` : ''}
+                        <div class="cart-item-qty">${item.qty}x ${formatCurrency(item.price + (item.addons?.reduce((s,a) => s + a.price, 0) || 0))}</div>
+                    </div>
+                    <div class="cart-item-price">
+                        ${formatCurrency((item.price + (item.addons?.reduce((s,a) => s + a.price, 0) || 0)) * item.qty)}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function renderAddresses() {
+            const container = document.getElementById('addressList');
+            if (addresses.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px;">Nenhum endereço cadastrado</div>';
+                return;
+            }
+            
+            container.innerHTML = addresses.map((addr, idx) => `
+                <div class="address-card ${idx === 0 ? 'selected' : ''}" onclick="selectAddress(${idx})">
+                    <div class="address-label">${addr.label || 'Endereço'}</div>
+                    <div class="address-text">
+                        ${addr.street}, ${addr.number || 's/n'}
+                        ${addr.complement ? ` - ${addr.complement}` : ''}
+                        <br>${addr.neighborhood}, ${addr.city}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function selectAddress(idx) {
+            selectedAddress = addresses[idx];
+            document.querySelectorAll('.address-card').forEach((card, i) => {
+                card.classList.toggle('selected', i === idx);
+            });
+        }
+        
+        function selectDeliveryMode(mode) {
+            deliveryMode = mode;
+            document.getElementById('deliveryOption').classList.toggle('selected', mode === 'delivery');
+            document.getElementById('pickupOption').classList.toggle('selected', mode === 'pickup');
+            document.getElementById('addressSection').style.display = mode === 'delivery' ? 'block' : 'none';
+            updateTotals();
+        }
+        
+        function selectPayment(method) {
+            selectedPayment = method;
+            document.querySelectorAll('.payment-method').forEach(el => {
+                el.classList.toggle('selected', el.dataset.method === method);
+            });
+            
+            // Mostra campo de troco se for dinheiro
+            document.getElementById('changeInput').classList.toggle('show', method === 'cash');
+        }
+        
+        function updateTotals() {
+            const subtotal = cart.reduce((sum, item) => {
+                const itemPrice = item.price + (item.addons?.reduce((s,a) => s + a.price, 0) || 0);
+                return sum + (itemPrice * item.qty);
+            }, 0);
+            
+            const deliveryFee = (deliveryMode === 'delivery' && store) ? (store.deliveryFee || 0) : 0;
+            const total = subtotal + deliveryFee;
+            
+            document.getElementById('subtotal').textContent = formatCurrency(subtotal);
+            document.getElementById('deliveryFee').textContent = formatCurrency(deliveryFee);
+            document.getElementById('total').textContent = formatCurrency(total);
+            
+            document.getElementById('deliveryFeeRow').style.display = deliveryFee > 0 ? 'flex' : 'none';
+        }
+        
+        async function finishOrder() {
+            if (!user) {
+                alert('Faça login para continuar');
+                return;
+            }
+            
+            if (cart.length === 0) {
+                alert('Carrinho vazio');
+                return;
+            }
+            
+            if (deliveryMode === 'delivery' && !selectedAddress) {
+                alert('Selecione um endereço');
+                return;
+            }
+            
+            const btn = document.getElementById('finishBtn');
+            btn.disabled = true;
+            btn.textContent = 'Processando...';
+            
+            try {
+                const subtotal = cart.reduce((sum, item) => {
+                    const itemPrice = item.price + (item.addons?.reduce((s,a) => s + a.price, 0) || 0);
+                    return sum + (itemPrice * item.qty);
+                }, 0);
+                
+                const deliveryFee = (deliveryMode === 'delivery' && store) ? (store.deliveryFee || 0) : 0;
+                const total = subtotal + deliveryFee;
+                
+                const order = {
+                    storeId: store.id,
+                    userId: user.uid,
+                    userName: user.displayName || user.email,
+                    userPhone: user.phoneNumber || '',
+                    items: cart,
+                    deliveryMode,
+                    address: deliveryMode === 'delivery' ? selectedAddress : null,
+                    paymentMethod: selectedPayment,
+                    needChange: selectedPayment === 'cash',
+                    changeFor: selectedPayment === 'cash' ? parseFloat(document.getElementById('changeFor').value) || 0 : 0,
+                    notes: document.getElementById('notes').value.trim(),
+                    subtotal,
+                    deliveryFee,
+                    total,
+                    status: 'pending',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    timeline: [{
+                        status: 'pending',
+                        timestamp: new Date().toISOString(),
+                        message: 'Pedido realizado'
+                    }]
+                };
+                
+                await db.collection('orders').add(order);
+                
+                // Limpa carrinho
+                localStorage.removeItem('cart');
+                
+                // Notifica janela pai
+                if (window.opener && !window.opener.closed) {
+                    window.opener.postMessage({ type: 'ORDER_PLACED' }, '*');
+                }
+                
+                alert('Pedido realizado com sucesso!');
+                window.close();
+                
+            } catch (err) {
+                console.error('Erro ao finalizar pedido:', err);
+                alert('Erro ao finalizar pedido');
+                btn.disabled = false;
+                btn.textContent = 'Finalizar Pedido';
+            }
+        }
+        
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
+        }
+    </script>
+</body>
+</html>
