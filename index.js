@@ -7,7 +7,6 @@ function showPage(page) {
         loadOrders?.();
     }
 }
-
 // Firebase Config
 const firebaseConfig = {
     apiKey: "AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",
