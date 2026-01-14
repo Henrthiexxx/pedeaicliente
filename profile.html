@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meu Perfil - Pedra Delivery</title>
+
+  <link rel="stylesheet" href="index.css" />
+
+  <style>
+    body { padding:0; margin:0; min-height:100vh; }
+
+    .profile-container{
+      min-height:100vh;
+      padding: 20px;
+      padding-top: 92px;
+      padding-bottom: 56px;
+      max-width: 920px;
+      margin: 0 auto;
+    }
+
+    .profile-back-header{
+      position: fixed;
+      top:0; left:0; right:0;
+      height: 64px;
+      background: var(--bg);
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      padding: 0 20px;
+      z-index: 100;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+    }
+    .profile-back-btn{
+      width:44px; height:44px;
+      border-radius: 12px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 1.05rem;
+      cursor: pointer;
+      transition: all .15s ease;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .profile-back-btn:hover{ border-color: var(--primary); transform: translateY(-1px); }
+    .profile-back-btn:active{ transform: translateY(0); }
+    .profile-back-title{
+      font-size: .95rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text);
+      opacity: .92;
+    }
+
+    .profile-header{
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 10px 28px rgba(0,0,0,.16);
+      display:flex;
+      gap: 14px;
+      align-items:center;
+      margin-bottom: 14px;
+    }
+
+    .avatar-wrap{
+      width: 82px;
+      height: 82px;
+      flex: 0 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .profile-avatar{
+      width: 82px;
+      height: 82px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color: var(--text);
+      font-weight: 800;
+      font-size: 1.9rem;
+      letter-spacing: .6px;
+      overflow:hidden;
+      user-select: none;
+    }
+
+    .profile-identity{ flex: 1; min-width: 0; }
+    .profile-name{
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: .2px;
+      margin-bottom: 4px;
+      word-break: break-word;
+    }
+    .profile-email{
+      font-size: .9rem;
+      color: var(--text-muted);
+      word-break: break-word;
+    }
+
+    .profile-badges{
+      margin-top: 10px;
+      display:flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .chip{
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: .82rem;
+      line-height: 1;
+      opacity: .95;
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+    }
+    .chip.muted{ color: var(--text-muted); }
+    .dot{
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--primary);
+      box-shadow: 0 0 0 4px rgba(255,255,255,.02);
+    }
+
+    .profile-menu{
+      margin-top: 12px;
+      display:flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .menu-section{
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 10px 28px rgba(0,0,0,.14);
+    }
+
+    .section-title{
+      padding: 12px 14px;
+      font-size: .78rem;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border-bottom: 1px solid rgba(255,255,255,.04);
+      background: rgba(255,255,255,.02);
+    }
+
+    .profile-menu-item{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      padding: 14px;
+      cursor:pointer;
+      transition: all .12s ease;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+    .profile-menu-item:last-child{ border-bottom: none; }
+    .profile-menu-item:hover{ background: rgba(255,255,255,.03); }
+
+    .menu-icon{
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color: var(--text);
+      font-size: .78rem;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      opacity: .95;
+      flex: 0 0 auto;
+    }
+
+    .menu-text{ flex: 1; min-width: 0; }
+    .menu-title{
+      font-weight: 800;
+      font-size: .95rem;
+      color: var(--text);
+      margin-bottom: 2px;
+      letter-spacing: .1px;
+    }
+    .menu-subtitle{
+      font-size: .78rem;
+      color: var(--text-muted);
+      line-height: 1.1rem;
+    }
+
+    .menu-right{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      flex: 0 0 auto;
+    }
+
+    .badge{
+      min-width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      padding: 0 10px;
+      background: var(--primary);
+      color: #000;
+      font-size: .78rem;
+      font-weight: 800;
+      display:none;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .arrow{
+      width: 28px;
+      height: 28px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.06);
+      background: rgba(255,255,255,.02);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      line-height: 1;
+    }
+
+    .danger .menu-icon{
+      border-color: rgba(255,0,0,.2);
+      color: var(--danger);
+    }
+
+    @media (max-width: 520px){
+      .profile-container{ padding-left: 14px; padding-right: 14px; }
+      .profile-header{ padding: 14px; }
+      .profile-name{ font-size: 1.05rem; }
+      .menu-icon{ width: 40px; height: 40px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="profile-back-header">
+    <button class="profile-back-btn" onclick="goBack()" aria-label="Voltar">←</button>
+    <div class="profile-back-title">Meu Perfil</div>
+  </div>
+
+  <div class="profile-container">
+    <div class="profile-header">
+      <div class="avatar-wrap" id="profileAvatarContainer"></div>
+
+      <div class="profile-identity">
+        <div class="profile-name" id="profileName">-</div>
+        <div class="profile-email" id="profileEmail">-</div>
+
+        <div class="profile-badges">
+          <span class="chip muted"><span class="dot" aria-hidden="true"></span><span>Conta ativa</span></span>
+          <span class="chip muted" id="profileUidChip" style="display:none;"><span class="dot" aria-hidden="true"></span><span id="profileUidText"></span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-menu">
+      <div class="menu-section">
+        <div class="section-title">Conta</div>
+
+        <div class="profile-menu-item" onclick="window.location.href='pending-reviews.html'">
+          <div class="menu-icon">REV</div>
+          <div class="menu-text">
+            <div class="menu-title">Avaliações pendentes</div>
+            <div class="menu-subtitle">Avalie seus pedidos entregues</div>
+          </div>
+          <div class="menu-right">
+            <div id="pendingReviewsBadge" class="badge"></div>
+            <div class="arrow">›</div>
+          </div>
+        </div>
+
+        <div class="profile-menu-item" onclick="window.location.href='address.html'">
+          <div class="menu-icon">ADR</div>
+          <div class="menu-text">
+            <div class="menu-title">Meus endereços</div>
+            <div class="menu-subtitle">Gerencie endereços de entrega</div>
+          </div>
+          <div class="menu-right"><div class="arrow">›</div></div>
+        </div>
+
+        <div class="profile-menu-item" onclick="window.location.href='orders.html'">
+          <div class="menu-icon">ORD</div>
+          <div class="menu-text">
+            <div class="menu-title">Histórico de pedidos</div>
+            <div class="menu-subtitle">Veja seus pedidos anteriores</div>
+          </div>
+          <div class="menu-right"><div class="arrow">›</div></div>
+        </div>
+      </div>
+
+      <div class="menu-section">
+        <div class="section-title">App</div>
+
+        <div class="profile-menu-item" onclick="window.location.href='notifications.html'">
+          <div class="menu-icon">NOT</div>
+          <div class="menu-text">
+            <div class="menu-title">Notificações</div>
+            <div class="menu-subtitle">Central e histórico de alertas</div>
+          </div>
+          <div class="menu-right"><div class="arrow">›</div></div>
+        </div>
+
+        <div class="profile-menu-item" onclick="window.location.href='help.html'">
+          <div class="menu-icon">HLP</div>
+          <div class="menu-text">
+            <div class="menu-title">Ajuda e suporte</div>
+            <div class="menu-subtitle">Fale com a equipe e tire dúvidas</div>
+          </div>
+          <div class="menu-right"><div class="arrow">›</div></div>
+        </div>
+
+        <div class="profile-menu-item" onclick="window.location.href='about.html'">
+          <div class="menu-icon">INF</div>
+          <div class="menu-text">
+            <div class="menu-title">Sobre o app</div>
+            <div class="menu-subtitle">Versão, termos e informações</div>
+          </div>
+          <div class="menu-right"><div class="arrow">›</div></div>
+        </div>
+      </div>
+
+      <div class="menu-section">
+        <div class="section-title">Segurança</div>
+
+        <div class="profile-menu-item" onclick="window.location.href='security.html'">
+          <div class="menu-icon">SEC</div>
+          <div class="menu-text">
+            <div class="menu-title">Segurança da conta</div>
+            <div class="menu-subtitle">Senha, dispositivos e privacidade</div>
+          </div>
+          <div class="menu-right"><div class="arrow">›</div></div>
+        </div>
+
+        <div class="profile-menu-item" onclick="window.location.href='payments.html'">
+          <div class="menu-icon">PAY</div>
+          <div class="menu-text">
+            <div class="menu-title">Pagamentos</div>
+            <div class="menu-subtitle">Métodos e recibos</div>
+          </div>
+          <div class="menu-right"><div class="arrow">›</div></div>
+        </div>
+      </div>
+
+      <div class="menu-section">
+        <div class="section-title">Sessão</div>
+
+        <div class="profile-menu-item danger" onclick="handleLogout()">
+          <div class="menu-icon">OUT</div>
+          <div class="menu-text">
+            <div class="menu-title">Sair da conta</div>
+            <div class="menu-subtitle">Encerrar sessão neste dispositivo</div>
+          </div>
+          <div class="menu-right"><div class="arrow">›</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",
+      authDomain: "pedrad-814d0.firebaseapp.com",
+      projectId: "pedrad-814d0",
+      storageBucket: "pedrad-814d0.firebasestorage.app",
+      messagingSenderId: "293587190550",
+      appId: "1:293587190550:web:80c9399f82847c80e20637"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let currentUser = null;
+
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        currentUser = user;
+        await loadProfile();
+        await updatePendingReviewsBadge();
+      } else {
+        window.location.href = "index.html";
+      }
+    });
+
+    async function loadProfile() {
+      if (!currentUser) return;
+
+      const nameEl = document.getElementById("profileName");
+      const emailEl = document.getElementById("profileEmail");
+      const avatarContainer = document.getElementById("profileAvatarContainer");
+
+      if (nameEl) nameEl.textContent = currentUser.displayName || "Usuário";
+      if (emailEl) emailEl.textContent = currentUser.email || "";
+
+      const uidChip = document.getElementById("profileUidChip");
+      const uidText = document.getElementById("profileUidText");
+      if (uidChip && uidText && currentUser.uid) {
+        uidText.textContent = "ID: " + String(currentUser.uid).slice(0, 8);
+        uidChip.style.display = "inline-flex";
+      }
+
+      // Avatar SEM upload (apenas inicial)
+      if (avatarContainer) {
+        const initial = (currentUser.displayName || currentUser.email || "U")[0].toUpperCase();
+        avatarContainer.innerHTML = `
+          <div class="avatar-wrap">
+            <div class="profile-avatar" aria-label="Avatar">${escapeHtml(initial)}</div>
+          </div>
+        `;
+      }
+    }
+
+    async function updatePendingReviewsBadge() {
+      if (!currentUser) return;
+
+      try {
+        const snapshot = await db.collection("orders")
+          .where("userId", "==", currentUser.uid)
+          .where("status", "==", "delivered")
+          .where("reviewed", "==", false)
+          .get();
+
+        const count = snapshot.size;
+        const badge = document.getElementById("pendingReviewsBadge");
+
+        if (badge) {
+          badge.textContent = count;
+          badge.style.display = count > 0 ? "flex" : "none";
+        }
+      } catch (err) {
+        console.error("Error counting reviews:", err);
+      }
+    }
+
+    async function handleLogout() {
+      if (confirm("Deseja sair da sua conta?")) {
+        try {
+          await auth.signOut();
+          window.location.href = "index.html";
+        } catch (err) {
+          showToast("Erro ao sair");
+        }
+      }
+    }
+
+    function goBack() {
+      if (document.referrer.includes("index.html") || document.referrer.includes(window.location.host)) {
+        window.history.back();
+      } else {
+        window.location.href = "index.html";
+      }
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      if (!toast) return;
+      toast.textContent = message;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 3000);
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+  </script>
+</body>
+</html>

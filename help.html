@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ajuda e Suporte - Pedrad</title>
+
+ 
+
+  <style>
+:root{
+  --bg:#000;--bg-card:#0a0a0a;--bg-input:#171717;
+  --text:#fff;--text-muted:#737373;--border:#262626;
+  --primary:#ffd54a;--danger:#ff4d4d;--radius:16px;
+}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui}
+
+    .help-page{display:block !important;}
+.help-header{display:flex !important;}
+
+    body{margin:0;padding:0;min-height:100vh;background:var(--bg);color:var(--text);}
+    .page{max-width:920px;margin:0 auto;min-height:100vh;padding-bottom:22px;}
+
+    /* Header */
+    .header{
+      position:fixed;top:0;left:0;right:0;height:64px;
+      background:var(--bg);border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 16px;z-index:9999;backdrop-filter:blur(10px);
+    }
+    .h-left,.h-right{display:flex;align-items:center;gap:10px;min-width:120px;}
+    .h-right{justify-content:flex-end;}
+    .title{
+      flex:1;text-align:center;pointer-events:none;
+      font-size:.95rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;opacity:.92;
+    }
+    .icon-btn{
+      width:44px;height:44px;border-radius:12px;
+      background:var(--bg-input);border:1px solid var(--border);
+      color:var(--text);cursor:pointer;transition:.15s;
+      display:flex;align-items:center;justify-content:center;
+      user-select:none;
+    }
+    .icon-btn:hover{border-color:var(--primary);transform:translateY(-1px);}
+    .icon-btn:active{transform:translateY(0);}
+
+    /* Content */
+    .content{padding-top:78px;padding-left:12px;padding-right:12px;}
+    .card{
+      background:var(--bg-card);border:1px solid var(--border);
+      border-radius:18px;box-shadow:0 10px 28px rgba(0,0,0,.12);
+      padding:14px;margin-bottom:12px;
+    }
+
+    .hero{
+      display:flex;gap:12px;align-items:flex-start;
+    }
+    .hero-badge{
+      width:48px;height:48px;border-radius:16px;
+      background:var(--bg-input);border:1px solid var(--border);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:900;letter-spacing:1px;color:var(--text-muted);
+      flex:0 0 auto;
+    }
+    .hero-title{font-weight:900;font-size:1.05rem;margin:0 0 6px;}
+    .hero-sub{color:var(--text-muted);font-size:.86rem;line-height:1.35rem;margin:0;}
+
+    .grid{
+      display:grid;grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:10px;margin-top:12px;
+    }
+    .btn{
+      border-radius:14px;border:1px solid var(--border);
+      background:var(--bg-input);color:var(--text);
+      padding:12px 12px;cursor:pointer;transition:.15s;
+      display:flex;align-items:center;justify-content:center;gap:10px;
+      font-weight:900;font-size:.9rem;
+    }
+    .btn:hover{border-color:var(--primary);transform:translateY(-1px);}
+    .btn:active{transform:translateY(0);}
+    .btn.primary{background:var(--primary);color:#000;border-color:transparent;}
+    .btn.danger:hover{border-color:var(--danger);color:var(--danger);}
+
+    .row{
+      display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+    }
+    .pill{
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.02);
+      border-radius:999px;padding:6px 10px;
+      font-size:.78rem;color:var(--text-muted);
+      white-space:nowrap;
+    }
+
+    /* Search */
+    .search{
+      display:flex;gap:10px;align-items:center;
+      padding:12px;border-radius:16px;
+      border:1px solid var(--border);background:var(--bg-input);
+    }
+    .search input{
+      width:100%;border:0;outline:0;background:transparent;
+      color:var(--text);font-size:.92rem;
+    }
+
+    /* FAQ */
+    .section-title{
+      font-size:.78rem;letter-spacing:1.6px;text-transform:uppercase;
+      color:var(--text-muted);margin:0 0 10px;padding:0 2px;
+    }
+
+    .faq-item{
+      border:1px solid rgba(255,255,255,.06);
+      background:rgba(255,255,255,.02);
+      border-radius:16px;overflow:hidden;margin-bottom:10px;
+    }
+    .faq-q{
+      width:100%;text-align:left;
+      padding:12px 12px;cursor:pointer;
+      background:transparent;border:0;color:var(--text);
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      font-weight:900;font-size:.92rem;
+    }
+    .faq-a{
+      display:none;padding:0 12px 12px;color:var(--text-muted);
+      line-height:1.35rem;font-size:.86rem;
+    }
+    .faq-item.open .faq-a{display:block;}
+    .chev{
+      width:28px;height:28px;border-radius:10px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.02);
+      display:flex;align-items:center;justify-content:center;
+      color:var(--text-muted);flex:0 0 auto;
+    }
+
+    /* Modal UI */
+    .modal-ui{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:99999;padding:16px;}
+    .modal-ui.show{display:flex;}
+    .modal-ui-card{width:min(520px,100%);background:var(--bg-card);border:1px solid var(--border);border-radius:18px;box-shadow:0 18px 60px rgba(0,0,0,.35);padding:16px;}
+    .modal-ui-title{font-weight:900;letter-spacing:.4px;margin-bottom:8px;color:var(--text);}
+    .modal-ui-text{color:var(--text-muted);line-height:1.45;margin-bottom:14px;white-space:pre-wrap;overflow-wrap:anywhere;}
+    .modal-ui-actions{display:flex;gap:10px;justify-content:flex-end;}
+    .btn-ui{height:42px;padding:0 14px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:var(--bg-input);color:var(--text);font-weight:900;cursor:pointer;transition:.15s;}
+    .btn-ui:hover{border-color:var(--primary);transform:translateY(-1px);}
+    .btn-ui:active{transform:translateY(0);}
+    .btn-ui.primary{background:var(--primary);color:#000;border-color:transparent;}
+
+    /* Toast (se index.css já tiver, isso só ajuda) */
+    .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);
+      background:var(--bg-card);border:1px solid var(--border);
+      color:var(--text);padding:10px 14px;border-radius:14px;
+      opacity:0;pointer-events:none;transition:.18s;z-index:100000;
+      box-shadow:0 10px 28px rgba(0,0,0,.18);
+      max-width:min(92vw,520px);text-align:center;
+    }
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);}
+
+    @media (max-width:520px){
+      .grid{grid-template-columns:1fr;}
+      .h-left,.h-right{min-width:90px;}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <div class="h-left">
+      <button class="icon-btn" id="backBtn" type="button" aria-label="Voltar">←</button>
+    </div>
+    <div class="title">Ajuda</div>
+    <div class="h-right">
+      <button class="icon-btn" id="copyIdBtn" type="button" aria-label="Copiar ID">ID</button>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="content">
+
+      <div class="card">
+        <div class="hero">
+          <div class="hero-badge">HLP</div>
+          <div style="flex:1;min-width:0;">
+            <h1 class="hero-title">Central de Ajuda</h1>
+            <p class="hero-sub">Suporte rápido, dúvidas comuns e atalhos úteis. Tudo no estilo do app (sem popups do navegador).</p>
+            <div class="row" style="margin-top:10px;">
+              <span class="pill" id="appVersionPill">Versão: —</span>
+              <span class="pill" id="devicePill">Dispositivo: —</span>
+              <span class="pill" id="statusPill">Status: online</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid">
+          <button class="btn primary" id="openOrdersBtn" type="button">📦 Ver pedidos</button>
+          <button class="btn" id="openNotificationsBtn" type="button">🔔 Notificações</button>
+          <button class="btn" id="reportBtn" type="button">🐞 Reportar problema</button>
+          <button class="btn" id="contactBtn" type="button">💬 Falar com suporte</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Buscar</div>
+        <div class="search">
+          <span style="color:var(--text-muted);font-weight:900;">🔎</span>
+          <input id="searchInput" type="text" placeholder="Digite sua dúvida (ex: login, pedido, entrega)" autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Perguntas frequentes</div>
+
+        <div class="faq-item" data-tags="login senha acessar conta">
+          <button class="faq-q" type="button">
+            <span>Não consigo entrar (email/senha)</span>
+            <span class="chev">›</span>
+          </button>
+          <div class="faq-a">
+            Verifique se o email está correto. Se a senha estiver errada, tente redefinir em <b>security.html</b>.
+            Se persistir, copie seu ID (botão “ID”) e envie ao suporte.
+          </div>
+        </div>
+
+        <div class="faq-item" data-tags="pedido status entrega atrasado">
+          <button class="faq-q" type="button">
+            <span>Meu pedido não atualiza o status</span>
+            <span class="chev">›</span>
+          </button>
+          <div class="faq-a">
+            Abra <b>orders.html</b> e verifique o pedido mais recente. Se estiver offline, o app mostra o último estado salvo.
+            Ao voltar a ficar online, o status atualiza automaticamente.
+          </div>
+        </div>
+
+        <div class="faq-item" data-tags="endereco taxa entrega bairro">
+          <button class="faq-q" type="button">
+            <span>Taxa de entrega diferente do esperado</span>
+            <span class="chev">›</span>
+          </button>
+          <div class="faq-a">
+            A taxa depende do bairro e do modo (entrega/retirada). Revise seu endereço em <b>address.html</b>.
+          </div>
+        </div>
+
+        <div class="faq-item" data-tags="pagamento pix cartao dinheiro">
+          <button class="faq-q" type="button">
+            <span>Problemas com pagamento</span>
+            <span class="chev">›</span>
+          </button>
+          <div class="faq-a">
+            Confira o método selecionado no checkout. Para ajustes e recibos, use <b>payments.html</b>.
+          </div>
+        </div>
+
+        <div class="faq-item" data-tags="privacidade termos dados">
+          <button class="faq-q" type="button">
+            <span>Privacidade e termos</span>
+            <span class="chev">›</span>
+          </button>
+          <div class="faq-a">
+            Consulte <b>privacy.html</b> e <b>terms.html</b> (você pode criar essas páginas depois).
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Links úteis</div>
+        <div class="grid">
+          <button class="btn" type="button" onclick="window.location.href='about.html'">ℹ️ Sobre</button>
+          <button class="btn" type="button" onclick="window.location.href='security.html'">🔒 Segurança</button>
+          <button class="btn" type="button" onclick="window.location.href='config.html'">⚙️ Configurações</button>
+          <button class="btn" type="button" onclick="window.location.href='payments.html'">💳 Pagamentos</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Modal UI -->
+  <div id="uiModal" class="modal-ui" aria-hidden="true">
+    <div class="modal-ui-card" role="dialog" aria-modal="true">
+      <div class="modal-ui-title" id="uiModalTitle">Aviso</div>
+      <div class="modal-ui-text" id="uiModalText"></div>
+      <div class="modal-ui-actions">
+        <button class="btn-ui" id="uiModalCancel" type="button" style="display:none">Cancelar</button>
+        <button class="btn-ui primary" id="uiModalOk" type="button">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ====== Toast ======
+    function showToast(msg){
+      const t = document.getElementById('toast');
+      if(!t) return;
+      t.textContent = String(msg || '');
+      t.classList.add('show');
+      setTimeout(()=>t.classList.remove('show'), 2600);
+    }
+
+    // ====== Modal HTML (sem alert/confirm do navegador) ======
+    const UIModal = (() => {
+      const el = document.getElementById('uiModal');
+      const titleEl = document.getElementById('uiModalTitle');
+      const textEl = document.getElementById('uiModalText');
+      const okBtn = document.getElementById('uiModalOk');
+      const cancelBtn = document.getElementById('uiModalCancel');
+
+      function open({ title='Aviso', text='', okText='OK', cancelText='Cancelar', showCancel=false }){
+        titleEl.textContent = title;
+        textEl.textContent = text;
+        okBtn.textContent = okText;
+        cancelBtn.textContent = cancelText;
+        cancelBtn.style.display = showCancel ? 'inline-flex' : 'none';
+        el.classList.add('show');
+        el.setAttribute('aria-hidden','false');
+      }
+      function close(){
+        el.classList.remove('show');
+        el.setAttribute('aria-hidden','true');
+      }
+
+      function alert({ title='Aviso', text='', okText='OK' }){
+        return new Promise(resolve => {
+          open({ title, text, okText, showCancel:false });
+          okBtn.onclick = () => { close(); resolve(true); };
+          cancelBtn.onclick = null;
+        });
+      }
+
+      function confirm({ title='Confirmar', text='', okText='Confirmar', cancelText='Cancelar' }){
+        return new Promise(resolve => {
+          open({ title, text, okText, cancelText, showCancel:true });
+          okBtn.onclick = () => { close(); resolve(true); };
+          cancelBtn.onclick = () => { close(); resolve(false); };
+        });
+      }
+
+      el.addEventListener('click', (e) => { if (e.target === el) close(); });
+
+      return { alert, confirm };
+    })();
+
+    // ====== Back robusto ======
+    (function(){
+      const back = document.getElementById('backBtn');
+      if(!back) return;
+      back.addEventListener('click', (e)=>{
+        e.preventDefault(); e.stopPropagation();
+        if (window.history.length > 1) window.history.back();
+        else window.location.href = 'index.html';
+      }, true);
+    })();
+
+    // ====== FAQ accordion + busca ======
+    function bindFaq(){
+      document.querySelectorAll('.faq-item .faq-q').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const item = btn.closest('.faq-item');
+          const isOpen = item.classList.contains('open');
+          document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
+          if(!isOpen) item.classList.add('open');
+        });
+      });
+    }
+
+    function filterFaq(q){
+      const s = String(q||'').trim().toLowerCase();
+      document.querySelectorAll('.faq-item').forEach(item=>{
+        const tags = (item.getAttribute('data-tags')||'').toLowerCase();
+        const text = item.innerText.toLowerCase();
+        const ok = !s || tags.includes(s) || text.includes(s);
+        item.style.display = ok ? '' : 'none';
+      });
+    }
+
+    // ====== Botões úteis ======
+    (function(){
+      document.getElementById('openOrdersBtn')?.addEventListener('click', ()=>window.location.href='orders.html');
+      document.getElementById('openNotificationsBtn')?.addEventListener('click', ()=>window.location.href='notifications.html');
+
+      document.getElementById('reportBtn')?.addEventListener('click', async ()=>{
+        await UIModal.alert({
+          title: 'Reportar problema',
+          text: 'Crie a página report.html para receber detalhes (prints, descrição, ID do usuário).\n\nSugestão: salvar em Firestore / enviar para WhatsApp do suporte.'
+        });
+        window.location.href = 'report.html';
+      });
+
+      document.getElementById('contactBtn')?.addEventListener('click', async ()=>{
+        const ok = await UIModal.confirm({
+          title: 'Falar com suporte',
+          text: 'Você quer abrir a página de suporte?\n\nDica: inclua formulário e anexe seu ID de usuário.',
+          okText: 'Abrir',
+          cancelText: 'Agora não'
+        });
+        if (ok) window.location.href = 'support.html';
+      });
+    })();
+
+    // ====== Copiar ID de suporte (usa localStorage, sem Firebase aqui) ======
+    (function(){
+      const btn = document.getElementById('copyIdBtn');
+      if(!btn) return;
+
+      function getSupportId(){
+        // tenta pegar algo útil do seu app (ajuste depois)
+        const uid = localStorage.getItem('uid') || localStorage.getItem('userId') || '';
+        return uid ? String(uid) : 'SEM-ID';
+      }
+
+      btn.addEventListener('click', async ()=>{
+        const id = getSupportId();
+        try{
+          await navigator.clipboard.writeText(id);
+          showToast('ID copiado');
+        }catch(e){
+          await UIModal.alert({ title:'ID do suporte', text: id });
+        }
+      });
+    })();
+
+    // ====== Status / versão / device ======
+    (function(){
+      const v = document.getElementById('appVersionPill');
+      const d = document.getElementById('devicePill');
+      const s = document.getElementById('statusPill');
+
+      const version = localStorage.getItem('app_version') || '1.0.0';
+      if(v) v.textContent = 'Versão: ' + version;
+
+      const ua = navigator.userAgent || '';
+      const device = ua.includes('Android') ? 'Android' : (ua.includes('iPhone')||ua.includes('iPad') ? 'iOS' : 'Web');
+      if(d) d.textContent = 'Dispositivo: ' + device;
+
+      function setStatus(){
+        if(!s) return;
+        s.textContent = navigator.onLine ? 'Status: online' : 'Status: offline';
+      }
+      window.addEventListener('online', setStatus);
+      window.addEventListener('offline', setStatus);
+      setStatus();
+    })();
+
+    // ====== Init ======
+    (function init(){
+      bindFaq();
+      const input = document.getElementById('searchInput');
+      input?.addEventListener('input', (e)=>filterFaq(e.target.value));
+    })();
+  </script>
+</body>
+</html>

@@ -1,348 +1,652 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notificações - Pedrad</title>
-    
-    <!-- Referencia CSS existente do projeto -->
-    <link rel="stylesheet" href="index.css">
-    
-    <style>
-        /* CSS específico da página de notificações */
-        body {
-            margin: 0;
-            padding: 0;
-        }
-        
-        .notifications-page {
-            min-height: 100vh;
-            background: var(--bg);
-            padding-bottom: 20px;
-        }
-        
-        .notifications-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 60px;
-            background: var(--bg);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            z-index: 100;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .back-btn {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            color: var(--text);
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .back-btn:hover {
-            border-color: var(--primary);
-        }
-        
-        .notifications-title {
-            font-size: 1rem;
-            font-weight: 300;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-        }
-        
-        .clear-all-btn {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            color: var(--text);
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .clear-all-btn:hover {
-            border-color: var(--danger);
-            color: var(--danger);
-        }
-        
-        .notifications-content {
-            padding-top: 70px;
-            padding-left: 10px;
-            padding-right: 10px;
-        }
-        
-        .notification-item {
-            display: flex;
-            gap: 12px;
-            padding: 16px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            margin-bottom: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            animation: slideIn 0.3s ease;
-        }
-        
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-        
-        .notification-item:hover {
-            background: rgba(255,255,255,0.03);
-            border-color: var(--text-muted);
-        }
-        
-        .notification-item.unread {
-            background: rgba(255,255,255,0.05);
-            border-left: 3px solid var(--primary);
-        }
-        
-        .notification-icon {
-            font-size: 0.9rem;
-            margin-top: 2px;
-            flex-shrink: 0;
-        }
-        
-        .notification-content {
-            flex: 1;
-            min-width: 0;
-        }
-        
-        .notification-title {
-            font-weight: 600;
-            margin-bottom: 4px;
-            font-size: 0.95rem;
-        }
-        
-        .notification-message {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-            line-height: 1.4;
-        }
-        
-        .notification-time {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-        
-        .notification-delete {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            font-size: 1.1rem;
-            cursor: pointer;
-            opacity: 0.5;
-            transition: all 0.2s;
-            padding: 4px 8px;
-            flex-shrink: 0;
-        }
-        
-        .notification-delete:hover {
-            opacity: 1;
-            color: var(--danger);
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-        }
-        
-        .empty-state-icon {
-            font-size: 3rem;
-            margin-bottom: 16px;
-            opacity: 0.3;
-        }
-        
-        .empty-state-title {
-            font-size: 1rem;
-            font-weight: 500;
-            margin-bottom: 8px;
-        }
-        
-        .empty-state-text {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notificações - Pedrad</title>
+
+  <link rel="stylesheet" href="index.css">
+
+  <style>
+     .modal-ui{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:99999;padding:16px;}
+  .modal-ui.show{display:flex;}
+  .modal-ui-card{width:min(520px,100%);background:var(--bg-card);border:1px solid var(--border);border-radius:18px;box-shadow:0 18px 60px rgba(0,0,0,.35);padding:16px;}
+  .modal-ui-title{font-weight:900;letter-spacing:.4px;margin-bottom:8px;color:var(--text);}
+  .modal-ui-text{color:var(--text-muted);line-height:1.45;margin-bottom:14px;white-space:pre-wrap;overflow-wrap:anywhere;}
+  .modal-ui-actions{display:flex;gap:10px;justify-content:flex-end;}
+  .btn-ui{height:42px;padding:0 14px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:var(--bg-input);color:var(--text);font-weight:900;cursor:pointer;transition:.15s;}
+  .btn-ui:hover{border-color:var(--primary);transform:translateY(-1px);}
+  .btn-ui:active{transform:translateY(0);}
+  .btn-ui.primary{background:var(--primary);color:#000;border-color:transparent;}
+
+    body { margin:0; padding:0; min-height:100vh; background:var(--bg); }
+
+    .notifications-page{
+      min-height:100vh;
+      padding-bottom: 20px;
+      max-width: 920px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .notifications-header{
+      position: fixed;
+      top:0; left:0; right:0;
+      height: 64px;
+      background: var(--bg);
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 9999;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+    }
+
+    .header-left, .header-right{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 120px;
+    }
+    .header-right{ justify-content:flex-end; }
+
+    .back-btn,
+    .icon-btn{
+      width:44px; height:44px;
+      border-radius: 12px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 1.05rem;
+      cursor: pointer;
+      transition: all .15s ease;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position: relative;
+      z-index: 10000;
+      pointer-events: auto;
+      user-select: none;
+    }
+    .back-btn:hover,
+    .icon-btn:hover{ border-color: var(--primary); transform: translateY(-1px); }
+    .back-btn:active,
+    .icon-btn:active{ transform: translateY(0); }
+
+    .icon-btn.danger:hover{
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    .notifications-title{
+      font-size: .95rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text);
+      opacity: .92;
+      text-align:center;
+      flex: 1;
+      pointer-events: none;
+    }
+
+    .count-chip{
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text-muted);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: .78rem;
+      line-height: 1;
+      display:none;
+      white-space: nowrap;
+    }
+
+    .notifications-content{
+      padding-top: 78px;
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+
+    /* Top tools */
+    .tools-bar{
+      display:flex;
+      gap: 10px;
+      margin: 10px 0 14px;
+    }
+
+    .tool-btn{
+      flex:1;
+      border-radius: 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 12px;
+      cursor: pointer;
+      transition: all .15s ease;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: .9rem;
+      box-shadow: 0 10px 28px rgba(0,0,0,.12);
+    }
+    .tool-btn:hover{ border-color: var(--primary); transform: translateY(-1px); }
+    .tool-btn:active{ transform: translateY(0); }
+    .tool-btn.secondary{
+      background: var(--bg-input);
+      box-shadow: none;
+      font-weight: 800;
+    }
+    .tool-btn.danger:hover{ border-color: var(--danger); color: var(--danger); }
+
+    /* Cards */
+    .notification-item{
+      display:flex;
+      gap: 12px;
+      padding: 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all .15s ease;
+      animation: slideIn .22s ease;
+      box-shadow: 0 10px 28px rgba(0,0,0,.12);
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-8px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .notification-item:hover{
+      background: rgba(255,255,255,.03);
+      border-color: rgba(255,255,255,.14);
+    }
+
+    .notification-item.unread{
+      background: rgba(255,255,255,.04);
+      border-left: 3px solid var(--primary);
+    }
+
+    .notification-icon{
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: .82rem;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      color: var(--text);
+      flex-shrink: 0;
+      opacity: .95;
+      user-select: none;
+    }
+
+    .notification-content{ flex:1; min-width:0; }
+    .notification-title{
+      font-weight: 800;
+      margin-bottom: 4px;
+      font-size: .95rem;
+      color: var(--text);
+      letter-spacing: .1px;
+    }
+    .notification-message{
+      font-size: .83rem;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      line-height: 1.35rem;
+      overflow-wrap: anywhere;
+    }
+
+    .notification-meta{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: .76rem;
+      color: var(--text-muted);
+    }
+
+    .pill{
+      border: 1px solid rgba(255,255,255,.06);
+      background: rgba(255,255,255,.02);
+      border-radius: 999px;
+      padding: 4px 10px;
+      white-space: nowrap;
+    }
+
+    .notification-actions{
+      display:flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .small-btn{
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.02);
+      color: var(--text-muted);
+      border-radius: 12px;
+      height: 34px;
+      min-width: 46px;
+      padding: 0 10px;
+      cursor:pointer;
+      transition: all .15s ease;
+      font-weight: 800;
+      font-size: .75rem;
+      letter-spacing: .7px;
+      text-transform: uppercase;
+    }
+    .small-btn:hover{ border-color: var(--primary); color: var(--text); transform: translateY(-1px); }
+    .small-btn:active{ transform: translateY(0); }
+    .small-btn.danger:hover{ border-color: var(--danger); color: var(--danger); }
+
+    .empty-state{
+      text-align:center;
+      padding: 64px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 10px 28px rgba(0,0,0,.12);
+    }
+    .empty-state-icon{
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      margin-bottom: 14px;
+      color: var(--text-muted);
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .empty-state-title{ font-size: 1rem; font-weight: 900; margin-bottom: 6px; }
+    .empty-state-text{ color: var(--text-muted); font-size: .85rem; }
+
+    /* Responsive */
+    @media (max-width: 520px){
+      .notifications-content{ padding-left: 12px; padding-right: 12px; }
+      .tools-bar{ flex-direction: column; }
+      .header-left, .header-right{ min-width: 90px; }
+    }
+  </style>
 </head>
+
 <body>
-    <div class="notifications-page">
-        <!-- Header -->
-        <div class="notifications-header">
-            <button class="back-btn" onclick="goBack()">←</button>
-            <div class="notifications-title">Notificações</div>
-            <button class="clear-all-btn" onclick="clearAll()">🗑️</button>
-        </div>
-        
-        <!-- Lista de Notificações -->
-        <div class="notifications-content" id="notificationsList">
-            <!-- Renderizado pelo JS -->
-        </div>
+  <div class="notifications-page">
+    <!-- Header -->
+    <div class="notifications-header">
+      <div class="header-left">
+        <button class="back-btn" type="button" onclick="goBack()">←</button>
+
+      </div>
+
+      <div class="notifications-title">Notificações</div>
+
+      <div class="header-right">
+        <div class="count-chip" id="countChip">0</div>
+        <button class="icon-btn danger" id="clearBtn" type="button" aria-label="Limpar">✕</button>
+      </div>
     </div>
+
+    <!-- Content -->
+    <div class="notifications-content">
+      <!-- Botões úteis -->
+      <div class="tools-bar">
+        <button class="tool-btn secondary" id="markAllBtn" type="button">Marcar tudo como lido</button>
+        <button class="tool-btn danger" id="clearAllBtn" type="button">Limpar tudo</button>
+      </div>
+
+      <!-- Render -->
+      <div id="notificationsList"></div>
+    </div>
+  </div>
+    <div id="uiModal" class="modal-ui" aria-hidden="true">
+  <div class="modal-ui-card" role="dialog" aria-modal="true">
+    <div class="modal-ui-title" id="uiModalTitle">Aviso</div>
+    <div class="modal-ui-text" id="uiModalText"></div>
+    <div class="modal-ui-actions">
+      <button class="btn-ui" id="uiModalCancel" type="button" style="display:none">Cancelar</button>
+      <button class="btn-ui primary" id="uiModalOk" type="button">OK</button>
+    </div>
+  </div>
+</div>
+  <script>
+
+    function goBack(){
+  // se abriu via link normal e tem histórico
+  if (window.history.length > 1) {
+    window.history.back();
+    // fallback se não voltar em 400ms
+    setTimeout(() => {
+      if (document.visibilityState === 'visible') window.location.href = 'index.html';
+    }, 400);
+    return;
+  }
+  // se abriu direto (sem histórico)
+  window.location.href = 'index.html';
+}
+
+    // ==================== CACHE (reduz leituras do localStorage) ====================
+    // A página agora:
+    // - lê do localStorage 1 vez ao abrir (hydrate)
+    // - mantém em memória (state)
+    // - escreve no localStorage somente quando houver mudança (save)
+    // - sem setInterval lendo a cada 30s (isso era "leitura infinita" do storage)
+
+    const STORAGE_KEY = 'notifications';
+
+    const NotifsState = {
+      list: [],
+      loaded: false
+    };
+
+    function hydrateOnce() {
+      if (NotifsState.loaded) return;
+      try {
+        NotifsState.list = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      } catch (e) {
+        NotifsState.list = [];
+      }
+      NotifsState.loaded = true;
+    }
+
+    function persist() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(NotifsState.list));
+      } catch (e) {}
+    }
+
+    // ==================== NAV (voltar robusto) ====================
+    (function bindBackButton(){
+      const btn = document.getElementById('backBtn');
+      if (!btn) return;
+
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (window.history.length > 1) window.history.back();
+        else window.location.href = 'index.html';
+      }, true);
+    })();
+
+    // ==================== HELPERS ====================
+
+    function safeText(str) {
+      return String(str ?? '')
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'","&#039;");
+    }
+
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diff = now - date;
+
+      if (!dateString || isNaN(date.getTime())) return '—';
+
+      if (diff < 60000) return 'Agora';
+      if (diff < 3600000) return `${Math.floor(diff / 60000)}m atrás`;
+      if (diff < 86400000) return `${Math.floor(diff / 3600000)}h atrás`;
+      if (diff < 604800000) return `${Math.floor(diff / 86400000)}d atrás`;
+
+      return date.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'2-digit' });
+    }
+
+    function getIconLabel(n) {
+      // Remove emojis/ícones e usa "tags" curtas profissionais
+      const title = (n?.title || '').trim().toUpperCase();
+      if (title.includes('PEDIDO')) return 'ORD';
+      if (title.includes('ENTREGA')) return 'DLV';
+      if (title.includes('PAG')) return 'PAY';
+      if (title.includes('AVALIA')) return 'REV';
+      if (title.includes('CUPOM')) return 'CUP';
+      return 'INF';
+    }
+
+    function updateHeaderCount() {
+      const chip = document.getElementById('countChip');
+      if (!chip) return;
+
+      const total = NotifsState.list.length;
+      const unread = NotifsState.list.filter(n => !n.read).length;
+
+      if (total === 0) {
+        chip.style.display = 'none';
+        return;
+      }
+      chip.style.display = 'inline-flex';
+      chip.textContent = unread > 0 ? `${unread} não lidas` : `${total} total`;
+    }
+
+    // ==================== ACTIONS (protege a lógica) ====================
+
+    function markAsRead(notificationId) {
+      const idx = NotifsState.list.findIndex(n => n.id === notificationId);
+      if (idx === -1) return;
+      if (NotifsState.list[idx].read) return;
+
+      NotifsState.list[idx] = { ...NotifsState.list[idx], read: true };
+      persist();
+      renderNotifications();
+    }
+
+    function markAllAsRead() {
+      if (NotifsState.list.length === 0) return;
+
+      let changed = false;
+      NotifsState.list = NotifsState.list.map(n => {
+        if (!n.read) { changed = true; return { ...n, read: true }; }
+        return n;
+      });
+
+      if (changed) persist();
+      renderNotifications();
+    }
+
+async function deleteNotification(notificationId, event) {
+  event?.stopPropagation?.();
+
+  const idx = NotifsState.list.findIndex(n => n.id === notificationId);
+  if (idx === -1) return;
+
+  const ok = await UIModal.confirm({ text: 'Deletar esta notificação?' });
+  if (!ok) return;
+
+  NotifsState.list.splice(idx, 1);
+  persist();
+  renderNotifications();
+}
+
+async function clearAll() {
+  if (NotifsState.list.length === 0) {
+    await UIModal.alert({ text: 'Não há notificações para limpar' });
+    return;
+  }
+
+  const ok = await UIModal.confirm({
+    text: `Deletar todas as ${NotifsState.list.length} notificações?`
+  });
+  if (!ok) return;
+
+  NotifsState.list = [];
+  persist();
+  renderNotifications();
+}
+
+function refreshFromStorage() {
+  try {
+    const latest = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    NotifsState.list = Array.isArray(latest) ? latest : [];
+    renderNotifications();
+  } catch (e) {
+    UIModal.alert({ text: 'Falha ao atualizar notificações' });
+  }
+}
+
+    // ==================== RENDER ====================
+
+function renderNotifications() {
+  const container = document.getElementById('notificationsList');
+  if (!container) return;
+
+  updateHeaderCount();
+
+  const notifications = NotifsState.list;
+
+  // VAZIO (mantido igual ao seu)
+  if (notifications.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">NOT</div>
+        <div class="empty-state-title">Nenhuma notificação</div>
+        <div class="empty-state-text">Quando houver novidades, elas aparecem aqui.</div>
+        <div class="tools-bar" style="margin-top:16px;">
+          <button class="tool-btn secondary" type="button" onclick="refreshFromStorage()">Atualizar</button>
+          <button class="tool-btn" type="button" onclick="window.location.href='orders.html'">Ver pedidos</button>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  // Ordena visualmente: mais recentes primeiro
+  const sorted = [...notifications].sort((a, b) => {
+    const da = new Date(a.createdAt || 0).getTime();
+    const db = new Date(b.createdAt || 0).getTime();
+    return db - da;
+  });
+
+  container.innerHTML = sorted.map(n => {
+    const id = safeText(n.id || '');
+    const isUnread = !n.read;
+    const tag = getIconLabel(n);
+    const title = safeText(n.title || 'Notificação');
+    const message = safeText(n.message || '');
+    const time = formatDate(n.createdAt);
+
+    // Se existir algum "tipo" ou "action", você pode usar depois
+    // const type = safeText(n.type || '');
+
+    return `
+      <div class="notification-item ${isUnread ? 'unread' : ''}"
+           onclick="markAsRead('${id}')">
+
+        <div class="notification-icon">${tag}</div>
+
+        <div class="notification-content">
+          <div class="notification-title">${title}</div>
+          <div class="notification-message">${message}</div>
+
+          <div class="notification-meta">
+            <span class="pill">${safeText(time)}</span>
+            <span class="pill">${isUnread ? 'Não lida' : 'Lida'}</span>
+          </div>
+        </div>
+
+        <div class="notification-actions">
+          <button class="small-btn" type="button"
+                  onclick="event.stopPropagation(); markAsRead('${id}')">
+            Ler
+          </button>
+
+          <button class="small-btn danger" type="button"
+                  onclick="deleteNotification('${id}', event)">
+            Del
+          </button>
+        </div>
+
+      </div>
+    `;
+  }).join('');
+}
+
+
+    // ==================== INIT ====================
+
+    (function init(){
+      hydrateOnce();
+
+      // Botões do header
+      const clearBtn = document.getElementById('clearBtn');
+      if (clearBtn) clearBtn.addEventListener('click', (e) => { e.preventDefault(); clearAll(); }, true);
+
+      // Botões da barra
+      document.getElementById('markAllBtn')?.addEventListener('click', markAllAsRead);
+      document.getElementById('clearAllBtn')?.addEventListener('click', clearAll);
+
+      // Se outra aba alterar o localStorage, atualiza aqui (sem polling)
+      window.addEventListener('storage', (e) => {
+        if (e.key === STORAGE_KEY) {
+          refreshFromStorage();
+        }
+      });
+
+      renderNotifications();
+    })();
+
+    const UIModal = (() => {
+    const el = document.getElementById('uiModal');
+    const titleEl = document.getElementById('uiModalTitle');
+    const textEl = document.getElementById('uiModalText');
+    const okBtn = document.getElementById('uiModalOk');
+    const cancelBtn = document.getElementById('uiModalCancel');
+
+    function open({ title='Aviso', text='', okText='OK', cancelText='Cancelar', showCancel=false }){
+      titleEl.textContent = title;
+      textEl.textContent = text;
+      okBtn.textContent = okText;
+      cancelBtn.textContent = cancelText;
+      cancelBtn.style.display = showCancel ? 'inline-flex' : 'none';
+      el.classList.add('show');
+      el.setAttribute('aria-hidden','false');
+    }
+    function close(){
+      el.classList.remove('show');
+      el.setAttribute('aria-hidden','true');
+    }
+
+    function alert({ title='Aviso', text='', okText='OK' }){
+      return new Promise(resolve => {
+        open({ title, text, okText, showCancel:false });
+        okBtn.onclick = () => { close(); resolve(true); };
+        cancelBtn.onclick = null;
+      });
+    }
+
+    function confirm({ title='Confirmar', text='', okText='Confirmar', cancelText='Cancelar' }){
+      return new Promise(resolve => {
+        open({ title, text, okText, cancelText, showCancel:true });
+        okBtn.onclick = () => { close(); resolve(true); };
+        cancelBtn.onclick = () => { close(); resolve(false); };
+      });
+    }
+
+    // fechar clicando fora
+    el.addEventListener('click', (e) => { if (e.target === el) close(); });
+
+    return { alert, confirm };
+  })();
     
-    <script>
-        // ==================== FUNÇÕES ====================
-        
-        function goBack() {
-            // Tenta voltar no histórico
-            if (document.referrer && document.referrer !== '') {
-                window.history.back();
-            } else {
-                // Se não tem histórico, vai para index
-                window.location.href = 'index.html';
-            }
-        }
-        
-        function getNotifications() {
-            try {
-                return JSON.parse(localStorage.getItem('notifications') || '[]');
-            } catch (e) {
-                console.error('Erro ao carregar notificações:', e);
-                return [];
-            }
-        }
-        
-        function saveNotifications(notifications) {
-            localStorage.setItem('notifications', JSON.stringify(notifications));
-        }
-        
-        function markAsRead(notificationId) {
-            const notifications = getNotifications();
-            const updated = notifications.map(n => 
-                n.id === notificationId ? {...n, read: true} : n
-            );
-            saveNotifications(updated);
-            renderNotifications();
-        }
-        
-        function deleteNotification(notificationId, event) {
-            event.stopPropagation();
-            
-            if (!confirm('Deletar esta notificação?')) return;
-            
-            const notifications = getNotifications();
-            const filtered = notifications.filter(n => n.id !== notificationId);
-            saveNotifications(filtered);
-            renderNotifications();
-        }
-        
-        function clearAll() {
-            const notifications = getNotifications();
-            
-            if (notifications.length === 0) {
-                alert('Não há notificações para limpar');
-                return;
-            }
-            
-            if (!confirm(`Deletar todas as ${notifications.length} notificações?`)) return;
-            
-            saveNotifications([]);
-            renderNotifications();
-        }
-        
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            const now = new Date();
-            const diff = now - date;
-            
-            // Menos de 1 minuto
-            if (diff < 60000) {
-                return 'Agora';
-            }
-            
-            // Menos de 1 hora
-            if (diff < 3600000) {
-                const minutes = Math.floor(diff / 60000);
-                return `${minutes}m atrás`;
-            }
-            
-            // Menos de 24 horas
-            if (diff < 86400000) {
-                const hours = Math.floor(diff / 3600000);
-                return `${hours}h atrás`;
-            }
-            
-            // Menos de 7 dias
-            if (diff < 604800000) {
-                const days = Math.floor(diff / 86400000);
-                return `${days}d atrás`;
-            }
-            
-            // Mais de 7 dias - mostra data
-            return date.toLocaleDateString('pt-BR', {
-                day: '2-digit',
-                month: '2-digit',
-                year: '2-digit'
-            });
-        }
-        
-        function renderNotifications() {
-            const container = document.getElementById('notificationsList');
-            const notifications = getNotifications();
-            
-            if (notifications.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">🔔</div>
-                        <div class="empty-state-title">Nenhuma notificação</div>
-                        <div class="empty-state-text">Você será notificado aqui quando houver novidades</div>
-                    </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = notifications.map(n => {
-                const isUnread = !n.read;
-                const icon = isUnread ? '🔵' : '⚪';
-                
-                return `
-                    <div class="notification-item ${isUnread ? 'unread' : ''}" 
-                         onclick="markAsRead('${n.id}')">
-                        <div class="notification-icon">${icon}</div>
-                        <div class="notification-content">
-                            <div class="notification-title">${n.title}</div>
-                            <div class="notification-message">${n.message}</div>
-                            <div class="notification-time">${formatDate(n.createdAt)}</div>
-                        </div>
-                        <button class="notification-delete" onclick="deleteNotification('${n.id}', event)">
-                            🗑️
-                        </button>
-                    </div>
-                `;
-            }).join('');
-        }
-        
-        // ==================== INIT ====================
-        
-        // Renderiza ao carregar
-        renderNotifications();
-        
-        // Atualiza a cada 30 segundos (caso tenha novas notificações)
-        setInterval(renderNotifications, 30000);
-    </script>
-    
+  </script>
+
+
 </body>
 </html>

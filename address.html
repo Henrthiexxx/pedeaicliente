@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meus Endereços - Pedra Delivery</title>
+
+  <link rel="stylesheet" href="index.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    body { padding:0; margin:0; min-height:100vh; }
+
+    /* Layout */
+    .addresses-container{
+      min-height:100vh;
+      padding:20px;
+      padding-top:88px;
+      padding-bottom:48px;
+      max-width: 920px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .addresses-back-header{
+      position:fixed; top:0; left:0; right:0;
+      height:64px;
+      background: var(--bg);
+      display:flex; align-items:center; gap:12px;
+      padding: 0 20px;
+      z-index:100;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+    }
+    .addresses-back-btn{
+      width:44px; height:44px;
+      border-radius:12px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 1.05rem;
+      cursor:pointer;
+      transition: all .15s ease;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .addresses-back-btn:hover{ border-color: var(--primary); transform: translateY(-1px); }
+    .addresses-back-btn:active{ transform: translateY(0px); }
+    .addresses-back-title{
+      font-size: .95rem;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text);
+      opacity: .92;
+    }
+
+    /* Cards */
+    .address-card{
+      display:flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,.15);
+    }
+    .address-badge{
+      width: 12px;
+      min-width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      background: var(--primary);
+      margin-top: 6px;
+      box-shadow: 0 0 0 4px rgba(255,255,255,.03);
+    }
+    .address-info{ flex: 1; min-width: 0; }
+
+    .address-label{
+      font-weight: 700;
+      letter-spacing: .3px;
+      margin-bottom: 6px;
+      color: var(--text);
+      font-size: 1rem;
+    }
+    .address-text{
+      color: var(--text-muted);
+      font-size: .9rem;
+      line-height: 1.25rem;
+      margin-bottom: 4px;
+      word-break: break-word;
+    }
+
+    .address-meta-row{
+      display:flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .chip{
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: .82rem;
+      line-height: 1;
+      opacity: .95;
+    }
+    .chip.muted{ color: var(--text-muted); }
+    .chip.primary{
+      border-color: rgba(255,255,255,.08);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
+    }
+
+    .actions-col{
+      display:flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: flex-end;
+    }
+    .icon-btn{
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text);
+      cursor: pointer;
+      transition: all .15s ease;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position: relative;
+    }
+    .icon-btn:hover{ border-color: var(--primary); transform: translateY(-1px); }
+    .icon-btn:active{ transform: translateY(0); }
+
+    /* “sem ícones”: usa texto minimalista */
+    .icon-btn::before{
+      content: "Del";
+      font-size: .78rem;
+      letter-spacing: .6px;
+      text-transform: uppercase;
+      opacity: .9;
+    }
+
+    /* Footer CTA */
+    .cta-row{
+      margin-top: 16px;
+      display:flex;
+      gap: 10px;
+      align-items:center;
+    }
+    .btn-full{ width: 100%; border-radius: 14px; padding: 14px 14px; }
+
+    /* Empty */
+    .empty-state{
+      background: var(--bg-card);
+      border: 1px dashed var(--border);
+      border-radius: 18px;
+      padding: 26px;
+      text-align: center;
+      color: var(--text-muted);
+      box-shadow: 0 8px 20px rgba(0,0,0,.10);
+    }
+    .empty-state-title{
+      color: var(--text);
+      font-weight: 700;
+      margin-bottom: 6px;
+      letter-spacing: .2px;
+    }
+    .empty-state-text{ font-size: .92rem; line-height: 1.35rem; }
+
+    /* Modal refinements */
+    .modal-content{
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 14px 40px rgba(0,0,0,.35);
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+    }
+    .modal-header{
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,.02);
+    }
+    .modal-title{
+      font-weight: 700;
+      letter-spacing: .6px;
+      text-transform: uppercase;
+      font-size: .9rem;
+    }
+    .modal-close{
+      width: 42px; height: 42px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text);
+      cursor: pointer;
+    }
+    .modal-close:hover{ border-color: var(--primary); }
+
+    /* Location box (sem emojis) */
+    .location-box{
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      background: rgba(255,255,255,.02);
+      margin: 14px 0 16px;
+    }
+    .location-status{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      color: var(--text-muted);
+      font-size: .9rem;
+      line-height: 1.2rem;
+    }
+    .status-dot{
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--border);
+      box-shadow: 0 0 0 4px rgba(255,255,255,.02);
+    }
+    .location-status.success{ color: var(--text); }
+    .location-status.success .status-dot{ background: #2ecc71; }
+    .location-status.error{ color: var(--danger); }
+    .location-status.error .status-dot{ background: var(--danger); }
+
+    /* Map Picker */
+    #pickerCoords{
+      text-align:center;
+      margin-bottom: 12px;
+      color: var(--text-muted);
+      font-size: .85rem;
+      letter-spacing: .2px;
+    }
+
+    /* Small screens */
+    @media (max-width: 520px){
+      .addresses-container{ padding-left: 14px; padding-right: 14px; }
+      .address-card{ padding: 12px; }
+      .actions-col{ gap: 6px; }
+      .icon-btn{ width: 42px; height: 42px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="addresses-back-header">
+    <button class="addresses-back-btn" onclick="goBack()" aria-label="Voltar">←</button>
+    <div class="addresses-back-title">Meus Endereços</div>
+  </div>
+
+  <div class="addresses-container">
+    <div id="addressesList"></div>
+
+    <div class="cta-row">
+      <button class="btn btn-primary btn-full" onclick="showAddAddressModal()">
+        Adicionar endereço
+      </button>
+    </div>
+  </div>
+
+  <!-- Add Address Modal -->
+  <div class="modal" id="addressModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">Novo Endereço</div>
+        <button class="modal-close" onclick="closeModal()" aria-label="Fechar">×</button>
+      </div>
+      <div class="modal-body">
+        <form onsubmit="saveAddress(event)">
+          <div class="input-group">
+            <label>Apelido</label>
+            <input type="text" class="input" id="addressLabel" placeholder="Casa" required />
+          </div>
+
+          <div class="input-group">
+            <label>Rua</label>
+            <input type="text" class="input" id="addressStreet" placeholder="Nome da rua" required />
+          </div>
+
+          <div class="input-group">
+            <label>Número</label>
+            <input type="text" class="input" id="addressNumber" placeholder="123" required />
+          </div>
+
+          <div class="input-group">
+            <label>Complemento</label>
+            <input type="text" class="input" id="addressComplement" placeholder="Apto, Bloco..." />
+          </div>
+
+          <div class="input-group">
+            <label>Bairro</label>
+            <select class="input" id="addressNeighborhood" required>
+              <option value="">Selecione o bairro</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label>Ponto de referência</label>
+            <input type="text" class="input" id="addressReference" placeholder="Próximo a..." />
+          </div>
+
+          <div class="location-box" id="addressLocationBox">
+            <div class="location-status" id="addressLocationStatus">
+              <span class="status-dot" aria-hidden="true"></span>
+              <span>Localização não capturada</span>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-top:12px;">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="captureLocation()" style="flex:1;">
+                Capturar via GPS
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="openMapPicker()" style="flex:1;">
+                Selecionar no mapa
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Salvar endereço</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",
+      authDomain: "pedrad-814d0.firebaseapp.com",
+      projectId: "pedrad-814d0",
+      storageBucket: "pedrad-814d0.firebasestorage.app",
+      messagingSenderId: "293587190550",
+      appId: "1:293587190550:web:80c9399f82847c80e20637"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let currentUser = null;
+    let addresses = [];
+    let deliveryFees = [];
+    let capturedLocation = null;
+
+    // Auth Guard
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        currentUser = user;
+        await loadDeliveryFees();
+        await loadAddresses();
+        populateNeighborhoodSelect();
+        renderAddresses();
+      } else {
+        window.location.href = "index.html";
+      }
+    });
+
+    // Load Delivery Fees
+    async function loadDeliveryFees() {
+      try {
+        const snapshot = await db.collection("deliveryFees").where("active", "==", true).get();
+        deliveryFees = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        deliveryFees.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+      } catch (err) {
+        console.error("Error loading fees:", err);
+      }
+    }
+
+    // Load Addresses
+    async function loadAddresses() {
+      if (!currentUser) return;
+
+      try {
+        const snapshot = await db.collection("users").doc(currentUser.uid).collection("addresses").get();
+        addresses = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      } catch (err) {
+        console.error("Error loading addresses:", err);
+      }
+    }
+
+    // Render Addresses
+    function renderAddresses() {
+      const container = document.getElementById("addressesList");
+      if (!container) return;
+
+      if (addresses.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-title">Nenhum endereço cadastrado</div>
+            <div class="empty-state-text">Adicione um endereço para habilitar entregas e calcular a taxa automaticamente.</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = addresses
+        .map((addr) => {
+          const fee = getDeliveryFee(addr.neighborhood);
+          const hasGPS = !!addr.location;
+
+          return `
+            <div class="address-card">
+              <div class="address-badge" aria-hidden="true"></div>
+
+              <div class="address-info">
+                <div class="address-label">${escapeHtml(addr.label || "")}</div>
+
+                <div class="address-text">${escapeHtml(addr.street || "")}, ${escapeHtml(addr.number || "")}</div>
+                ${addr.complement ? `<div class="address-text">${escapeHtml(addr.complement)}</div>` : ""}
+                <div class="address-text">${escapeHtml(addr.neighborhood || "")}</div>
+                ${addr.reference ? `<div class="address-text">Ref: ${escapeHtml(addr.reference)}</div>` : ""}
+
+                <div class="address-meta-row">
+                  <span class="chip primary">Taxa: ${formatCurrency(fee)}</span>
+                  <span class="chip muted">${hasGPS ? "Localização salva" : "Sem localização"}</span>
+                </div>
+              </div>
+
+              <div class="actions-col">
+                <button class="icon-btn" onclick="deleteAddress('${addr.id}')" aria-label="Excluir endereço"></button>
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    // Get Delivery Fee
+    function getDeliveryFee(neighborhood) {
+      if (!neighborhood) return 0;
+      const fee = deliveryFees.find((f) => (f.name || "").toLowerCase() === neighborhood.toLowerCase());
+      return fee?.fee || 0;
+    }
+
+    // Populate Neighborhood Select
+    function populateNeighborhoodSelect() {
+      const select = document.getElementById("addressNeighborhood");
+      if (!select) return;
+
+      select.innerHTML =
+        '<option value="">Selecione o bairro</option>' +
+        deliveryFees
+          .map((f) => `<option value="${escapeAttr(f.name)}">${escapeHtml(f.name)} - ${formatCurrency(f.fee)}</option>`)
+          .join("");
+    }
+
+    // Show Add Address Modal
+    function showAddAddressModal() {
+      const fields = ["addressLabel", "addressStreet", "addressNumber", "addressComplement", "addressNeighborhood", "addressReference"];
+      fields.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.value = "";
+      });
+
+      capturedLocation = null;
+
+      const status = document.getElementById("addressLocationStatus");
+      if (status) {
+        status.innerHTML = `<span class="status-dot" aria-hidden="true"></span><span>Localização não capturada</span>`;
+        status.className = "location-status";
+      }
+
+      document.getElementById("addressModal").classList.add("active");
+    }
+
+    // Close Modal
+    function closeModal() {
+      document.getElementById("addressModal").classList.remove("active");
+    }
+
+    // Capture Location
+    function captureLocation() {
+      const status = document.getElementById("addressLocationStatus");
+
+      if (!navigator.geolocation) {
+        if (status) {
+          status.innerHTML = '<span class="status-dot" aria-hidden="true"></span><span>GPS não disponível</span>';
+          status.className = "location-status error";
+        }
+        showToast("GPS não disponível neste dispositivo");
+        return;
+      }
+
+      if (status) {
+        status.innerHTML = '<span class="status-dot" aria-hidden="true"></span><span>Obtendo localização...</span>';
+        status.className = "location-status";
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          capturedLocation = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+            accuracy: position.coords.accuracy
+          };
+
+          if (status) {
+            status.innerHTML = `<span class="status-dot" aria-hidden="true"></span><span>Localização capturada (precisão: ${Math.round(
+              position.coords.accuracy
+            )}m)</span>`;
+            status.className = "location-status success";
+          }
+
+          showToast("Localização capturada");
+        },
+        (error) => {
+          let msg = "Erro ao obter localização";
+          if (error.code === error.PERMISSION_DENIED) msg = "Permissão negada";
+          if (error.code === error.POSITION_UNAVAILABLE) msg = "Localização indisponível";
+          if (error.code === error.TIMEOUT) msg = "Tempo esgotado";
+
+          if (status) {
+            status.innerHTML = `<span class="status-dot" aria-hidden="true"></span><span>${msg}</span>`;
+            status.className = "location-status error";
+          }
+
+          showToast(msg);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 0
+        }
+      );
+    }
+
+    // Open Map Picker
+    function openMapPicker() {
+      const modal = document.createElement("div");
+      modal.id = "mapPickerModal";
+      modal.className = "modal active";
+      modal.innerHTML = `
+        <div class="modal-content" style="height:90vh;max-height:90vh;display:flex;flex-direction:column;">
+          <div class="modal-header">
+            <div class="modal-title">Selecionar localização</div>
+            <button class="modal-close" onclick="closeMapPicker()" aria-label="Fechar">×</button>
+          </div>
+          <div id="pickerMap" style="flex:1;min-height:300px;background:var(--bg-input);"></div>
+          <div style="padding:16px;">
+            <div id="pickerCoords">Toque no mapa para selecionar</div>
+            <button class="btn btn-primary" id="confirmLocationBtn" disabled onclick="confirmPickedLocation()">
+              Confirmar
+            </button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      setTimeout(() => {
+        const map = L.map("pickerMap").setView([-15.8267, -47.9218], 13);
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: "© OpenStreetMap"
+        }).addTo(map);
+
+        let marker = null;
+        window._pickedLocation = null;
+
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => map.setView([pos.coords.latitude, pos.coords.longitude], 16),
+            () => {},
+            { timeout: 5000 }
+          );
+        }
+
+        map.on("click", (e) => {
+          if (marker) map.removeLayer(marker);
+
+          marker = L.marker(e.latlng).addTo(map);
+          window._pickedLocation = { lat: e.latlng.lat, lng: e.latlng.lng };
+
+          const coordsEl = document.getElementById("pickerCoords");
+          const confirmBtn = document.getElementById("confirmLocationBtn");
+
+          if (coordsEl) coordsEl.textContent = `${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`;
+          if (confirmBtn) confirmBtn.disabled = false;
+        });
+      }, 100);
+    }
+
+    function closeMapPicker() {
+      document.getElementById("mapPickerModal")?.remove();
+    }
+
+    function confirmPickedLocation() {
+      if (!window._pickedLocation) return;
+
+      capturedLocation = { ...window._pickedLocation, accuracy: 0, manual: true };
+
+      const status = document.getElementById("addressLocationStatus");
+      if (status) {
+        status.innerHTML = `<span class="status-dot" aria-hidden="true"></span><span>Localização selecionada</span>`;
+        status.className = "location-status success";
+      }
+
+      closeMapPicker();
+      showToast("Localização definida");
+    }
+
+    // Save Address
+    async function saveAddress(e) {
+      e.preventDefault();
+      if (!currentUser) return;
+
+      const neighborhood = document.getElementById("addressNeighborhood")?.value;
+
+      if (!neighborhood) {
+        showToast("Selecione um bairro");
+        return;
+      }
+
+      const address = {
+        label: document.getElementById("addressLabel")?.value || "",
+        street: document.getElementById("addressStreet")?.value || "",
+        number: document.getElementById("addressNumber")?.value || "",
+        complement: document.getElementById("addressComplement")?.value || "",
+        neighborhood: neighborhood,
+        reference: document.getElementById("addressReference")?.value || "",
+        location: capturedLocation,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      try {
+        const docRef = await db.collection("users").doc(currentUser.uid).collection("addresses").add(address);
+
+        address.id = docRef.id;
+        addresses.push(address);
+
+        closeModal();
+        renderAddresses();
+        showToast("Endereço salvo com sucesso");
+      } catch (err) {
+        console.error("Error saving address:", err);
+        showToast("Erro ao salvar endereço");
+      }
+    }
+
+    // Delete Address
+    async function deleteAddress(addressId) {
+      if (!confirm("Deseja excluir este endereço?")) return;
+      if (!currentUser) return;
+
+      try {
+        await db.collection("users").doc(currentUser.uid).collection("addresses").doc(addressId).delete();
+
+        addresses = addresses.filter((a) => a.id !== addressId);
+        renderAddresses();
+        showToast("Endereço excluído");
+      } catch (err) {
+        console.error("Error deleting address:", err);
+        showToast("Erro ao excluir endereço");
+      }
+    }
+
+    // Go Back
+    function goBack() {
+      if (document.referrer.includes(window.location.host)) window.history.back();
+      else window.location.href = "profile.html";
+    }
+
+    // Format Currency
+    function formatCurrency(value) {
+      return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value || 0);
+    }
+
+    // Toast
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      if (!toast) return;
+      toast.textContent = message;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 3000);
+    }
+
+    // Modal click outside
+    document.addEventListener("click", (e) => {
+      if (e.target.classList.contains("modal")) e.target.classList.remove("active");
+    });
+
+    // Basic escape helpers (mantém lógica, evita injeção em render)
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+    function escapeAttr(str){ return escapeHtml(str).replaceAll("`","&#096;"); }
+  </script>
+</body>
+</html>

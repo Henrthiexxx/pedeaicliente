@@ -224,7 +224,12 @@ body.auth-ready .auth-loading {
                         <span id="cartTotal">R$ 0,00</span>
                     </div>
                 </div>
-                <button class="btn btn-primary" onclick="showCheckout()" style="margin-top: 16px;">
+                <!-- TROQUE O onclick DO BOTÃO "Finalizar pedido" (no Cart Page) -->
+
+<button class="btn btn-primary" onclick="window.location.href='checkout.html'" style="margin-top: 16px;">
+  Finalizar pedido
+</button>
+
                     Finalizar pedido
                 </button>
             </div>
@@ -236,91 +241,33 @@ body.auth-ready .auth-loading {
             <div id="ordersList"></div>
         </div>
         
-        <!-- Profile Page -->
-        <div id="profilePage" class="page">
-            <div class="profile-header">
-                <div id="profileAvatarContainer"></div>
-                <div class="profile-name" id="profileName">-</div>
-                <div class="profile-email" id="profileEmail">-</div>
-            </div>
-            
-            <div class="profile-menu">
-                <!-- BOTÃO DE AVALIAÇÕES (COM !important PARA GARANTIR) -->
-                <div class="profile-menu-item" 
-                     onclick="window.location.href='pending-reviews.html'" 
-                     style="display:flex !important;align-items:center;gap:12px;padding:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;cursor:pointer;margin-bottom:12px;opacity:1 !important;visibility:visible !important;">
-                    
-                    <div style="font-size:1.3rem;width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border-radius:10px;">
-                        ⭐
-                    </div>
-                    
-                    <div style="flex:1;">
-                        <div style="font-weight:600;font-size:0.95rem;margin-bottom:2px;">
-                            Avaliações Pendentes
-                        </div>
-                        <div style="font-size:0.75rem;color:var(--text-muted);">
-                            Avalie seus pedidos entregues
-                        </div>
-                    </div>
-                    
-                    <div id="pendingReviewsBadge" style="min-width:24px;height:24px;background:var(--primary);color:#000;border-radius:12px;font-size:0.75rem;font-weight:600;display:none;align-items:center;justify-content:center;padding:0 8px;">
-                    </div>
-                    
-                    <div style="font-size:1.2rem;color:var(--text-muted);">›</div>
-                </div>
-                
-                <!-- OUTROS BOTÕES DO MENU -->
-                <div class="profile-menu-item" onclick="showPage('addresses')">
-                    <div class="profile-menu-icon">◎</div>
-                    <div class="profile-menu-text">Meus endereços</div>
-                    <div class="profile-menu-arrow">›</div>
-                </div>
-                
-                <div class="profile-menu-item" onclick="showPage('orders')">
-                    <div class="profile-menu-icon">≡</div>
-                    <div class="profile-menu-text">Histórico de pedidos</div>
-                    <div class="profile-menu-arrow">›</div>
-                </div>
-                
-                <div class="profile-menu-item" onclick="handleLogout()">
-                    <div class="profile-menu-icon">→</div>
-                    <div class="profile-menu-text" style="color: var(--text-muted);">Sair</div>
-                    <div class="profile-menu-arrow">›</div>
-                </div>
-            </div>
-        </div>
+
         
-        <!-- Addresses Page -->
-        <div id="addressesPage" class="page">
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
-                <span style="font-size: 1.3rem; cursor: pointer;" onclick="showPage('profile')">←</span>
-                <h2 style="font-weight: 400; letter-spacing: 1px;">Meus Endereços</h2>
-            </div>
-            <div id="addressesList"></div>
-            <button class="btn btn-primary" onclick="showAddAddressModal()" style="margin-top: 16px;">
-                + Adicionar endereço
-            </button>
-        </div>
+ <!-- Meus Endereços -->
+<div class="profile-menu-item" onclick="window.location.href='address.html'">
+    <div class="profile-menu-icon">📍</div>
+    <div class="profile-menu-text">Meus endereços</div>
+    <div class="profile-menu-arrow">›</div>
+</div>
         
         <!-- Tracking Page -->
         <div id="trackingPage" class="page"></div>
         
-        <!-- Navigation -->
-        <nav class="nav">
-            <div class="nav-item active" onclick="showPage('home')">
-                <span>⌂</span>
-                Início
-            </div>
-            <div class="nav-item" onclick="showPage('orders')">
-                <span>≡</span>
-                Pedidos
-            </div>
-            <div class="nav-item" onclick="showPage('profile')">
-                <span>○</span>
-                Perfil
-            </div>
-        </nav>
+<!-- Navigation -->
+<nav class="nav">
+    <div class="nav-item active" onclick="showPage('home')">
+        <span>⌂</span>
+        Início
     </div>
+    <div class="nav-item" onclick="window.location.href='orders.html'">
+        <span>≡</span>
+        Pedidos
+    </div>
+    <div class="nav-item" onclick="window.location.href='profile.html'">
+        <span>○</span>
+        Perfil
+    </div>
+</nav>
     
     <!-- Product Modal -->
     <div class="modal" id="productModal">
@@ -495,6 +442,7 @@ body.auth-ready .auth-loading {
             <div class="modal-header">
                 <div class="modal-title">Detalhes do Pedido</div>
                 <button class="modal-close" onclick="closeModal('orderModal')">×</button>
+                
             </div>
             <div class="modal-body" id="orderDetailContent"></div>
         </div>
@@ -576,6 +524,20 @@ body.auth-ready .auth-loading {
         console.log('✅ Sistema de avaliações inicializado');
     });
     </script>
+    <!-- OPCIONAL: se existir algum lugar chamando showPage('orders'), crie esse fallback (cole em um <script> após index.js) -->
+<script>
+  (function(){
+    const _showPage = window.showPage;
+    window.showPage = function(pageId){
+      if (pageId === 'orders') {
+        window.location.href = 'orders.html';
+        return;
+      }
+      if (typeof _showPage === 'function') return _showPage(pageId);
+    };
+  })();
+</script>
+
     <script src="modules/polish.js"></script>
     
 </body>

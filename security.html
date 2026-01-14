@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Segurança - Pedrad</title>
+
+  <style>
+    :root{
+      --bg:#000; --bg-card:#0a0a0a; --bg-input:#141414;
+      --text:#fff; --text-muted:#8a8a8a; --border:#262626;
+      --primary:#f6c343; --danger:#ff4d4d; --success:#38d17c; --warning:#ffcc66;
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;}
+    .page{max-width:920px;margin:0 auto;min-height:100vh;padding:92px 14px 22px;}
+    .header{
+      position:fixed;left:0;right:0;top:0;height:64px;background:rgba(0,0,0,.78);
+      border-bottom:1px solid var(--border);backdrop-filter:blur(12px);
+      display:flex;align-items:center;gap:12px;padding:0 14px;z-index:9999;
+    }
+    .back-btn{
+      width:44px;height:44px;border-radius:14px;background:var(--bg-input);
+      border:1px solid var(--border);color:var(--text);cursor:pointer;
+      display:flex;align-items:center;justify-content:center;font-size:1.05rem;
+      transition:.15s; user-select:none;
+    }
+    .back-btn:hover{border-color:var(--primary);transform:translateY(-1px)}
+    .back-btn:active{transform:translateY(0)}
+    .title{
+      font-size:.95rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;
+      opacity:.92;flex:1;text-align:center;pointer-events:none;
+    }
+
+    .card{
+      background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+      box-shadow:0 14px 40px rgba(0,0,0,.25);padding:16px;margin-bottom:12px;
+    }
+    .section-title{
+      font-size:.78rem;letter-spacing:1.6px;text-transform:uppercase;
+      color:var(--text-muted);margin:0 0 12px;
+    }
+
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width:640px){ .grid{grid-template-columns:1fr;} }
+
+    .pill{
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.02);
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:.78rem;
+      color:var(--text-muted);
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      white-space:nowrap;
+    }
+
+    .item{
+      border:1px solid rgba(255,255,255,.06);
+      background:rgba(255,255,255,.02);
+      border-radius:16px;padding:14px;
+    }
+    .item .k{color:var(--text-muted);font-size:.78rem;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:6px}
+    .item .v{font-weight:900;font-size:.95rem;overflow-wrap:anywhere}
+
+    .list{display:flex;flex-direction:column;gap:10px}
+    .row{
+      display:flex;align-items:flex-start;gap:10px;
+      padding:12px;border:1px solid rgba(255,255,255,.06);
+      border-radius:16px;background:rgba(255,255,255,.02);
+    }
+    .tag{
+      width:42px;height:42px;border-radius:14px;border:1px solid var(--border);
+      background:var(--bg-input);display:flex;align-items:center;justify-content:center;
+      font-weight:900;letter-spacing:.8px;text-transform:uppercase;color:var(--text);
+      flex:0 0 auto;
+    }
+    .row h3{margin:0 0 4px;font-size:.95rem}
+    .row p{margin:0;color:var(--text-muted);font-size:.84rem;line-height:1.35}
+
+    .tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .btn{
+      height:42px;padding:0 14px;border-radius:14px;border:1px solid rgba(255,255,255,.08);
+      background:var(--bg-input);color:var(--text);font-weight:900;cursor:pointer;
+      transition:.15s; display:inline-flex; align-items:center; justify-content:center; gap:10px;
+    }
+    .btn:hover{border-color:var(--primary);transform:translateY(-1px)}
+    .btn:active{transform:translateY(0)}
+    .btn.primary{background:var(--primary);color:#000;border-color:transparent}
+    .btn.danger:hover{border-color:var(--danger);color:var(--danger)}
+    .btn.warning:hover{border-color:var(--warning);color:var(--warning)}
+
+    code{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size:.83rem;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.06);
+      padding:2px 6px;border-radius:10px;color:var(--text);
+      overflow-wrap:anywhere;
+    }
+
+    /* Modal HTML */
+    .modal-ui{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+      background:rgba(0,0,0,.55);z-index:99999;padding:16px;}
+    .modal-ui.show{display:flex;}
+    .modal-ui-card{width:min(560px,100%);background:var(--bg-card);border:1px solid var(--border);
+      border-radius:18px;box-shadow:0 18px 60px rgba(0,0,0,.35);padding:16px;}
+    .modal-ui-title{font-weight:900;letter-spacing:.4px;margin-bottom:8px}
+    .modal-ui-text{color:var(--text-muted);line-height:1.45;margin-bottom:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+    .modal-ui-actions{display:flex;gap:10px;justify-content:flex-end}
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <button class="back-btn" id="backBtn" type="button" aria-label="Voltar">←</button>
+    <div class="title">Segurança</div>
+    <div style="width:44px;height:44px;"></div>
+  </div>
+
+  <main class="page">
+    <section class="card">
+      <div class="section-title">Status do dispositivo</div>
+      <div class="grid">
+        <div class="item">
+          <div class="k">Ambiente</div>
+          <div class="v" id="envText">—</div>
+        </div>
+        <div class="item">
+          <div class="k">Conexão</div>
+          <div class="v" id="onlineText">—</div>
+        </div>
+        <div class="item">
+          <div class="k">Armazenamento</div>
+          <div class="v" id="storageText">—</div>
+        </div>
+        <div class="item">
+          <div class="k">HTTPS</div>
+          <div class="v" id="httpsText">—</div>
+        </div>
+      </div>
+
+      <div class="tools">
+        <span class="pill" id="pillCookies">Cookies: —</span>
+        <span class="pill" id="pillServiceWorker">Service Worker: —</span>
+        <span class="pill" id="pillStandalone">Standalone: —</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">Boas práticas (usuário)</div>
+      <div class="list">
+        <div class="row">
+          <div class="tag">PIN</div>
+          <div>
+            <h3>Bloqueio do aparelho</h3>
+            <p>Ative senha/PIN/biometria para proteger pedidos e endereços.</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="tag">PWD</div>
+          <div>
+            <h3>Senha forte</h3>
+            <p>Evite reutilizar senha. Prefira frases longas e únicas.</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="tag">PHI</div>
+          <div>
+            <h3>Golpes</h3>
+            <p>Não compartilhe códigos, links suspeitos ou dados de pagamento fora do app.</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="tag">LOG</div>
+          <div>
+            <h3>Sair em aparelhos compartilhados</h3>
+            <p>Se estiver usando computador de terceiros, finalize a sessão ao sair.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">Dados locais (cache)</div>
+      <p style="margin:0 0 10px;color:var(--text-muted);font-size:.84rem;line-height:1.4">
+        O app pode guardar dados locais para ficar mais rápido (ex.: notificações, carrinho, cache de pedidos).
+        Isso fica no seu dispositivo. Você pode limpar quando quiser.
+      </p>
+
+      <div class="grid">
+        <div class="item">
+          <div class="k">Chaves detectadas</div>
+          <div class="v" id="keysText">—</div>
+        </div>
+        <div class="item">
+          <div class="k">Tamanho (estimado)</div>
+          <div class="v" id="sizeText">—</div>
+        </div>
+      </div>
+
+      <div class="tools">
+        <button class="btn" id="btnListKeys" type="button">Ver detalhes</button>
+        <button class="btn warning" id="btnClearSensitive" type="button">Limpar notificações/carrinho</button>
+        <button class="btn danger" id="btnClearAll" type="button">Limpar tudo</button>
+      </div>
+
+      <p style="margin:12px 0 0;color:var(--text-muted);font-size:.84rem;line-height:1.4">
+        Dica: se status de pedido “trava”, limpar apenas o cache do módulo de pedidos (se existir) costuma resolver,
+        sem apagar sua conta.
+      </p>
+    </section>
+
+    <section class="card">
+      <div class="section-title">Integridade (para dev)</div>
+      <div class="list">
+        <div class="row">
+          <div class="tag">CSP</div>
+          <div>
+            <h3>Content Security Policy</h3>
+            <p>Use CSP para reduzir XSS. Ex.: <code>default-src 'self';</code> + domínios necessários.</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="tag">TLS</div>
+          <div>
+            <h3>HTTPS obrigatório</h3>
+            <p>Evite enviar tokens/sessão em HTTP. Em produção, preferir sempre HTTPS.</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="tag">TOK</div>
+          <div>
+            <h3>Tokens</h3>
+            <p>Não grave tokens sensíveis em localStorage. Prefira mecanismos do SDK/autenticação.</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="tag">LOG</div>
+          <div>
+            <h3>Logs</h3>
+            <p>Em produção, evite logar dados pessoais (e-mails, endereços, etc.).</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal -->
+  <div id="uiModal" class="modal-ui" aria-hidden="true">
+    <div class="modal-ui-card" role="dialog" aria-modal="true">
+      <div class="modal-ui-title" id="uiModalTitle">Aviso</div>
+      <div class="modal-ui-text" id="uiModalText"></div>
+      <div class="modal-ui-actions">
+        <button class="btn" id="uiModalCancel" type="button" style="display:none">Cancelar</button>
+        <button class="btn primary" id="uiModalOk" type="button">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== Modal HTML =====
+    const UIModal = (() => {
+      const el = document.getElementById('uiModal');
+      const titleEl = document.getElementById('uiModalTitle');
+      const textEl = document.getElementById('uiModalText');
+      const okBtn = document.getElementById('uiModalOk');
+      const cancelBtn = document.getElementById('uiModalCancel');
+
+      function open({ title='Aviso', text='', okText='OK', cancelText='Cancelar', showCancel=false }){
+        titleEl.textContent = title;
+        textEl.textContent = text;
+        okBtn.textContent = okText;
+        cancelBtn.textContent = cancelText;
+        cancelBtn.style.display = showCancel ? 'inline-flex' : 'none';
+        el.classList.add('show');
+        el.setAttribute('aria-hidden','false');
+      }
+      function close(){
+        el.classList.remove('show');
+        el.setAttribute('aria-hidden','true');
+      }
+
+      function alert({ title='Aviso', text='', okText='OK' }){
+        return new Promise(resolve => {
+          open({ title, text, okText, showCancel:false });
+          okBtn.onclick = () => { close(); resolve(true); };
+          cancelBtn.onclick = null;
+        });
+      }
+
+      function confirm({ title='Confirmar', text='', okText='Confirmar', cancelText='Cancelar' }){
+        return new Promise(resolve => {
+          open({ title, text, okText, cancelText, showCancel:true });
+          okBtn.onclick = () => { close(); resolve(true); };
+          cancelBtn.onclick = () => { close(); resolve(false); };
+        });
+      }
+
+      el?.addEventListener('click', (e) => { if (e.target === el) close(); });
+      return { alert, confirm };
+    })();
+
+    // ===== Voltar robusto =====
+    document.getElementById('backBtn')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (window.history.length > 1) window.history.back();
+      else window.location.href = 'index.html';
+    }, true);
+
+    function detectEnv(){
+      const ua = navigator.userAgent || '';
+      const isStandalone = window.matchMedia?.('(display-mode: standalone)')?.matches || (navigator.standalone === true);
+      if (isStandalone) return 'PWA (standalone)';
+      if (/Android/i.test(ua)) return 'Web (Android)';
+      if (/iPhone|iPad|iPod/i.test(ua)) return 'Web (iOS)';
+      return 'Web (Desktop)';
+    }
+
+    function setText(id, value){ const el = document.getElementById(id); if (el) el.textContent = value; }
+
+    // ===== Status do dispositivo =====
+    setText('envText', detectEnv());
+    setText('onlineText', navigator.onLine ? 'Online' : 'Offline');
+    setText('httpsText', location.protocol === 'https:' ? 'Sim' : 'Não');
+
+    // Cookies / SW / Standalone
+    document.getElementById('pillCookies').textContent = 'Cookies: ' + (navigator.cookieEnabled ? 'Ativo' : 'Bloqueado');
+    document.getElementById('pillServiceWorker').textContent = 'Service Worker: ' + ('serviceWorker' in navigator ? 'Suportado' : 'Não');
+    const standalone = window.matchMedia?.('(display-mode: standalone)')?.matches || (navigator.standalone === true);
+    document.getElementById('pillStandalone').textContent = 'Standalone: ' + (standalone ? 'Sim' : 'Não');
+
+    // Storage
+    setText('storageText', (function(){
+      try { return (typeof localStorage !== 'undefined') ? 'localStorage OK' : 'Indisponível'; }
+      catch(e){ return 'Bloqueado'; }
+    })());
+
+    // ===== Dados locais =====
+    function listLocalKeys(){
+      try{
+        return Object.keys(localStorage || {}).sort();
+      }catch(e){
+        return [];
+      }
+    }
+
+    function estimateLocalSize(){
+      try{
+        let bytes = 0;
+        for (const k of Object.keys(localStorage)){
+          const v = localStorage.getItem(k) || '';
+          bytes += (k.length + v.length) * 2; // aprox UTF-16
+        }
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+        return (bytes/(1024*1024)).toFixed(2) + ' MB';
+      }catch(e){
+        return '—';
+      }
+    }
+
+    function refreshLocalInfo(){
+      const keys = listLocalKeys();
+      setText('keysText', keys.length ? (keys.length + ' chaves') : 'Nenhuma');
+      setText('sizeText', estimateLocalSize());
+    }
+
+    refreshLocalInfo();
+
+    // ===== Botões =====
+    document.getElementById('btnListKeys')?.addEventListener('click', async () => {
+      const keys = listLocalKeys();
+      const preview = keys.slice(0, 60).map(k => '• ' + k).join('\n');
+      await UIModal.alert({
+        title: 'Chaves no dispositivo',
+        text: keys.length ? (preview + (keys.length > 60 ? `\n… +${keys.length-60} chaves` : '')) : 'Nenhuma chave encontrada.'
+      });
+    });
+
+    document.getElementById('btnClearSensitive')?.addEventListener('click', async () => {
+      const ok = await UIModal.confirm({
+        title: 'Limpar dados locais',
+        text: 'Remover notificações e carrinho deste dispositivo?',
+        okText: 'Limpar',
+        cancelText: 'Cancelar'
+      });
+      if (!ok) return;
+
+      const keysToRemove = [
+        'notifications',
+        'cart',
+        'orders_cache',
+        'orders_cache_meta'
+      ];
+
+      try{
+        keysToRemove.forEach(k => localStorage.removeItem(k));
+        // carrinho por usuário (cart_<uid>)
+        Object.keys(localStorage).forEach(k => { if (k.startsWith('cart_')) localStorage.removeItem(k); });
+      }catch(e){}
+
+      refreshLocalInfo();
+      await UIModal.alert({ title:'Pronto', text:'Dados locais removidos.' });
+    });
+
+    document.getElementById('btnClearAll')?.addEventListener('click', async () => {
+      const ok = await UIModal.confirm({
+        title: 'Limpar tudo',
+        text: 'Isso remove TODOS os dados locais deste app no dispositivo. Continuar?',
+        okText: 'Limpar tudo',
+        cancelText: 'Cancelar'
+      });
+      if (!ok) return;
+
+      try { localStorage.clear(); } catch(e){}
+      refreshLocalInfo();
+      await UIModal.alert({ title:'Concluído', text:'Armazenamento local foi limpo.' });
+    });
+
+    // Reage a online/offline
+    window.addEventListener('online', () => setText('onlineText','Online'));
+    window.addEventListener('offline', () => setText('onlineText','Offline'));
+  </script>
+</body>
+</html>

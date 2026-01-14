@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sobre - Pedrad</title>
+
+  <style>
+    :root{
+      --bg:#000; --bg-card:#0a0a0a; --bg-input:#141414;
+      --text:#fff; --text-muted:#8a8a8a; --border:#262626;
+      --primary:#f6c343; --danger:#ff4d4d; --success:#38d17c;
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;}
+    .page{max-width:920px;margin:0 auto;min-height:100vh;padding:92px 14px 22px;}
+    .header{
+      position:fixed;left:0;right:0;top:0;height:64px;background:rgba(0,0,0,.78);
+      border-bottom:1px solid var(--border);backdrop-filter:blur(12px);
+      display:flex;align-items:center;gap:12px;padding:0 14px;z-index:9999;
+    }
+    .back-btn{
+      width:44px;height:44px;border-radius:14px;background:var(--bg-input);
+      border:1px solid var(--border);color:var(--text);cursor:pointer;
+      display:flex;align-items:center;justify-content:center;font-size:1.05rem;
+      transition:.15s; user-select:none;
+    }
+    .back-btn:hover{border-color:var(--primary);transform:translateY(-1px)}
+    .back-btn:active{transform:translateY(0)}
+    .title{
+      font-size:.95rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;
+      opacity:.92;flex:1;text-align:center;pointer-events:none;
+    }
+
+    .card{
+      background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+      box-shadow:0 14px 40px rgba(0,0,0,.25);padding:16px;margin-bottom:12px;
+    }
+
+    .brand{
+      display:flex;gap:14px;align-items:center;
+    }
+    .logo{
+      width:56px;height:56px;border-radius:18px;background:var(--bg-input);
+      border:1px solid var(--border);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:900;letter-spacing:1px;color:var(--primary);
+    }
+    .brand h1{margin:0;font-size:1.1rem}
+    .brand p{margin:6px 0 0;color:var(--text-muted);font-size:.85rem;line-height:1.35}
+
+    .grid{
+      display:grid;grid-template-columns:1fr 1fr;gap:12px;
+    }
+    @media (max-width:640px){ .grid{grid-template-columns:1fr;} }
+
+    .item{
+      border:1px solid rgba(255,255,255,.06);
+      background:rgba(255,255,255,.02);
+      border-radius:16px;padding:14px;
+    }
+    .item .k{color:var(--text-muted);font-size:.78rem;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:6px}
+    .item .v{font-weight:900;font-size:.95rem;overflow-wrap:anywhere}
+
+    .section-title{
+      font-size:.78rem;letter-spacing:1.6px;text-transform:uppercase;
+      color:var(--text-muted);margin:4px 0 12px;
+    }
+
+    .list{display:flex;flex-direction:column;gap:10px}
+    .row{
+      display:flex;align-items:flex-start;gap:10px;
+      padding:12px;border:1px solid rgba(255,255,255,.06);
+      border-radius:16px;background:rgba(255,255,255,.02);
+    }
+    .tag{
+      width:42px;height:42px;border-radius:14px;border:1px solid var(--border);
+      background:var(--bg-input);display:flex;align-items:center;justify-content:center;
+      font-weight:900;letter-spacing:.8px;text-transform:uppercase;color:var(--text);
+      flex:0 0 auto;
+    }
+    .row h3{margin:0 0 4px;font-size:.95rem}
+    .row p{margin:0;color:var(--text-muted);font-size:.84rem;line-height:1.35}
+
+    .tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .btn{
+      height:42px;padding:0 14px;border-radius:14px;border:1px solid rgba(255,255,255,.08);
+      background:var(--bg-input);color:var(--text);font-weight:900;cursor:pointer;
+      transition:.15s; display:inline-flex; align-items:center; justify-content:center; gap:10px;
+    }
+    .btn:hover{border-color:var(--primary);transform:translateY(-1px)}
+    .btn:active{transform:translateY(0)}
+    .btn.primary{background:var(--primary);color:#000;border-color:transparent}
+    .btn.danger:hover{border-color:var(--danger);color:var(--danger)}
+
+    /* Modal HTML (sem alert/confirm do navegador) */
+    .modal-ui{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+      background:rgba(0,0,0,.55);z-index:99999;padding:16px;}
+    .modal-ui.show{display:flex;}
+    .modal-ui-card{width:min(520px,100%);background:var(--bg-card);border:1px solid var(--border);
+      border-radius:18px;box-shadow:0 18px 60px rgba(0,0,0,.35);padding:16px;}
+    .modal-ui-title{font-weight:900;letter-spacing:.4px;margin-bottom:8px}
+    .modal-ui-text{color:var(--text-muted);line-height:1.45;margin-bottom:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+    .modal-ui-actions{display:flex;gap:10px;justify-content:flex-end}
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <button class="back-btn" id="backBtn" type="button" aria-label="Voltar">←</button>
+    <div class="title">Sobre o app</div>
+    <div style="width:44px;height:44px;"></div>
+  </div>
+
+  <main class="page">
+    <section class="card">
+      <div class="brand">
+        <div class="logo">PD</div>
+        <div style="min-width:0">
+          <h1>Pedrad</h1>
+          <p>Aplicativo de delivery com foco em velocidade, simplicidade e operação local.</p>
+        </div>
+      </div>
+
+      <div class="tools">
+        <button class="btn primary" id="btnHelp" type="button">Ajuda</button>
+        <button class="btn" id="btnTerms" type="button">Termos</button>
+        <button class="btn" id="btnPrivacy" type="button">Privacidade</button>
+        <button class="btn" id="btnCopyInfo" type="button">Copiar info</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">Informações</div>
+      <div class="grid">
+        <div class="item">
+          <div class="k">Versão</div>
+          <div class="v" id="appVersion">—</div>
+        </div>
+        <div class="item">
+          <div class="k">Ambiente</div>
+          <div class="v" id="appEnv">Web</div>
+        </div>
+        <div class="item">
+          <div class="k">Build</div>
+          <div class="v" id="appBuild">—</div>
+        </div>
+        <div class="item">
+          <div class="k">Suporte</div>
+          <div class="v" id="supportText">help.html</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">O que o app faz</div>
+      <div class="list">
+        <div class="row">
+          <div class="tag">ORD</div>
+          <div>
+            <h3>Pedidos</h3>
+            <p>Crie pedidos, acompanhe status e revise o histórico.</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="tag">DLV</div>
+          <div>
+            <h3>Entrega</h3>
+            <p>Entrega ou retirada na loja, conforme disponibilidade.</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="tag">NOT</div>
+          <div>
+            <h3>Notificações</h3>
+            <p>Central local para avisos e atualizações de pedidos.</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="tag">SEC</div>
+          <div>
+            <h3>Segurança</h3>
+            <p>Conta, sessão e boas práticas de uso no dispositivo.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">Ações</div>
+      <div class="tools">
+        <button class="btn" id="btnOpenHelp" type="button">Abrir help.html</button>
+        <button class="btn" id="btnOpenHome" type="button">Ir para index.html</button>
+        <button class="btn danger" id="btnClearLocal" type="button">Limpar dados locais</button>
+      </div>
+      <p style="margin:12px 0 0;color:var(--text-muted);font-size:.84rem;line-height:1.4">
+        Limpar dados locais remove caches (ex.: notificações, carrinho), mas não apaga dados do servidor.
+      </p>
+    </section>
+  </main>
+
+  <!-- Modal -->
+  <div id="uiModal" class="modal-ui" aria-hidden="true">
+    <div class="modal-ui-card" role="dialog" aria-modal="true">
+      <div class="modal-ui-title" id="uiModalTitle">Aviso</div>
+      <div class="modal-ui-text" id="uiModalText"></div>
+      <div class="modal-ui-actions">
+        <button class="btn" id="uiModalCancel" type="button" style="display:none">Cancelar</button>
+        <button class="btn primary" id="uiModalOk" type="button">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ======= Modal HTML (sem alert/confirm do navegador) =======
+    const UIModal = (() => {
+      const el = document.getElementById('uiModal');
+      const titleEl = document.getElementById('uiModalTitle');
+      const textEl = document.getElementById('uiModalText');
+      const okBtn = document.getElementById('uiModalOk');
+      const cancelBtn = document.getElementById('uiModalCancel');
+
+      function open({ title='Aviso', text='', okText='OK', cancelText='Cancelar', showCancel=false }){
+        if (!el) return;
+        titleEl.textContent = title;
+        textEl.textContent = text;
+        okBtn.textContent = okText;
+        cancelBtn.textContent = cancelText;
+        cancelBtn.style.display = showCancel ? 'inline-flex' : 'none';
+        el.classList.add('show');
+        el.setAttribute('aria-hidden','false');
+      }
+      function close(){
+        if (!el) return;
+        el.classList.remove('show');
+        el.setAttribute('aria-hidden','true');
+      }
+
+      function alert({ title='Aviso', text='', okText='OK' }){
+        return new Promise(resolve => {
+          open({ title, text, okText, showCancel:false });
+          okBtn.onclick = () => { close(); resolve(true); };
+          cancelBtn.onclick = null;
+        });
+      }
+
+      function confirm({ title='Confirmar', text='', okText='Confirmar', cancelText='Cancelar' }){
+        return new Promise(resolve => {
+          open({ title, text, okText, cancelText, showCancel:true });
+          okBtn.onclick = () => { close(); resolve(true); };
+          cancelBtn.onclick = () => { close(); resolve(false); };
+        });
+      }
+
+      el?.addEventListener('click', (e) => { if (e.target === el) close(); });
+      return { alert, confirm };
+    })();
+
+    // ======= Header back robusto =======
+    document.getElementById('backBtn')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (window.history.length > 1) window.history.back();
+      else window.location.href = 'index.html';
+    }, true);
+
+    // ======= Info dinâmicas =======
+    function detectEnv(){
+      const isStandalone = window.matchMedia?.('(display-mode: standalone)')?.matches || (navigator.standalone === true);
+      const ua = navigator.userAgent || '';
+      const isAndroid = /Android/i.test(ua);
+      const isIOS = /iPhone|iPad|iPod/i.test(ua);
+      if (isStandalone) return 'PWA (standalone)';
+      if (isAndroid) return 'Web (Android)';
+      if (isIOS) return 'Web (iOS)';
+      return 'Web';
+    }
+
+    function setText(id, value){
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    }
+
+    // Versão: tenta pegar de localStorage (você pode setar isso no build)
+    const version = localStorage.getItem('app_version') || '1.0.0';
+    const build = localStorage.getItem('app_build') || 'local';
+    setText('appVersion', version);
+    setText('appBuild', build);
+    setText('appEnv', detectEnv());
+
+    // ======= Ações =======
+    document.getElementById('btnOpenHelp')?.addEventListener('click', () => {
+      window.location.href = 'help.html';
+    });
+    document.getElementById('btnHelp')?.addEventListener('click', () => {
+      window.location.href = 'help.html';
+    });
+    document.getElementById('btnOpenHome')?.addEventListener('click', () => {
+      window.location.href = 'index.html';
+    });
+
+    document.getElementById('btnTerms')?.addEventListener('click', async () => {
+      await UIModal.alert({
+        title: 'Termos',
+        text:
+`Uso responsável.
+Pedidos e pagamentos dependem do estabelecimento.
+Ao usar o app, você concorda com as regras de funcionamento e comunicação de status.`
+      });
+    });
+
+    document.getElementById('btnPrivacy')?.addEventListener('click', async () => {
+      await UIModal.alert({
+        title: 'Privacidade',
+        text:
+`Dados locais: podem incluir caches (notificações, carrinho).
+Dados de conta e pedidos: ficam no servidor do projeto.
+Você pode limpar dados locais nesta tela quando quiser.`
+      });
+    });
+
+    document.getElementById('btnCopyInfo')?.addEventListener('click', async () => {
+      const text =
+`Pedrad
+Versão: ${version}
+Build: ${build}
+Ambiente: ${detectEnv()}
+URL: ${location.href}`;
+      try {
+        await navigator.clipboard.writeText(text);
+        await UIModal.alert({ title:'Copiado', text:'Informações copiadas para a área de transferência.' });
+      } catch (e) {
+        await UIModal.alert({ title:'Falha', text:'Não foi possível copiar. Seu navegador bloqueou a ação.' });
+      }
+    });
+
+    document.getElementById('btnClearLocal')?.addEventListener('click', async () => {
+      const ok = await UIModal.confirm({
+        title: 'Limpar dados locais',
+        text: 'Deseja remover caches locais (notificações/carrinho/etc.) deste dispositivo?',
+        okText: 'Limpar',
+        cancelText: 'Cancelar'
+      });
+      if (!ok) return;
+
+      // Limpeza conservadora: remove chaves comuns sem destruir tudo
+      const keysToRemove = [
+        'notifications',
+        'cart',
+        'app_cache',
+        'orders_cache',
+        'orders_cache_meta'
+      ];
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+
+      // também limpa carrinhos por uid (cart_<uid>)
+      try{
+        Object.keys(localStorage).forEach(k => {
+          if (k.startsWith('cart_')) localStorage.removeItem(k);
+        });
+      } catch(e){}
+
+      await UIModal.alert({ title:'Pronto', text:'Dados locais removidos.' });
+    });
+  </script>
+</body>
+</html>
