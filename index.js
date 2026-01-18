@@ -1887,53 +1887,37 @@ function openProductModal(productId){
 }
 
 
-function closeProductPopup() {
-  const pop = document.getElementById("htmlPopup");
-  const frame = document.getElementById("popupFrame");
-  if (pop) pop.style.display = "none";
-  if (frame) frame.src = "about:blank";
+function closeProductPopup(){
+  document.getElementById("htmlPopup").style.display = "none";
+  document.getElementById("popupFrame").src = "about:blank";
 }
 
 window.addEventListener("message", (e) => {
-  if (!e.data) return;
+  if (!e.data || e.data.type !== "ADD_TO_CART") return;
 
-  // fechar popup
-  if (e.data.type === "closePopup") {
-    closeProductPopup();
+  const payload = e.data.payload || {};
+  const productId = payload.productId;
+  const qty = Number(payload.qty || 1);
+
+  // 🔥 monta o produto real a partir da lista carregada
+  const product = (products || []).find(p => p.id === productId);
+
+  if (!product) {
+    console.log("❌ Produto não encontrado na lista products[]", productId, products);
+    showToast("❌ Produto inválido (não carregado)");
     return;
   }
 
-  // adicionar no carrinho (USANDO SUA FUNÇÃO OFICIAL)
-  if (e.data.type === "ADD_TO_CART") {
-    const payload = e.data.payload || {};
-    const product = payload.product;
-    const qty = Number(payload.qty || 1);
-    const addons = Array.isArray(payload.addons) ? payload.addons : [];
+  // transforma selections em addons (se existir)
+  const addons = payload.selections
+    ? Object.values(payload.selections).map(a => ({
+        name: String(a.name || "").trim(),
+        price: Number(a.price || 0)
+      })).filter(a => a.name)
+    : [];
 
-    if (!product?.id || !product?.storeId) {
-      showToast("Produto inválido");
-      return;
-    }
+  addToCart(product, qty, addons);
 
-    // garante store selecionada (evita bug no app)
-    if (!window.selectedStore || window.selectedStore.id !== product.storeId) {
-      window.selectedStore = (window.stores || []).find(s => s.id === product.storeId) || {
-        id: product.storeId,
-        name: product.storeName || ""
-      };
-    }
-
-    localStorage.setItem("currentStoreId", product.storeId);
-
-    addToCart(product, qty, addons); // ✅ aqui está o segredo
-    closeProductPopup();
-    return;
-  }
-
-  // caso popup mande atualizar
-  if (e.data.type === "cartUpdated") {
-    loadCart();
-    renderCart();
-    updateCartBadge();
-  }
+  closeProductPopup();
 });
+
