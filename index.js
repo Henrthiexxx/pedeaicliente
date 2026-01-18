@@ -545,6 +545,46 @@ function filterProducts() {
     renderProducts();
 }
 
+window.addEventListener("message", (e) => {
+  if (!e.data || e.data.type !== "ADD_TO_CART") return;
+
+  const payload = e.data.payload || {};
+  const productId = payload.productId;
+  const qty = Number(payload.qty || 1);
+
+  const product = (products || []).find(p => p.id === productId);
+
+  if (!product) {
+    console.log("❌ Produto não encontrado", productId);
+    showToast("❌ Produto inválido");
+    return;
+  }
+
+  // 🔥 PROCESSA CORRETAMENTE: flavor, size, extras
+  const addons = [];
+  const sel = payload.selections || {};
+  
+  if (sel.flavor && sel.flavor.name) {
+    addons.push({ name: sel.flavor.name, price: parseFloat(sel.flavor.price) || 0 });
+  }
+  
+  if (sel.size && sel.size.name) {
+    addons.push({ name: sel.size.name, price: parseFloat(sel.size.price) || 0 });
+  }
+  
+  if (Array.isArray(sel.extras)) {
+    sel.extras.forEach(ex => {
+      if (ex && ex.name) {
+        addons.push({ name: ex.name, price: parseFloat(ex.price) || 0 });
+      }
+    });
+  }
+
+  console.log("🛒 Addons processados:", addons); // ← temporário
+  addToCart(product, qty, addons);
+  closeProductPopup();
+});
+
 function renderCart() {
     const container = document.getElementById('cartItems');
     const summary = document.getElementById('cartSummary');
@@ -566,8 +606,8 @@ function renderCart() {
     container.innerHTML = `<div class="card">${cart.map((item, idx) => {
         const imgUrl = (item.imageUrl || '').trim();
         const hasImg = hasImageUrl(imgUrl);
-        const addonTotal = (item.addons || []).reduce((s, a) => s + (a.price || 0), 0);
-        const itemTotal = (item.price + addonTotal) * item.qty;
+        const addonTotal = (item.addons || []).reduce((s, a) => s + (parseFloat(a.price) || 0), 0);
+        const itemTotal = (parseFloat(item.price) + addonTotal) * item.qty;
         
         return `
         <div class="cart-item">
@@ -579,7 +619,7 @@ function renderCart() {
             </div>
             <div class="cart-item-info">
                 <div class="cart-item-name">${item.name}</div>
-                ${item.addons?.length ? `<div class="cart-item-addons">${item.addons.map(a => `+ ${a.name}`).join(', ')}</div>` : ''}
+                ${item.addons?.length ? `<div class="cart-item-addons">${item.addons.map(a => `+ ${a.name} (${formatCurrency(a.price)})`).join(', ')}</div>` : ''}
                 <div class="cart-item-price">${formatCurrency(itemTotal)}</div>
             </div>
             <div class="cart-item-controls">
@@ -594,7 +634,6 @@ function renderCart() {
     updateCartSummary();
     if (summary) summary.style.display = 'block';
 }
-
 function renderAddons() {
     const container = document.getElementById('addonsList');
     if (productAddons.length === 0) {
@@ -697,25 +736,22 @@ function populateNeighborhoodSelect() {
 function addToCart(product, qty = 1, addons = []) {
   if (!selectedStore) return;
 
-  // trava por loja
   if (cart.length > 0 && cart[0].storeId !== selectedStore.id) {
     showToast(`Finalize o pedido de ${cart[0].storeName} primeiro!`);
     return;
   }
 
-  // addons normalizados
+  // 🔥 FORÇA conversão para número
   const safeAddons = Array.isArray(addons) ? addons.map(a => ({
     name: String(a.name || "").trim(),
-    price: Number(a.price || 0)
-  })).filter(a => a.name) : [];
+    price: parseFloat(a.price) || 0  // ← mudou aqui
+  })).filter(a => a.name && a.price >= 0) : [];
 
-  // chave única = produto + addons (ordem não importa)
   const addonKey = safeAddons.length
     ? safeAddons.map(a => a.name).sort().join("|")
     : "none";
 
   const itemKey = `${product.id}__${addonKey}`;
-
   const existing = cart.find(i => i.itemKey === itemKey);
 
   if (existing) {
@@ -725,7 +761,7 @@ function addToCart(product, qty = 1, addons = []) {
       itemKey,
       id: product.id,
       name: product.name,
-      price: Number(product.price || 0),
+      price: parseFloat(product.price) || 0,  // ← força número
       emoji: product.emoji,
       imageUrl: product.imageUrl || null,
       storeId: selectedStore.id,
@@ -735,6 +771,7 @@ function addToCart(product, qty = 1, addons = []) {
     });
   }
 
+  console.log("🛒 Addons salvos:", safeAddons); // ← temporário
   saveCart();
   renderCart();
   showToast(`✅ ${product.name} adicionado!`);
@@ -760,8 +797,7 @@ function updateCartBadge() {
 
 function getCartSubtotal() {
     return cart.reduce((sum, item) => {
-        const addons = sanitizeAddons(item.addons || []);
-        const addonTotal = addons.reduce((s, a) => s + (a.price || 0), 0);
+        const addonTotal = (item.addons || []).reduce((s, a) => s + (Number(a.price) || 0), 0);
         return sum + ((item.price + addonTotal) * item.qty);
     }, 0);
 }
@@ -1892,32 +1928,4 @@ function closeProductPopup(){
   document.getElementById("popupFrame").src = "about:blank";
 }
 
-window.addEventListener("message", (e) => {
-  if (!e.data || e.data.type !== "ADD_TO_CART") return;
-
-  const payload = e.data.payload || {};
-  const productId = payload.productId;
-  const qty = Number(payload.qty || 1);
-
-  // 🔥 monta o produto real a partir da lista carregada
-  const product = (products || []).find(p => p.id === productId);
-
-  if (!product) {
-    console.log("❌ Produto não encontrado na lista products[]", productId, products);
-    showToast("❌ Produto inválido (não carregado)");
-    return;
-  }
-
-  // transforma selections em addons (se existir)
-  const addons = payload.selections
-    ? Object.values(payload.selections).map(a => ({
-        name: String(a.name || "").trim(),
-        price: Number(a.price || 0)
-      })).filter(a => a.name)
-    : [];
-
-  addToCart(product, qty, addons);
-
-  closeProductPopup();
-});
 
