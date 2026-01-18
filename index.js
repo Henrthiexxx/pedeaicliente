@@ -480,6 +480,7 @@ function setupRealtimeListeners() {
 // ==================== RENDER ====================
 
 async function selectStore(storeId) {
+    localStorage.setItem("currentStoreId", storeId); 
     selectedStore = stores.find(s => s.id === storeId);
     if (!selectedStore) return;
     
@@ -1876,15 +1877,15 @@ function renderOrders() {
 }
 
 function openProductModal(productId){
-
-  const storeId = window.selectedStore?.id || localStorage.getItem("currentStoreId");
-  if(!storeId) return showToast("StoreId não encontrado");
+  const storeId = localStorage.getItem("currentStoreId");
+  if(!storeId) return showToast("Selecione uma loja!");
 
   document.getElementById("popupFrame").src =
     `popup.html?storeId=${encodeURIComponent(storeId)}&productId=${encodeURIComponent(productId)}`;
 
   document.getElementById("htmlPopup").style.display = "block";
 }
+
 
 function closeProductPopup(){
   document.getElementById("htmlPopup").style.display = "none";
