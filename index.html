@@ -18,6 +18,14 @@ pointer-events: none;
 }
 
 /* Loading */
+.product-img img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+
 .auth-loading {
     position: fixed;
     top: 50%;
@@ -230,8 +238,7 @@ body.auth-ready .auth-loading {
   Finalizar pedido
 </button>
 
-                    Finalizar pedido
-                </button>
+                 
             </div>
         </div>
         
@@ -244,11 +251,7 @@ body.auth-ready .auth-loading {
 
         
  <!-- Meus Endereços -->
-<div class="profile-menu-item" onclick="window.location.href='address.html'">
-    <div class="profile-menu-icon">📍</div>
-    <div class="profile-menu-text">Meus endereços</div>
-    <div class="profile-menu-arrow">›</div>
-</div>
+
         
         <!-- Tracking Page -->
         <div id="trackingPage" class="page"></div>
@@ -269,27 +272,32 @@ body.auth-ready .auth-loading {
     </div>
 </nav>
     
-    <!-- Product Modal -->
-    <div class="modal" id="productModal">
-        <div class="modal-content">
-            <div class="product-detail-img" id="modalProductImg">◎</div>
-            <div class="product-detail-info">
-                <div class="product-detail-name" id="modalProductName">-</div>
-                <div class="product-detail-desc" id="modalProductDesc">-</div>
-                <div class="product-detail-price" id="modalProductPrice">R$ 0,00</div>
-                
-                <div class="product-qty-selector">
-                    <button class="product-qty-btn" onclick="changeModalQty(-1)">−</button>
-                    <span class="product-qty-value" id="modalQty">1</span>
-                    <button class="product-qty-btn" onclick="changeModalQty(1)">+</button>
+<!-- Product Modal -->
+<!-- Product View Modal (CLIENTE) -->
+<div class="modal" id="productModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title" id="modalProductName">Produto</div>
+            <button class="modal-close" onclick="closeModal('productModal')">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="product-modal-img" id="modalProductImg">🍽️</div>
+            <p class="product-modal-desc" id="modalProductDesc"></p>
+            <div id="modalAddons"></div>
+            <div class="product-modal-footer">
+                <div class="qty-control">
+                    <button class="qty-btn" onclick="changeModalQty(-1)">−</button>
+                    <span class="qty-value" id="modalQty">1</span>
+                    <button class="qty-btn" onclick="changeModalQty(1)">+</button>
                 </div>
-                
-                <button class="btn btn-primary" onclick="addToCartFromModal()">Adicionar ao carrinho</button>
-                <button class="btn btn-secondary" onclick="closeModal('productModal')" style="margin-top: 8px;">Cancelar</button>
+                <div class="product-modal-price" id="modalProductPrice">R$ 0,00</div>
             </div>
         </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" style="width:100%" onclick="addToCartFromModal()">Adicionar ao carrinho</button>
+        </div>
     </div>
-    
+</div>
     <!-- Checkout Modal -->
     <div class="modal" id="checkoutModal">
         <div class="modal-content">
@@ -453,12 +461,11 @@ body.auth-ready .auth-loading {
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="modules/stores.js"></script>
-    <script src="modules/profile.js"></script>
-    <script src="modules/notifications.js"></script>
-    <script src="modules/tracking.js"></script>
-    <script src="modules/store-cache.js"></script>
-    <script src="index.js"></script>
+   <script src="index.js"></script>
+<script src="modules/stores.js"></script>
+<script src="modules/notifications.js"></script>
+<script src="modules/tracking.js"></script>
+<script src="modules/store-cache.js"></script>
     
     <!-- SCRIPT DE AVALIAÇÕES - DEVE VIR DEPOIS DO INDEX.JS -->
     <script>
@@ -536,9 +543,68 @@ body.auth-ready .auth-loading {
       if (typeof _showPage === 'function') return _showPage(pageId);
     };
   })();
+
+  
 </script>
 
     <script src="modules/polish.js"></script>
-    
+    <script>
+  window.addEventListener("load", async () => {
+    firebase.auth().onAuthStateChanged(async (user) => {
+      if (!user) return;
+
+      // chama seu carregamento real (precisa existir no seu JS)
+      if (typeof loadStores === "function") await loadStores();
+      if (typeof renderStores === "function") await renderStores();
+    });
+  });
+
+
+function closeProductPopup(){
+  document.getElementById("htmlPopup").style.display = "none";
+  document.getElementById("popupFrame").src = "about:blank";
+}
+
+function addToCartFromPopup(product, qty, addons){
+  const key = "cart"; // ⚠️ troque aqui se seu carrinho usa outra chave
+  const cart = JSON.parse(localStorage.getItem(key) || "[]");
+
+  cart.push({
+    productId: product.id,
+    storeId: product.storeId,
+    name: product.name,
+    price: Number(product.price||0),
+    qty: Number(qty||1),
+    addons: addons || [],
+    createdAt: Date.now()
+  });
+
+  localStorage.setItem(key, JSON.stringify(cart));
+
+  if (typeof renderCart === "function") renderCart();
+  if (typeof updateCartBadge === "function") updateCartBadge();
+}
+window.addEventListener("message", (ev) => {
+  if (!ev.data) return;
+
+  if (ev.data.type === "closePopup") {
+    document.getElementById("htmlPopup").style.display = "none";
+    document.getElementById("popupFrame").src = "about:blank";
+  }
+
+  if (ev.data.type === "cartUpdated") {
+    loadCartFromStorage();
+    renderCart();
+    updateCartBadge?.();
+  }
+});
+
+</script>
+<div id="htmlPopup" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.6)">
+  <div style="width:min(520px,92vw);height:min(820px,92vh);margin:4vh auto;background:#0a0a0a;border:1px solid #262626;border-radius:14px;overflow:hidden">
+    <iframe id="popupFrame" style="width:100%;height:100%;border:0"></iframe>
+  </div>
+</div>
+
 </body>
 </html>

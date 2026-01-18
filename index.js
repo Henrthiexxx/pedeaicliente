@@ -49,7 +49,8 @@ auth.onAuthStateChanged(async (user) => {
         await loadUserData();
         showMainApp();
         
-        
+ 
+
         if (typeof StoresModule !== 'undefined') StoresModule.init();
         if (typeof ProfileModule !== 'undefined') ProfileModule.init();
         if (typeof NotificationsModule !== 'undefined') {
@@ -347,6 +348,20 @@ async function loadDeliveryFees() {
     }
 }
 
+function sanitizeAddons(addons) {
+    if (!Array.isArray(addons)) return [];
+    
+    return addons
+        .filter(a => a && typeof a === 'object')
+        .map((a, index) => ({
+            name: String(a.name || '').trim() || `Item ${index + 1}`,
+            price: parseFloat(a.price) || 0,
+            order: typeof a.order === 'number' ? a.order : index
+        }))
+        .filter(a => a.name && a.name !== `Item ${a.order + 1}`); // Remove items sem nome real
+}
+
+
 async function loadCoupons() {
     try {
         const snapshot = await db.collection('coupons').where('active', '==', true).get();
@@ -383,27 +398,6 @@ async function loadAddresses() {
     }
 }
 
-async function loadOrders() {
-    if (!currentUser) return;
-    try {
-        const snapshot = await db.collection('orders')
-            .where('userId', '==', currentUser.uid)
-            .get();
-        
-        orders = snapshot.docs
-            .map(doc => ({ id: doc.id, ...doc.data() }))
-            .sort((a, b) => {
-                const dateA = a.createdAt?.toDate?.() || new Date(a.createdAt) || 0;
-                const dateB = b.createdAt?.toDate?.() || new Date(b.createdAt) || 0;
-                return dateB - dateA;
-            })
-            .slice(0, 30);
-        
-        renderOrders();
-    } catch (err) {
-        console.error('Error loading orders:', err);
-    }
-}
 
 async function loadProducts(storeId) {
     try {
@@ -534,52 +528,11 @@ function renderCategories() {
     `).join('');
 }
 
-function renderProducts() {
-    const grid = document.getElementById('productsGrid');
-    if (!grid) return;
-    
-    const searchInput = document.getElementById('searchInput');
-    const search = searchInput?.value?.toLowerCase() || '';
-    
-    let filtered = products;
-    
-    if (activeCategory !== 'all') {
-        filtered = filtered.filter(p => p.category === activeCategory);
-    }
-    
-    if (search) {
-        filtered = filtered.filter(p => 
-            (p.name || '').toLowerCase().includes(search) ||
-            (p.description || '').toLowerCase().includes(search)
-        );
-    }
-    
-    if (filtered.length === 0) {
-        grid.innerHTML = `
-            <div class="empty-state" style="grid-column: 1/-1;">
-                <div class="empty-state-icon">🔍</div>
-                <div class="empty-state-title">Nenhum produto encontrado</div>
-            </div>
-        `;
-        return;
-    }
-    
-    grid.innerHTML = filtered.map(p => {
-        const hasImage = p.imageUrl && p.imageUrl.startsWith('data:');
-        return `
-        <div class="product-card" onclick="openProductModal('${p.id}')">
-            <div class="product-img ${hasImage ? 'has-image' : ''}" ${hasImage ? `style="background-image: url('${p.imageUrl}')"` : ''}>
-                ${hasImage ? '' : (p.emoji || '🍽️')}
-            </div>
-            <div class="product-info">
-                <div class="product-name">${p.name}</div>
-                <div class="product-desc">${p.description || ''}</div>
-                <div class="product-price">${formatCurrency(p.price)}</div>
-            </div>
-        </div>
-    `;
-    }).join('');
-}
+
+
+
+
+
 
 function filterByCategory(cat) {
     activeCategory = cat;
@@ -610,13 +563,18 @@ function renderCart() {
     }
     
     container.innerHTML = `<div class="card">${cart.map((item, idx) => {
-        const hasImage = item.imageUrl && item.imageUrl.startsWith('data:');
+        const imgUrl = (item.imageUrl || '').trim();
+        const hasImg = hasImageUrl(imgUrl);
         const addonTotal = (item.addons || []).reduce((s, a) => s + (a.price || 0), 0);
         const itemTotal = (item.price + addonTotal) * item.qty;
+        
         return `
         <div class="cart-item">
-            <div class="cart-item-img ${hasImage ? 'has-image' : ''}" ${hasImage ? `style="background-image: url('${item.imageUrl}')"` : ''}>
-                ${hasImage ? '' : (item.emoji || '🍽️')}
+            <div class="cart-item-img ${hasImg ? 'has-image' : ''}">
+                ${hasImg 
+                    ? `<img src="${imgUrl}" alt="${item.name}" onerror="this.remove();this.parentElement.classList.remove('has-image');this.parentElement.textContent='${item.emoji || '🍽️'}';">`
+                    : (item.emoji || '🍽️')
+                }
             </div>
             <div class="cart-item-info">
                 <div class="cart-item-name">${item.name}</div>
@@ -629,13 +587,50 @@ function renderCart() {
                 <button class="qty-btn" onclick="updateCartQty(${idx}, 1)">+</button>
             </div>
         </div>
-    `;
+        `;
     }).join('')}</div>`;
     
     updateCartSummary();
     if (summary) summary.style.display = 'block';
 }
 
+function renderAddons() {
+    const container = document.getElementById('addonsList');
+    if (productAddons.length === 0) {
+        container.innerHTML = '<div class="addon-empty">Nenhum adicional cadastrado</div>';
+        return;
+    }
+    
+    // Sanitiza adicionais antes de renderizar
+    productAddons = productAddons
+        .filter(a => a && typeof a === 'object')
+        .map((a, i) => ({
+            name: String(a.name || '').trim(),
+            price: parseFloat(a.price) || 0,
+            order: typeof a.order === 'number' ? a.order : i
+        }))
+        .filter(a => a.name); // Remove vazios
+    
+    container.innerHTML = productAddons.map((addon, idx) => `
+        <div class="addon-item" draggable="true" ondragstart="dragAddon(event, ${idx})" ondragover="event.preventDefault()" ondrop="dropAddon(event, ${idx})">
+            <span class="addon-drag">⋮⋮</span>
+            <input type="text" class="form-input addon-name" value="${addon.name}" onchange="updateAddon(${idx}, 'name', this.value)">
+            <input type="number" class="form-input addon-price" value="${addon.price}" step="0.50" onchange="updateAddon(${idx}, 'price', parseFloat(this.value) || 0)">
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeAddon(${idx})">×</button>
+        </div>
+    `).join('');
+}
+
+// Adicione esta função após o bloco de STATE (antes de AUTH)
+function hasImageUrl(url) {
+    if (typeof url !== "string") return false;
+    const u = url.trim();
+    if (u.startsWith('data:image/')) return true;
+    if (!/^https?:\/\//i.test(u)) return false;
+    if (u.length < 10) return false;
+    if (u.includes(" ")) return false;
+    return true;
+}
 function updateCartSummary() {
     const subtotal = getCartSubtotal();
     const delivery = getSelectedDeliveryFee();
@@ -662,49 +657,7 @@ function updateCartSummary() {
     }
 }
 
-function renderOrders() {
-    const container = document.getElementById('ordersList');
-    if (!container) return;
-    
-    if (orders.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-state-icon">📦</div>
-                <div class="empty-state-title">Nenhum pedido ainda</div>
-                <button class="btn btn-primary" onclick="showPage('home')">Fazer pedido</button>
-            </div>
-        `;
-        return;
-    }
-    
-    container.innerHTML = orders.map(order => {
-        const canTrack = typeof TrackingModule !== 'undefined' && TrackingModule.canTrack(order);
-        return `
-        <div class="order-card" onclick="openOrderDetail('${order.id}')">
-            <div class="order-store">${order.storeName || 'Loja'}</div>
-            <div class="order-header">
-                <div>
-                    <div class="order-id">Pedido #${order.id.slice(-6).toUpperCase()}</div>
-                    <div class="order-date">${formatDate(order.createdAt)}</div>
-                </div>
-                <span class="order-status status-${order.status}">${getStatusLabel(order.status)}</span>
-            </div>
-            <div class="order-items">
-                ${order.items.map(i => `${i.qty}x ${i.name}`).join(', ')}
-            </div>
-            <div class="order-total">
-                <span>Total</span>
-                <span>${formatCurrency(order.total)}</span>
-            </div>
-            ${canTrack ? `
-                <button class="order-track-btn" onclick="event.stopPropagation(); TrackingModule.openTracking('${order.id}')">
-                    🗺️ Rastrear entrega em tempo real
-                </button>
-            ` : ''}
-        </div>
-    `;
-    }).join('');
-}
+
 
 function renderCheckoutAddresses() {
     const container = document.getElementById('checkoutAddresses');
@@ -740,39 +693,50 @@ function populateNeighborhoodSelect() {
 
 // ==================== CART ====================
 
-function addToCart(product, qty = 1) {
-    if (!selectedStore) return;
-    
-    if (cart.length > 0 && cart[0].storeId !== selectedStore.id) {
-        showToast(`Finalize o pedido de ${cart[0].storeName} primeiro!`);
-        return;
-    }
-    
-    const addonKey = selectedAddon ? `-${selectedAddon.name}` : '';
-    const itemKey = `${product.id}${addonKey}`;
-    
-    const existing = cart.find(item => item.itemKey === itemKey);
-    
-    if (existing) {
-        existing.qty += qty;
-    } else {
-        cart.push({
-            itemKey,
-            id: product.id,
-            name: product.name,
-            price: product.price,
-            emoji: product.emoji,
-            imageUrl: product.imageUrl || null,
-            storeId: selectedStore.id,
-            storeName: selectedStore.name,
-            qty,
-            addons: selectedAddon ? [selectedAddon] : []
-        });
-    }
-    
-    selectedAddon = null;
-    saveCart();
-    showToast(`${product.name} adicionado!`);
+function addToCart(product, qty = 1, addons = []) {
+  if (!selectedStore) return;
+
+  // trava por loja
+  if (cart.length > 0 && cart[0].storeId !== selectedStore.id) {
+    showToast(`Finalize o pedido de ${cart[0].storeName} primeiro!`);
+    return;
+  }
+
+  // addons normalizados
+  const safeAddons = Array.isArray(addons) ? addons.map(a => ({
+    name: String(a.name || "").trim(),
+    price: Number(a.price || 0)
+  })).filter(a => a.name) : [];
+
+  // chave única = produto + addons (ordem não importa)
+  const addonKey = safeAddons.length
+    ? safeAddons.map(a => a.name).sort().join("|")
+    : "none";
+
+  const itemKey = `${product.id}__${addonKey}`;
+
+  const existing = cart.find(i => i.itemKey === itemKey);
+
+  if (existing) {
+    existing.qty += qty;
+  } else {
+    cart.push({
+      itemKey,
+      id: product.id,
+      name: product.name,
+      price: Number(product.price || 0),
+      emoji: product.emoji,
+      imageUrl: product.imageUrl || null,
+      storeId: selectedStore.id,
+      storeName: selectedStore.name,
+      qty: Number(qty || 1),
+      addons: safeAddons
+    });
+  }
+
+  saveCart();
+  renderCart();
+  showToast(`✅ ${product.name} adicionado!`);
 }
 
 function updateCartQty(index, delta) {
@@ -795,11 +759,11 @@ function updateCartBadge() {
 
 function getCartSubtotal() {
     return cart.reduce((sum, item) => {
-        const addonTotal = (item.addons || []).reduce((s, a) => s + (a.price || 0), 0);
+        const addons = sanitizeAddons(item.addons || []);
+        const addonTotal = addons.reduce((s, a) => s + (a.price || 0), 0);
         return sum + ((item.price + addonTotal) * item.qty);
     }, 0);
 }
-
 // ==================== DELIVERY FEE ====================
 
 function getDeliveryFeeByNeighborhood(neighborhood) {
@@ -1009,13 +973,17 @@ async function submitOrder() {
         userEmail: currentUser.email,
         storeId: store.id,
         storeName: store.name,
-        items: cart.map(item => ({
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            qty: item.qty,
-            addons: item.addons || []
-        })),
+        items: cart.map(item => {
+            // VALIDAÇÃO CRÍTICA: Sanitiza adicionais antes de salvar no pedido
+            const addons = sanitizeAddons(item.addons || []);
+            return {
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                qty: item.qty,
+                addons: addons
+            };
+        }),
         subtotal,
         delivery,
         discount,
@@ -1038,19 +1006,41 @@ async function submitOrder() {
     };
     
     try {
-        await db.collection('orders').add(order);
-        cart = [];
-        appliedCoupon = null;
-        saveCart();
-        closeModal('checkoutModal');
-        showPage('orders');
+await db.collection('orders').add(order);
+
+cart = [];
+appliedCoupon = null;
+saveCart();        // ✅ salva cart_${uid}
+renderCart();      // ✅ atualiza tela
+updateCartBadge(); // ✅ zera badge
+
+closeModal('checkoutModal');
+showPage('orders');
+showToast('Pedido realizado!');
+
         
-        await loadOrders();
-        showToast('Pedido realizado!');
+
     } catch (err) {
         console.error('Order error:', err);
         showToast('Erro ao fazer pedido');
     }
+}
+function cartKey(storeId){
+  return `LS_CART_${storeId || localStorage.getItem("currentStoreId") || "global"}`;
+}
+
+function loadCartFromStorage(){
+  const storeId = localStorage.getItem("currentStoreId") || "global";
+  try{
+    window.cart = JSON.parse(localStorage.getItem(cartKey(storeId)) || "[]");
+  }catch{
+    window.cart = [];
+  }
+}
+
+function saveCartToStorage(){
+  const storeId = localStorage.getItem("currentStoreId") || "global";
+  localStorage.setItem(cartKey(storeId), JSON.stringify(window.cart || []));
 }
 
 // ==================== ADDRESS ====================
@@ -1108,6 +1098,61 @@ async function deleteAddress(addressId) {
     } catch (err) {
         showToast('Erro ao excluir');
     }
+}
+
+function addAddon() {
+    const nameInput = document.getElementById('newAddonName');
+    const priceInput = document.getElementById('newAddonPrice');
+    const name = (nameInput?.value || '').trim();
+    const price = parseFloat(priceInput?.value) || 0;
+    
+    if (!name) { 
+        showToast('Digite o nome do adicional'); 
+        return; 
+    }
+    
+    if (!nameInput || !priceInput) {
+        console.error('Inputs de adicional não encontrados');
+        return;
+    }
+    
+    productAddons.push({ 
+        name, 
+        price, 
+        order: productAddons.length 
+    });
+    
+    nameInput.value = '';
+    priceInput.value = '';
+    renderAddons();
+}
+
+function updateAddon(idx, field, value) {
+    if (!productAddons[idx]) return;
+    
+    if (field === 'name') {
+        productAddons[idx][field] = String(value).trim();
+    } else if (field === 'price') {
+        productAddons[idx][field] = parseFloat(value) || 0;
+    }
+}
+
+function removeAddon(idx) {
+    productAddons.splice(idx, 1);
+    productAddons.forEach((a, i) => a.order = i);
+    renderAddons();
+}
+
+let draggedAddonIdx = null;
+function dragAddon(e, idx) { draggedAddonIdx = idx; }
+function dropAddon(e, targetIdx) {
+    e.preventDefault();
+    if (draggedAddonIdx === null || draggedAddonIdx === targetIdx) return;
+    const [item] = productAddons.splice(draggedAddonIdx, 1);
+    productAddons.splice(targetIdx, 0, item);
+    productAddons.forEach((a, i) => a.order = i);
+    renderAddons();
+    draggedAddonIdx = null;
 }
 
 function showAddAddressModal() {
@@ -1232,45 +1277,6 @@ function updateModalPrice() {
     if (priceEl) priceEl.textContent = formatCurrency(unitPrice * modalQty);
 }
 
-function openProductModal(productId) {
-    selectedProduct = products.find(p => p.id === productId);
-    if (!selectedProduct) return;
-    
-    modalQty = 1;
-    selectedAddon = null;
-    
-    const modalImg = document.getElementById('modalProductImg');
-    const hasImage = selectedProduct.imageUrl && selectedProduct.imageUrl.startsWith('data:');
-    
-    if (modalImg) {
-        if (hasImage) {
-            modalImg.innerHTML = '';
-            modalImg.style.backgroundImage = `url('${selectedProduct.imageUrl}')`;
-            modalImg.classList.add('has-image');
-        } else {
-            modalImg.textContent = selectedProduct.emoji || '🍽️';
-            modalImg.style.backgroundImage = '';
-            modalImg.classList.remove('has-image');
-        }
-    }
-    
-    const nameEl = document.getElementById('modalProductName');
-    const descEl = document.getElementById('modalProductDesc');
-    const priceEl = document.getElementById('modalProductPrice');
-    const qtyEl = document.getElementById('modalQty');
-    
-    if (nameEl) nameEl.textContent = selectedProduct.name;
-    if (descEl) descEl.textContent = selectedProduct.description || 'Sem descrição';
-    if (priceEl) priceEl.textContent = formatCurrency(selectedProduct.price);
-    if (qtyEl) qtyEl.textContent = modalQty;
-    
-    const addonsContainer = document.getElementById('modalAddons');
-    if (addonsContainer) {
-        addonsContainer.innerHTML = renderProductAddons(selectedProduct);
-    }
-    
-    openModal('productModal');
-}
 
 function renderProductAddons(product) {
     const addons = product.addons || [];
@@ -1328,10 +1334,14 @@ function changeModalQty(delta) {
 }
 
 function addToCartFromModal() {
-    if (selectedProduct) {
-        addToCart(selectedProduct, modalQty);
-        closeModal('productModal');
-    }
+  if (!selectedProduct) return;
+
+  const addons = selectedAddon ? [selectedAddon] : [];
+  addToCart(selectedProduct, modalQty, addons);
+
+  selectedAddon = null;
+  modalQty = 1;
+  closeModal('productModal');
 }
 
 function openOrderDetail(orderId) {
@@ -1370,14 +1380,17 @@ function openOrderDetail(orderId) {
         
         <h4 style="margin-bottom: 12px;">📦 Itens</h4>
         <div class="card" style="margin-bottom: 20px;">
-            ${order.items.map(item => {
-                const addonTotal = (item.addons || []).reduce((s, a) => s + (a.price || 0), 0);
+            ${(order.items || []).map(item => {
+                // VALIDAÇÃO CRÍTICA: Sanitiza adicionais
+                const addons = sanitizeAddons(item.addons || []);
+                const addonTotal = addons.reduce((s, a) => s + (a.price || 0), 0);
                 const itemTotal = (item.price + addonTotal) * item.qty;
+                
                 return `
                 <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
                     <div>
                         <span>${item.qty}x ${item.name}</span>
-                        ${item.addons?.length ? `<div style="font-size:0.8rem;color:var(--text-muted);">${item.addons.map(a => `+ ${a.name} (${formatCurrency(a.price)})`).join(', ')}</div>` : ''}
+                        ${addons.length > 0 ? `<div style="font-size:0.8rem;color:var(--text-muted);">${addons.map(a => `+ ${a.name} (${formatCurrency(a.price)})`).join(', ')}</div>` : ''}
                     </div>
                     <span>${formatCurrency(itemTotal)}</span>
                 </div>
@@ -1502,6 +1515,74 @@ function showToast(message) {
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 3000);
 }
+
+
+function renderProducts() {
+    const grid = document.getElementById('productsGrid');
+    if (!grid) return;
+
+    const searchInput = document.getElementById('searchInput');
+    const search = (searchInput?.value || '').toLowerCase().trim();
+
+    // Valida URL de imagem
+    function isValidImageUrl(url) {
+        if (typeof url !== "string") return false;
+        const u = url.trim();
+        if (!/^https?:\/\//i.test(u)) return false;
+        if (u.length < 10) return false;
+        if (u.includes(" ")) return false;
+        return true;
+    }
+
+    let filtered = Array.isArray(products) ? products : [];
+
+    // Filtro categoria
+    if (activeCategory && activeCategory !== 'all') {
+        filtered = filtered.filter(p => (p.category || '') === activeCategory);
+    }
+
+    // Filtro busca
+    if (search) {
+        filtered = filtered.filter(p =>
+            (p.name || '').toLowerCase().includes(search) ||
+            (p.description || '').toLowerCase().includes(search)
+        );
+    }
+
+    // Vazio
+    if (filtered.length === 0) {
+        grid.innerHTML = `
+            <div class="empty-state" style="grid-column: 1/-1;">
+                <div class="empty-state-icon">🔍</div>
+                <div class="empty-state-title">Nenhum produto encontrado</div>
+            </div>
+        `;
+        return;
+    }
+
+    grid.innerHTML = filtered.map(p => {
+        const imgUrl = (p.imageUrl || '').trim();
+        const hasImg = isValidImageUrl(imgUrl);
+        const fallbackEmoji = (p.emoji || '🍽️');
+
+        return `
+            <div class="product-card" onclick="openProductModal('${p.id}')">
+                <div class="product-img ${hasImg ? 'has-image' : ''}">
+                    ${hasImg 
+                        ? `<img src="${imgUrl}" loading="lazy" alt="${p.name || 'Produto'}" onerror="this.remove();this.parentElement.classList.remove('has-image');this.parentElement.innerHTML='${fallbackEmoji}';">`
+                        : fallbackEmoji
+                    }
+                </div>
+                <div class="product-info">
+                    <div class="product-name">${p.name || 'Produto'}</div>
+                    <div class="product-desc">${p.description || ''}</div>
+                    <div class="product-price">${formatCurrency(p.price || 0)}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
 
 // ==================== MAP PICKER ====================
 
@@ -1760,7 +1841,7 @@ function renderOrders() {
         };
         
         return `
-            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;">
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;cursor:pointer;" onclick="openOrderDetail('${order.id}')">
                 <div style="display:flex;justify-content:space-between;margin-bottom:12px;">
                     <div>
                         <div style="font-weight:600;font-size:1.1rem;">#${order.id.slice(-6).toUpperCase()}</div>
@@ -1772,16 +1853,79 @@ function renderOrders() {
                     </div>
                 </div>
                 <div style="border-top:1px solid var(--border);padding-top:12px;">
-                    ${order.items.map(i => `
+                    ${(order.items || []).map(i => {
+                        // VALIDAÇÃO CRÍTICA: Sanitiza adicionais
+                        const addons = sanitizeAddons(i.addons || []);
+                        const addonTotal = addons.reduce((s, a) => s + (a.price || 0), 0);
+                        const itemTotal = (i.price + addonTotal) * i.qty;
+                        
+                        return `
                         <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.9rem;">
-                            <span>${i.qty}x ${i.name}</span>
-                            <span>${formatCurrency(i.price * i.qty)}</span>
+                            <span>
+                                ${i.qty}x ${i.name}
+                                ${addons.length > 0 ? `<div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">${addons.map(a => `+ ${a.name}`).join(', ')}</div>` : ''}
+                            </span>
+                            <span>${formatCurrency(itemTotal)}</span>
                         </div>
-                    `).join('')}
+                    `;
+                    }).join('')}
                 </div>
             </div>
         `;
     }).join('');
 }
+
+function openProductModal(productId){
+
+  const storeId = window.selectedStore?.id || localStorage.getItem("currentStoreId");
+  if(!storeId) return showToast("StoreId não encontrado");
+
+  document.getElementById("popupFrame").src =
+    `popup.html?storeId=${encodeURIComponent(storeId)}&productId=${encodeURIComponent(productId)}`;
+
+  document.getElementById("htmlPopup").style.display = "block";
+}
+
+function closeProductPopup(){
+  document.getElementById("htmlPopup").style.display = "none";
+  document.getElementById("popupFrame").src = "about:blank";
+}
+
+window.addEventListener("message", (e) => {
+  if (!e.data) return;
+
+  if (e.data.type === "closePopup") {
+    closeProductPopup();
+  }
+
+  if (e.data.type === "ADD_TO_CART") {
+    const { product, qty, addons } = e.data.payload;
+
+    // adiciona direto no seu carrinho REAL
+    cart.push({
+      itemKey: `${product.id}-${Date.now()}`,
+      id: product.id,
+      name: product.name,
+      price: Number(product.price || 0),
+      emoji: product.emoji || "🍽️",
+      imageUrl: product.imageUrl || null,
+      storeId: product.storeId,
+      storeName: selectedStore?.name || "",
+      qty: Number(qty || 1),
+      addons: Array.isArray(addons) ? addons : []
+    });
+
+    saveCart();
+    renderCart();
+    updateCartBadge();
+    closeProductPopup();
+  }
+
+  if (e.data.type === "cartUpdated") {
+    loadCart();
+    renderCart();
+    updateCartBadge();
+  }
+});
 
 

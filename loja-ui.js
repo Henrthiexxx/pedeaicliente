@@ -310,27 +310,59 @@ async function updateOrderStatus(orderId, status) {
 // ==================== PRODUCTS ====================
 
 function renderProducts() {
-    const container = document.getElementById('productsList');
-    if (!container) return;
-    
-    const search = document.getElementById('productSearch')?.value?.toLowerCase() || '';
-    const filtered = search ? products.filter(p => p.name.toLowerCase().includes(search)) : products;
-    
-    if (filtered.length === 0) {
-        container.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;"><div class="empty-state-icon">🍽️</div><div class="empty-state-title">Nenhum produto</div><button class="btn btn-primary" onclick="openProductModal()">+ Adicionar</button></div>';
-        return;
-    }
-    
-    container.innerHTML = filtered.map(p => `<div class="product-card">
-        <div class="product-image">${p.imageUrl ? `<img src="${p.imageUrl}">` : (p.emoji || '🍽️')}<span class="product-badge ${p.active !== false ? 'active' : 'inactive'}">${p.active !== false ? 'Ativo' : 'Inativo'}</span></div>
-        <div class="product-info">
-            <div class="product-name">${p.name}</div>
-            <div class="product-category">${p.category || 'Sem categoria'}${p.addons?.length ? ` • ${p.addons.length} adicionais` : ''}</div>
-            <div class="product-price">${formatCurrency(p.price)}</div>
-            <div class="product-actions"><button class="btn btn-secondary btn-sm" onclick="editProduct('${p.id}')">✏️</button><button class="btn btn-danger btn-sm" onclick="confirmDeleteProduct('${p.id}')">🗑️</button></div>
+  const grid = document.getElementById('productsGrid');
+  if (!grid) return;
+
+  const searchInput = document.getElementById('searchInput');
+  const search = (searchInput?.value || '').toLowerCase();
+
+  let filtered = products;
+
+  if (activeCategory !== 'all') {
+    filtered = filtered.filter(p => p.category === activeCategory);
+  }
+
+  if (search) {
+    filtered = filtered.filter(p =>
+      (p.name || '').toLowerCase().includes(search) ||
+      (p.description || '').toLowerCase().includes(search)
+    );
+  }
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1;">
+        <div class="empty-state-icon">🔍</div>
+        <div class="empty-state-title">Nenhum produto encontrado</div>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(p => {
+    const rawUrl = (p.imageUrl || '').trim();
+    const ok = hasImageUrl(rawUrl);
+    const safeUrl = ok ? encodeURI(rawUrl) : '';
+
+    return `
+      <div class="product-card" onclick="openProductModal('${p.id}')">
+        <div class="product-img ${ok ? 'has-image' : ''}">
+          ${ok
+            ? `<img src="${safeUrl}" alt=""
+                 onerror="this.remove();this.parentElement.classList.remove('has-image');this.parentElement.innerHTML='${p.emoji || '🍽️'}'">`
+            : (p.emoji || '🍽️')
+          }
         </div>
-    </div>`).join('');
+        <div class="product-info">
+          <div class="product-name">${p.name || ''}</div>
+          <div class="product-desc">${p.description || ''}</div>
+          <div class="product-price">${formatCurrency(p.price)}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
+
 
 function filterProductsList() { renderProducts(); }
 

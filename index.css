@@ -2883,3 +2883,26 @@ select.input {
 }
 .notification-badge-btn{ padding:0; display:flex; align-items:center; justify-content:center; }
 .notification-badge-btn .icon{ width:20px;height:20px; background:transparent; }
+
+/* ===== Carrinho: imagem sempre em tamanho de ícone ===== */
+.cart-item-img{
+  width: 54px !important;
+  height: 54px !important;
+  min-width: 54px !important;
+  max-width: 54px !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: var(--bg-input) !important;
+  border: 1px solid var(--border) !important;
+  font-size: 1.6rem !important; /* tamanho do emoji */
+}
+
+.cart-item-img img{
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+}
