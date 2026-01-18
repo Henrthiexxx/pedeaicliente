@@ -1887,48 +1887,53 @@ function openProductModal(productId){
 }
 
 
-function closeProductPopup(){
-  document.getElementById("htmlPopup").style.display = "none";
-  document.getElementById("popupFrame").src = "about:blank";
+function closeProductPopup() {
+  const pop = document.getElementById("htmlPopup");
+  const frame = document.getElementById("popupFrame");
+  if (pop) pop.style.display = "none";
+  if (frame) frame.src = "about:blank";
 }
 
 window.addEventListener("message", (e) => {
   if (!e.data) return;
 
+  // fechar popup
   if (e.data.type === "closePopup") {
     closeProductPopup();
     return;
   }
 
+  // adicionar no carrinho (USANDO SUA FUNÇÃO OFICIAL)
   if (e.data.type === "ADD_TO_CART") {
     const payload = e.data.payload || {};
     const product = payload.product;
-
-    if (!product || !product.id) {
-      console.log("ADD_TO_CART inválido:", e.data);
-      return showToast("Erro: produto inválido");
-    }
-
     const qty = Number(payload.qty || 1);
     const addons = Array.isArray(payload.addons) ? payload.addons : [];
 
-    cart.push({
-      itemKey: `${product.id}-${Date.now()}`,
-      id: product.id,
-      name: product.name || "Produto",
-      price: Number(product.price || 0),
-      emoji: product.emoji || "🍽️",
-      imageUrl: product.imageUrl || null,
-      storeId: product.storeId || selectedStore?.id || localStorage.getItem("currentStoreId"),
-      storeName: selectedStore?.name || "",
-      qty,
-      addons
-    });
+    if (!product?.id || !product?.storeId) {
+      showToast("Produto inválido");
+      return;
+    }
 
-    saveCart();
+    // garante store selecionada (evita bug no app)
+    if (!window.selectedStore || window.selectedStore.id !== product.storeId) {
+      window.selectedStore = (window.stores || []).find(s => s.id === product.storeId) || {
+        id: product.storeId,
+        name: product.storeName || ""
+      };
+    }
+
+    localStorage.setItem("currentStoreId", product.storeId);
+
+    addToCart(product, qty, addons); // ✅ aqui está o segredo
+    closeProductPopup();
+    return;
+  }
+
+  // caso popup mande atualizar
+  if (e.data.type === "cartUpdated") {
+    loadCart();
     renderCart();
     updateCartBadge();
-    closeProductPopup();
   }
 });
-
