@@ -1897,23 +1897,32 @@ window.addEventListener("message", (e) => {
 
   if (e.data.type === "closePopup") {
     closeProductPopup();
+    return;
   }
 
   if (e.data.type === "ADD_TO_CART") {
-    const { product, qty, addons } = e.data.payload;
+    const payload = e.data.payload || {};
+    const product = payload.product;
 
-    // adiciona direto no seu carrinho REAL
+    if (!product || !product.id) {
+      console.log("ADD_TO_CART inválido:", e.data);
+      return showToast("Erro: produto inválido");
+    }
+
+    const qty = Number(payload.qty || 1);
+    const addons = Array.isArray(payload.addons) ? payload.addons : [];
+
     cart.push({
       itemKey: `${product.id}-${Date.now()}`,
       id: product.id,
-      name: product.name,
+      name: product.name || "Produto",
       price: Number(product.price || 0),
       emoji: product.emoji || "🍽️",
       imageUrl: product.imageUrl || null,
-      storeId: product.storeId,
+      storeId: product.storeId || selectedStore?.id || localStorage.getItem("currentStoreId"),
       storeName: selectedStore?.name || "",
-      qty: Number(qty || 1),
-      addons: Array.isArray(addons) ? addons : []
+      qty,
+      addons
     });
 
     saveCart();
@@ -1921,12 +1930,5 @@ window.addEventListener("message", (e) => {
     updateCartBadge();
     closeProductPopup();
   }
-
-  if (e.data.type === "cartUpdated") {
-    loadCart();
-    renderCart();
-    updateCartBadge();
-  }
 });
-
 
