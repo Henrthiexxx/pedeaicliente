@@ -212,7 +212,7 @@ const StoresModule = {
         if (filtered.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
-                    <div class="empty-state-icon">🏪</div>
+                    <div class="empty-state-icon">🪟</div>
                     <div class="empty-state-title">Nenhuma loja encontrada</div>
                 </div>
             `;
@@ -222,7 +222,8 @@ const StoresModule = {
         // Layout LISTA compacto (estilo iFood)
         container.innerHTML = filtered.map(store => {
             const isOpen = store.open !== false;
-            const hasImage = store.imageUrl && store.imageUrl.startsWith('data:');
+            const hasImage = store.imageUrl && store.imageUrl.startsWith('http');
+
             const rating = store.rating?.toFixed(1) || '4.5';
             const deliveryTime = store.deliveryTime || '30-45 min';
             const deliveryFee = store.deliveryFee ? formatCurrency(store.deliveryFee) : 'Grátis';
@@ -231,7 +232,7 @@ const StoresModule = {
                 <div class="store-item ${!isOpen ? 'closed' : ''}" onclick="selectStore('${store.id}')">
                     <div class="store-item-img ${hasImage ? 'has-image' : ''}" 
                          ${hasImage ? `style="background-image: url('${store.imageUrl}')"` : ''}>
-                        ${hasImage ? '' : (store.emoji || '🏪')}
+                        ${hasImage ? '' : (store.emoji || '🪟')}
                         ${!isOpen ? '<div class="store-closed-badge">Fechado</div>' : ''}
                     </div>
                     <div class="store-item-info">
@@ -271,7 +272,7 @@ const StoresModule = {
         if (filtered.length === 0) {
             grid.innerHTML = `
                 <div class="empty-state">
-                    <div class="empty-state-icon">🔍</div>
+                    <div class="empty-state-icon">🍔</div>
                     <div class="empty-state-title">Nenhum produto</div>
                 </div>
             `;
@@ -280,7 +281,8 @@ const StoresModule = {
         
         // Layout LISTA compacto (igual lojas)
         grid.innerHTML = filtered.map(p => {
-            const hasImage = p.imageUrl && p.imageUrl.startsWith('data:');
+            const hasImage = !!p.imageUrl && (p.imageUrl.startsWith('http://') || p.imageUrl.startsWith('https://'));
+
             const hasAddons = p.addons?.length > 0;
             
             return `
@@ -312,6 +314,36 @@ const StoresModule = {
     }
 };
 
+// ==================== HELPERS ADICIONAIS ====================
+
+// Validar e formatar adicionais ANTES de salvar/exibir
+function sanitizeAddons(addons) {
+    if (!Array.isArray(addons)) return [];
+    
+    return addons
+        .filter(a => a && typeof a === 'object')
+        .map((a, index) => ({
+            name: String(a.name || '').trim() || `Item ${index + 1}`,
+            price: parseFloat(a.price) || 0,
+            order: typeof a.order === 'number' ? a.order : index
+        }))
+        .filter(a => a.name); // Remove itens sem nome
+}
+
+// Formatar adicionais para exibição
+function formatAddons(addons) {
+    if (!Array.isArray(addons) || addons.length === 0) return '';
+    
+    const sanitized = sanitizeAddons(addons);
+    return sanitized.map(a => a.name).join(', ');
+}
+
+// Calcular total de adicionais
+function calculateAddonsTotal(addons) {
+    if (!Array.isArray(addons)) return 0;
+    return sanitizeAddons(addons).reduce((sum, a) => sum + (a.price || 0), 0);
+}
+
 // Substitui funções globais
 async function loadStores() {
     return StoresModule.loadStores();
@@ -325,3 +357,14 @@ async function loadProducts(storeId) {
 function renderProducts() {
     StoresModule.renderProducts();
 }
+
+function clearProductImage() {
+    document.getElementById('productImageUrl').value = '';
+    const preview = document.getElementById('productImagePreview');
+    if (preview) {
+        preview.innerHTML = '<div style="color: var(--text-muted); font-size: 0.75rem; text-align: center; padding: 12px;">Sem imagem<br>cole a URL abaixo</div>';
+    }
+    showToast('Imagem removida');
+}
+
+productImageData = null;
