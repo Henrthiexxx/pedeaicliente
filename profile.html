@@ -2,292 +2,206 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Meu Perfil - Pedra Delivery</title>
-
+  <meta name="theme-color" content="#000000">
   <link rel="stylesheet" href="index.css" />
-
   <style>
     body { padding:0; margin:0; min-height:100vh; }
-
     .profile-container{
-      min-height:100vh;
-      padding: 20px;
-      padding-top: 92px;
-      padding-bottom: 56px;
-      max-width: 920px;
-      margin: 0 auto;
+      min-height:100vh; padding: 20px; padding-top: 92px; padding-bottom: 56px;
+      max-width: 920px; margin: 0 auto;
     }
-
     .profile-back-header{
-      position: fixed;
-      top:0; left:0; right:0;
-      height: 64px;
-      background: var(--bg);
-      display:flex;
-      align-items:center;
-      gap: 12px;
-      padding: 0 20px;
-      z-index: 100;
-      border-bottom: 1px solid var(--border);
-      backdrop-filter: blur(10px);
+      position: fixed; top:0; left:0; right:0; height: 64px;
+      background: var(--bg); display:flex; align-items:center; gap: 12px;
+      padding: 0 20px; padding-top: env(safe-area-inset-top);
+      z-index: 100; border-bottom: 1px solid var(--border); backdrop-filter: blur(10px);
     }
     .profile-back-btn{
-      width:44px; height:44px;
-      border-radius: 12px;
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      color: var(--text);
-      font-size: 1.05rem;
-      cursor: pointer;
-      transition: all .15s ease;
-      display:flex;
-      align-items:center;
-      justify-content:center;
+      width:44px; height:44px; border-radius: 12px; background: var(--bg-input);
+      border: 1px solid var(--border); color: var(--text); font-size: 1.05rem;
+      cursor: pointer; transition: all .15s ease; display:flex; align-items:center; justify-content:center;
     }
-    .profile-back-btn:hover{ border-color: var(--primary); transform: translateY(-1px); }
-    .profile-back-btn:active{ transform: translateY(0); }
-    .profile-back-title{
-      font-size: .95rem;
-      font-weight: 600;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--text);
-      opacity: .92;
-    }
+    .profile-back-btn:hover{ border-color: var(--primary); }
+    .profile-back-title{ font-size: .95rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; }
 
     .profile-header{
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 18px;
-      box-shadow: 0 10px 28px rgba(0,0,0,.16);
-      display:flex;
-      gap: 14px;
-      align-items:center;
-      margin-bottom: 14px;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px;
+      padding: 18px; box-shadow: 0 10px 28px rgba(0,0,0,.16);
+      display:flex; gap: 14px; align-items:center; margin-bottom: 14px;
     }
-
-    .avatar-wrap{
-      width: 82px;
-      height: 82px;
-      flex: 0 0 auto;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-
     .profile-avatar{
-      width: 82px;
-      height: 82px;
-      border-radius: 18px;
-      border: 1px solid var(--border);
-      background: var(--bg-input);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color: var(--text);
-      font-weight: 800;
-      font-size: 1.9rem;
-      letter-spacing: .6px;
-      overflow:hidden;
-      user-select: none;
+      width: 82px; height: 82px; border-radius: 18px; border: 1px solid var(--border);
+      background: var(--bg-input); display:flex; align-items:center; justify-content:center;
+      color: var(--text); font-weight: 800; font-size: 1.9rem; flex: 0 0 auto;
     }
-
     .profile-identity{ flex: 1; min-width: 0; }
-    .profile-name{
-      font-size: 1.15rem;
-      font-weight: 800;
-      color: var(--text);
-      letter-spacing: .2px;
-      margin-bottom: 4px;
-      word-break: break-word;
-    }
-    .profile-email{
-      font-size: .9rem;
-      color: var(--text-muted);
-      word-break: break-word;
-    }
-
-    .profile-badges{
-      margin-top: 10px;
-      display:flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
+    .profile-name{ font-size: 1.15rem; font-weight: 800; margin-bottom: 4px; word-break: break-word; }
+    .profile-email{ font-size: .9rem; color: var(--text-muted); word-break: break-word; }
+    .profile-badges{ margin-top: 10px; display:flex; flex-wrap: wrap; gap: 8px; }
     .chip{
-      border: 1px solid var(--border);
-      background: var(--bg-input);
-      color: var(--text);
-      border-radius: 999px;
-      padding: 6px 10px;
-      font-size: .82rem;
-      line-height: 1;
-      opacity: .95;
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
+      border: 1px solid var(--border); background: var(--bg-input); color: var(--text);
+      border-radius: 999px; padding: 6px 10px; font-size: .82rem; display:inline-flex; align-items:center; gap: 8px;
     }
     .chip.muted{ color: var(--text-muted); }
-    .dot{
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background: var(--primary);
-      box-shadow: 0 0 0 4px rgba(255,255,255,.02);
-    }
+    .chip.warning{ border-color: rgba(255,152,0,.4); color: #ffb74d; background: rgba(255,152,0,.1); }
+    .chip.success{ border-color: rgba(34,197,94,.4); color: #4ade80; background: rgba(34,197,94,.1); }
+    .dot{ width: 10px; height: 10px; border-radius: 999px; background: var(--primary); }
 
-    .profile-menu{
-      margin-top: 12px;
-      display:flex;
-      flex-direction: column;
-      gap: 10px;
+    /* Formulário de dados */
+    .profile-form{
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px;
+      padding: 18px; margin-bottom: 14px;
     }
+    .form-title{ font-size: .85rem; font-weight: 700; margin-bottom: 16px; display:flex; align-items:center; gap: 8px; }
+    .form-title .icon{ font-size: 1.1rem; }
+    .form-group{ margin-bottom: 16px; }
+    .form-label{
+      display: block; margin-bottom: 8px; font-size: .78rem; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+    .form-label .required{ color: #ef4444; }
+    .form-label .optional{ color: var(--primary); font-size: .7rem; margin-left: 4px; }
+    .form-input{
+      width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border);
+      background: var(--bg-input); color: var(--text); font-size: 1rem; transition: all .2s;
+    }
+    .form-input:focus{ outline: none; border-color: var(--primary); }
+    .form-input.error{ border-color: #ef4444; }
+    .form-hint{ font-size: .75rem; color: var(--text-muted); margin-top: 6px; }
+    .form-hint.error{ color: #ef4444; }
+    .form-hint.success{ color: #4ade80; }
+    .btn-save{
+      width: 100%; padding: 14px; border-radius: 12px; border: none;
+      background: var(--primary); color: #000; font-size: .95rem; font-weight: 700;
+      cursor: pointer; transition: all .2s; text-transform: uppercase; letter-spacing: 1px;
+    }
+    .btn-save:hover{ opacity: .9; }
+    .btn-save:disabled{ opacity: .5; cursor: not-allowed; }
 
+    /* Alert de dados incompletos */
+    .alert-incomplete{
+      background: rgba(255,152,0,.1); border: 1px solid rgba(255,152,0,.3);
+      border-radius: 12px; padding: 14px; margin-bottom: 14px;
+      display: flex; align-items: flex-start; gap: 12px;
+    }
+    .alert-incomplete .icon{ font-size: 1.3rem; }
+    .alert-incomplete .text{ flex: 1; }
+    .alert-incomplete .title{ font-weight: 700; color: #ffb74d; margin-bottom: 4px; }
+    .alert-incomplete .desc{ font-size: .85rem; color: var(--text-muted); line-height: 1.4; }
+
+    /* Menu */
+    .profile-menu{ margin-top: 12px; display:flex; flex-direction: column; gap: 10px; }
     .menu-section{
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      overflow: hidden;
-      box-shadow: 0 10px 28px rgba(0,0,0,.14);
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px;
+      overflow: hidden; box-shadow: 0 10px 28px rgba(0,0,0,.14);
     }
-
     .section-title{
-      padding: 12px 14px;
-      font-size: .78rem;
-      letter-spacing: 1.6px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      border-bottom: 1px solid rgba(255,255,255,.04);
-      background: rgba(255,255,255,.02);
+      padding: 12px 14px; font-size: .78rem; letter-spacing: 1.6px; text-transform: uppercase;
+      color: var(--text-muted); border-bottom: 1px solid rgba(255,255,255,.04); background: rgba(255,255,255,.02);
     }
-
     .profile-menu-item{
-      display:flex;
-      align-items:center;
-      gap: 12px;
-      padding: 14px;
-      cursor:pointer;
-      transition: all .12s ease;
-      border-bottom: 1px solid rgba(255,255,255,.04);
+      display:flex; align-items:center; gap: 12px; padding: 14px; cursor:pointer;
+      transition: all .12s ease; border-bottom: 1px solid rgba(255,255,255,.04);
     }
     .profile-menu-item:last-child{ border-bottom: none; }
     .profile-menu-item:hover{ background: rgba(255,255,255,.03); }
-
     .menu-icon{
-      width: 42px;
-      height: 42px;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      background: var(--bg-input);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color: var(--text);
-      font-size: .78rem;
-      letter-spacing: .8px;
-      text-transform: uppercase;
-      opacity: .95;
-      flex: 0 0 auto;
+      width: 42px; height: 42px; border-radius: 14px; border: 1px solid var(--border);
+      background: var(--bg-input); display:flex; align-items:center; justify-content:center;
+      font-size: .78rem; letter-spacing: .8px; text-transform: uppercase; flex: 0 0 auto;
     }
-
     .menu-text{ flex: 1; min-width: 0; }
-    .menu-title{
-      font-weight: 800;
-      font-size: .95rem;
-      color: var(--text);
-      margin-bottom: 2px;
-      letter-spacing: .1px;
-    }
-    .menu-subtitle{
-      font-size: .78rem;
-      color: var(--text-muted);
-      line-height: 1.1rem;
-    }
-
-    .menu-right{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      flex: 0 0 auto;
-    }
-
+    .menu-title{ font-weight: 800; font-size: .95rem; margin-bottom: 2px; }
+    .menu-subtitle{ font-size: .78rem; color: var(--text-muted); }
+    .menu-right{ display:flex; align-items:center; gap: 10px; }
     .badge{
-      min-width: 26px;
-      height: 26px;
-      border-radius: 999px;
-      padding: 0 10px;
-      background: var(--primary);
-      color: #000;
-      font-size: .78rem;
-      font-weight: 800;
-      display:none;
-      align-items:center;
-      justify-content:center;
+      min-width: 26px; height: 26px; border-radius: 999px; padding: 0 10px;
+      background: var(--primary); color: #000; font-size: .78rem; font-weight: 800;
+      display:none; align-items:center; justify-content:center;
     }
-
     .arrow{
-      width: 28px;
-      height: 28px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,.06);
-      background: rgba(255,255,255,.02);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color: var(--text-muted);
-      font-size: 1.05rem;
-      line-height: 1;
+      width: 28px; height: 28px; border-radius: 10px; border: 1px solid rgba(255,255,255,.06);
+      background: rgba(255,255,255,.02); display:flex; align-items:center; justify-content:center;
+      color: var(--text-muted); font-size: 1.05rem;
     }
+    .danger .menu-icon{ border-color: rgba(239,68,68,.3); color: #ef4444; }
 
-    .danger .menu-icon{
-      border-color: rgba(255,0,0,.2);
-      color: var(--danger);
+    .toast{
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px);
+      background: var(--bg-card); padding: 14px 24px; border-radius: 12px;
+      border: 1px solid var(--border); z-index: 300; opacity: 0; transition: all .3s;
     }
+    .toast.show{ transform: translateX(-50%) translateY(0); opacity: 1; }
 
     @media (max-width: 520px){
       .profile-container{ padding-left: 14px; padding-right: 14px; }
       .profile-header{ padding: 14px; }
       .profile-name{ font-size: 1.05rem; }
-      .menu-icon{ width: 40px; height: 40px; }
     }
-
-    .wa-install-modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:9999;padding:16px}
-.wa-install-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:18px;max-width:360px;width:100%;text-align:center}
-.wa-install-icon{font-size:48px;margin-bottom:8px}
-.wa-install-title{font-weight:700;font-size:1.1rem}
-.wa-install-sub{color:var(--text-muted);margin:10px 0 14px;line-height:1.4}
-.wa-install-btn{background:var(--primary);color:#000;border:0;padding:10px 14px;border-radius:10px;font-weight:700;width:100%}
-
   </style>
 </head>
-
 <body>
   <div class="profile-back-header">
-    <button class="profile-back-btn" onclick="goBack()" aria-label="Voltar">←</button>
+    <button class="profile-back-btn" onclick="goBack()">←</button>
     <div class="profile-back-title">Meu Perfil</div>
   </div>
 
   <div class="profile-container">
-    <div class="profile-header">
-      <div class="avatar-wrap" id="profileAvatarContainer"></div>
+    <!-- Alerta de dados incompletos -->
+    <div class="alert-incomplete" id="alertIncomplete" style="display:none;">
+      <div class="icon">⚠️</div>
+      <div class="text">
+        <div class="title">Complete seu cadastro</div>
+        <div class="desc">Adicione seu telefone para poder fazer pedidos.</div>
+      </div>
+    </div>
 
+    <!-- Header do perfil -->
+    <div class="profile-header">
+      <div class="profile-avatar" id="profileAvatar">U</div>
       <div class="profile-identity">
         <div class="profile-name" id="profileName">-</div>
         <div class="profile-email" id="profileEmail">-</div>
-
         <div class="profile-badges">
-          <span class="chip muted"><span class="dot" aria-hidden="true"></span><span>Conta ativa</span></span>
-          <span class="chip muted" id="profileUidChip" style="display:none;"><span class="dot" aria-hidden="true"></span><span id="profileUidText"></span></span>
+          <span class="chip muted"><span class="dot"></span>Conta ativa</span>
+          <span class="chip warning" id="chipIncomplete" style="display:none;">📱 Telefone pendente</span>
+          <span class="chip success" id="chipComplete" style="display:none;">✓ Cadastro completo</span>
         </div>
       </div>
     </div>
 
+    <!-- Formulário de dados pessoais -->
+    <div class="profile-form">
+      <div class="form-title"><span class="icon">👤</span> Dados Pessoais</div>
+      
+      <div class="form-group">
+        <label class="form-label">Nome completo</label>
+        <input type="text" class="form-input" id="inputName" placeholder="Seu nome completo">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Telefone / WhatsApp <span class="required">*</span></label>
+        <input type="tel" class="form-input" id="inputPhone" placeholder="(00) 00000-0000" maxlength="15">
+        <div class="form-hint" id="phoneHint">Obrigatório para receber atualizações do pedido</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">CPF <span class="optional">(opcional)</span></label>
+        <input type="text" class="form-input" id="inputCpf" placeholder="000.000.000-00" maxlength="14">
+        <div class="form-hint">🎁 Cadastre o CPF e ganhe bônus em pedidos futuros!</div>
+      </div>
+
+      <button class="btn-save" id="btnSave" onclick="saveProfile()">Salvar alterações</button>
+    </div>
+
+    <!-- Menu -->
     <div class="profile-menu">
       <div class="menu-section">
         <div class="section-title">Conta</div>
 
-        <div class="profile-menu-item" onclick="window.location.href='pending-reviews.html'">
+        <div class="profile-menu-item" onclick="location.href='pending-reviews.html'">
           <div class="menu-icon">REV</div>
           <div class="menu-text">
             <div class="menu-title">Avaliações pendentes</div>
@@ -299,7 +213,7 @@
           </div>
         </div>
 
-        <div class="profile-menu-item" onclick="window.location.href='address.html'">
+        <div class="profile-menu-item" onclick="location.href='address.html'">
           <div class="menu-icon">ADR</div>
           <div class="menu-text">
             <div class="menu-title">Meus endereços</div>
@@ -308,7 +222,7 @@
           <div class="menu-right"><div class="arrow">›</div></div>
         </div>
 
-        <div class="profile-menu-item" onclick="window.location.href='orders.html'">
+        <div class="profile-menu-item" onclick="location.href='orders.html'">
           <div class="menu-icon">ORD</div>
           <div class="menu-text">
             <div class="menu-title">Histórico de pedidos</div>
@@ -321,7 +235,7 @@
       <div class="menu-section">
         <div class="section-title">App</div>
 
-        <div class="profile-menu-item" onclick="window.location.href='notifications.html'">
+        <div class="profile-menu-item" onclick="location.href='notifications.html'">
           <div class="menu-icon">NOT</div>
           <div class="menu-text">
             <div class="menu-title">Notificações</div>
@@ -330,42 +244,11 @@
           <div class="menu-right"><div class="arrow">›</div></div>
         </div>
 
-        <div class="profile-menu-item" onclick="window.location.href='help.html'">
+        <div class="profile-menu-item" onclick="location.href='suporte.html'">
           <div class="menu-icon">HLP</div>
           <div class="menu-text">
             <div class="menu-title">Ajuda e suporte</div>
-            <div class="menu-subtitle">Fale com a equipe e tire dúvidas</div>
-          </div>
-          <div class="menu-right"><div class="arrow">›</div></div>
-        </div>
-
-        <div class="profile-menu-item" onclick="window.location.href='about.html'">
-          <div class="menu-icon">INF</div>
-          <div class="menu-text">
-            <div class="menu-title">Sobre o app</div>
-            <div class="menu-subtitle">Versão, termos e informações</div>
-          </div>
-          <div class="menu-right"><div class="arrow">›</div></div>
-        </div>
-      </div>
-
-      <div class="menu-section">
-        <div class="section-title">Segurança</div>
-
-        <div class="profile-menu-item" onclick="window.location.href='security.html'">
-          <div class="menu-icon">SEC</div>
-          <div class="menu-text">
-            <div class="menu-title">Segurança da conta</div>
-            <div class="menu-subtitle">Senha, dispositivos e privacidade</div>
-          </div>
-          <div class="menu-right"><div class="arrow">›</div></div>
-        </div>
-
-        <div class="profile-menu-item" onclick="window.location.href='payments.html'">
-          <div class="menu-icon">PAY</div>
-          <div class="menu-text">
-            <div class="menu-title">Pagamentos</div>
-            <div class="menu-subtitle">Métodos e recibos</div>
+            <div class="menu-subtitle">Fale com a equipe via WhatsApp</div>
           </div>
           <div class="menu-right"><div class="arrow">›</div></div>
         </div>
@@ -388,6 +271,21 @@
 
   <div class="toast" id="toast"></div>
 
+  <!-- Popup de logout -->
+  <div id="logoutPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:#0a0a0a;border:1px solid #262626;border-radius:16px;max-width:340px;width:100%;overflow:hidden;">
+      <div style="padding:24px;text-align:center;">
+        <div style="font-size:3rem;margin-bottom:12px;">👋</div>
+        <div style="font-size:1.1rem;font-weight:600;margin-bottom:8px;">Sair da conta</div>
+        <div style="color:#737373;font-size:.9rem;">Tem certeza que deseja sair? Você precisará fazer login novamente.</div>
+      </div>
+      <div style="display:flex;border-top:1px solid #262626;">
+        <button onclick="closeLogoutPopup()" style="flex:1;padding:16px;border:none;background:transparent;color:#737373;font-size:.95rem;cursor:pointer;">Cancelar</button>
+        <button onclick="confirmLogout()" style="flex:1;padding:16px;border:none;border-left:1px solid #262626;background:transparent;color:#ef4444;font-size:.95rem;font-weight:600;cursor:pointer;">Sair</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -397,142 +295,216 @@
       apiKey: "AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",
       authDomain: "pedrad-814d0.firebaseapp.com",
       projectId: "pedrad-814d0",
-      storageBucket: "pedrad-814d0.firebasestorage.app",
+      storageBucket: "pedrad-814d0.appspot.com",
       messagingSenderId: "293587190550",
       appId: "1:293587190550:web:80c9399f82847c80e20637"
     };
-
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
 
     let currentUser = null;
+    let userData = null;
 
+    // ===== AUTH =====
     auth.onAuthStateChanged(async (user) => {
       if (user) {
         currentUser = user;
         await loadProfile();
         await updatePendingReviewsBadge();
       } else {
-        window.location.href = "index.html";
+        location.href = "index.html";
       }
     });
 
+    // ===== LOAD PROFILE =====
     async function loadProfile() {
       if (!currentUser) return;
 
-      const nameEl = document.getElementById("profileName");
-      const emailEl = document.getElementById("profileEmail");
-      const avatarContainer = document.getElementById("profileAvatarContainer");
+      // Dados do Auth
+      const name = currentUser.displayName || '';
+      const email = currentUser.email || '';
+      const initial = (name || email || 'U')[0].toUpperCase();
 
-      if (nameEl) nameEl.textContent = currentUser.displayName || "Usuário";
-      if (emailEl) emailEl.textContent = currentUser.email || "";
+      document.getElementById('profileAvatar').textContent = initial;
+      document.getElementById('profileName').textContent = name || 'Usuário';
+      document.getElementById('profileEmail').textContent = email;
 
-      const uidChip = document.getElementById("profileUidChip");
-      const uidText = document.getElementById("profileUidText");
-      if (uidChip && uidText && currentUser.uid) {
-        uidText.textContent = "ID: " + String(currentUser.uid).slice(0, 8);
-        uidChip.style.display = "inline-flex";
-      }
+      // Busca dados extras do Firestore
+      try {
+        const doc = await db.collection('users').doc(currentUser.uid).get();
+        userData = doc.exists ? doc.data() : {};
 
-      // Avatar SEM upload (apenas inicial)
-      if (avatarContainer) {
-        const initial = (currentUser.displayName || currentUser.email || "U")[0].toUpperCase();
-        avatarContainer.innerHTML = `
-          <div class="avatar-wrap">
-            <div class="profile-avatar" aria-label="Avatar">${escapeHtml(initial)}</div>
-          </div>
-        `;
+        // Preenche formulário
+        document.getElementById('inputName').value = userData.name || name || '';
+        document.getElementById('inputPhone').value = formatPhone(userData.phone || '');
+        document.getElementById('inputCpf').value = formatCpf(userData.cpf || '');
+
+        // Atualiza indicadores
+        updateProfileStatus();
+
+      } catch (err) {
+        console.error('Erro ao carregar perfil:', err);
+        userData = {};
       }
     }
 
-    async function updatePendingReviewsBadge() {
+    // ===== UPDATE STATUS =====
+    function updateProfileStatus() {
+      const phone = (document.getElementById('inputPhone').value || '').replace(/\D/g, '');
+      const hasPhone = phone.length >= 10;
+
+      document.getElementById('alertIncomplete').style.display = hasPhone ? 'none' : 'flex';
+      document.getElementById('chipIncomplete').style.display = hasPhone ? 'none' : 'inline-flex';
+      document.getElementById('chipComplete').style.display = hasPhone ? 'inline-flex' : 'none';
+    }
+
+    // ===== SAVE PROFILE =====
+    async function saveProfile() {
       if (!currentUser) return;
 
+      const name = (document.getElementById('inputName').value || '').trim();
+      const phone = (document.getElementById('inputPhone').value || '').replace(/\D/g, '');
+      const cpf = (document.getElementById('inputCpf').value || '').replace(/\D/g, '');
+
+      // Validação do telefone
+      if (phone.length > 0 && phone.length < 10) {
+        document.getElementById('inputPhone').classList.add('error');
+        document.getElementById('phoneHint').textContent = 'Telefone inválido';
+        document.getElementById('phoneHint').classList.add('error');
+        return;
+      }
+
+      // Validação do CPF (se preenchido)
+      if (cpf.length > 0 && cpf.length !== 11) {
+        showToast('CPF deve ter 11 dígitos');
+        return;
+      }
+
+      const btn = document.getElementById('btnSave');
+      btn.disabled = true;
+      btn.textContent = 'Salvando...';
+
       try {
-        const snapshot = await db.collection("orders")
-          .where("userId", "==", currentUser.uid)
-          .where("status", "==", "delivered")
-          .where("reviewed", "==", false)
+        // Atualiza displayName no Auth
+        if (name && name !== currentUser.displayName) {
+          await currentUser.updateProfile({ displayName: name });
+        }
+
+        // Salva no Firestore
+        await db.collection('users').doc(currentUser.uid).set({
+          name: name,
+          phone: phone,
+          cpf: cpf,
+          email: currentUser.email,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        // Atualiza localStorage para usar nos pedidos
+        localStorage.setItem('userPhone', phone);
+        localStorage.setItem('userName', name);
+        if (cpf) localStorage.setItem('userCpf', cpf);
+
+        document.getElementById('profileName').textContent = name || 'Usuário';
+        document.getElementById('inputPhone').classList.remove('error');
+        document.getElementById('phoneHint').textContent = 'Obrigatório para receber atualizações do pedido';
+        document.getElementById('phoneHint').classList.remove('error');
+
+        updateProfileStatus();
+        showToast('✓ Perfil salvo!');
+
+      } catch (err) {
+        console.error('Erro ao salvar:', err);
+        showToast('Erro ao salvar');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Salvar alterações';
+      }
+    }
+
+    // ===== MASKS =====
+    function formatPhone(value) {
+      const v = String(value || '').replace(/\D/g, '');
+      if (v.length <= 2) return v;
+      if (v.length <= 7) return `(${v.slice(0,2)}) ${v.slice(2)}`;
+      if (v.length <= 11) return `(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`;
+      return `(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7,11)}`;
+    }
+
+    function formatCpf(value) {
+      const v = String(value || '').replace(/\D/g, '');
+      if (v.length <= 3) return v;
+      if (v.length <= 6) return `${v.slice(0,3)}.${v.slice(3)}`;
+      if (v.length <= 9) return `${v.slice(0,3)}.${v.slice(3,6)}.${v.slice(6)}`;
+      return `${v.slice(0,3)}.${v.slice(3,6)}.${v.slice(6,9)}-${v.slice(9,11)}`;
+    }
+
+    // Aplica máscaras nos inputs
+    document.getElementById('inputPhone').addEventListener('input', function(e) {
+      e.target.value = formatPhone(e.target.value);
+      updateProfileStatus();
+    });
+
+    document.getElementById('inputCpf').addEventListener('input', function(e) {
+      e.target.value = formatCpf(e.target.value);
+    });
+
+    // ===== PENDING REVIEWS =====
+    async function updatePendingReviewsBadge() {
+      if (!currentUser) return;
+      try {
+        const snapshot = await db.collection('orders')
+          .where('userId', '==', currentUser.uid)
+          .where('status', '==', 'delivered')
+          .where('reviewed', '==', false)
           .get();
-
         const count = snapshot.size;
-        const badge = document.getElementById("pendingReviewsBadge");
-
+        const badge = document.getElementById('pendingReviewsBadge');
         if (badge) {
           badge.textContent = count;
-          badge.style.display = count > 0 ? "flex" : "none";
+          badge.style.display = count > 0 ? 'flex' : 'none';
         }
       } catch (err) {
-        console.error("Error counting reviews:", err);
+        console.error('Erro ao contar reviews:', err);
       }
     }
 
-    async function handleLogout() {
-      if (confirm("Deseja sair da sua conta?")) {
-        try {
-          await auth.signOut();
-          window.location.href = "index.html";
-        } catch (err) {
-          showToast("Erro ao sair");
-        }
+    // ===== LOGOUT =====
+    function handleLogout() {
+      document.getElementById('logoutPopup').style.display = 'flex';
+    }
+
+    function closeLogoutPopup() {
+      document.getElementById('logoutPopup').style.display = 'none';
+    }
+
+    async function confirmLogout() {
+      try {
+        await auth.signOut();
+        localStorage.removeItem('userPhone');
+        localStorage.removeItem('userName');
+        localStorage.removeItem('userCpf');
+        location.href = 'index.html';
+      } catch (err) {
+        showToast('Erro ao sair');
       }
     }
 
+    // ===== UTILS =====
     function goBack() {
-      if (document.referrer.includes("index.html") || document.referrer.includes(window.location.host)) {
-        window.history.back();
+      if (document.referrer.includes(location.host)) {
+        history.back();
       } else {
-        window.location.href = "index.html";
+        location.href = 'index.html';
       }
     }
 
-    function showToast(message) {
-      const toast = document.getElementById("toast");
-      if (!toast) return;
-      toast.textContent = message;
-      toast.classList.add("show");
-      setTimeout(() => toast.classList.remove("show"), 3000);
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
     }
-
-    function escapeHtml(str) {
-      return String(str)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    function closeWaInstall(){ document.getElementById('waInstallModal').style.display='none'; }
-
-function openWhatsApp(){
-  if(!storePhone) return alert('Telefone não disponível');
-  const clean = storePhone.replace(/\D/g,'');
-  const phone = clean.startsWith('55') ? clean : '55'+clean;
-  const msg = encodeURIComponent(`Olá! Vim pelo ${storeName||'app'} 😄`);
-  const appUrl = `whatsapp://send?phone=${phone}&text=${msg}`;
-
-  const t = Date.now();
-  window.location.href = appUrl;
-
-  setTimeout(()=>{
-    if(Date.now() - t < 1200){
-      document.getElementById('waInstallModal').style.display='flex';
-    }
-  }, 700);
-}
-
   </script>
-
-  <div class="wa-install-modal" id="waInstallModal">
-  <div class="wa-install-card">
-    <div class="wa-install-icon">🟢</div>
-    <div class="wa-install-title">Instale o WhatsApp</div>
-    <div class="wa-install-sub">Para falar com a loja, instale o WhatsApp no seu celular.</div>
-    <button class="wa-install-btn" onclick="closeWaInstall()">Entendi</button>
-  </div>
-</div>
-
 </body>
 </html>

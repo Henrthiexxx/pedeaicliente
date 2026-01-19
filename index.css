@@ -2906,3 +2906,8 @@ select.input {
   object-fit: cover !important;
   display: block !important;
 }
+
+body{
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
