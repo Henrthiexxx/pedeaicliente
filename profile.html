@@ -251,6 +251,14 @@
       .profile-name{ font-size: 1.05rem; }
       .menu-icon{ width: 40px; height: 40px; }
     }
+
+    .wa-install-modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:9999;padding:16px}
+.wa-install-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:18px;max-width:360px;width:100%;text-align:center}
+.wa-install-icon{font-size:48px;margin-bottom:8px}
+.wa-install-title{font-weight:700;font-size:1.1rem}
+.wa-install-sub{color:var(--text-muted);margin:10px 0 14px;line-height:1.4}
+.wa-install-btn{background:var(--primary);color:#000;border:0;padding:10px 14px;border-radius:10px;font-weight:700;width:100%}
+
   </style>
 </head>
 
@@ -495,6 +503,36 @@
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
     }
+
+    function closeWaInstall(){ document.getElementById('waInstallModal').style.display='none'; }
+
+function openWhatsApp(){
+  if(!storePhone) return alert('Telefone não disponível');
+  const clean = storePhone.replace(/\D/g,'');
+  const phone = clean.startsWith('55') ? clean : '55'+clean;
+  const msg = encodeURIComponent(`Olá! Vim pelo ${storeName||'app'} 😄`);
+  const appUrl = `whatsapp://send?phone=${phone}&text=${msg}`;
+
+  const t = Date.now();
+  window.location.href = appUrl;
+
+  setTimeout(()=>{
+    if(Date.now() - t < 1200){
+      document.getElementById('waInstallModal').style.display='flex';
+    }
+  }, 700);
+}
+
   </script>
+
+  <div class="wa-install-modal" id="waInstallModal">
+  <div class="wa-install-card">
+    <div class="wa-install-icon">🟢</div>
+    <div class="wa-install-title">Instale o WhatsApp</div>
+    <div class="wa-install-sub">Para falar com a loja, instale o WhatsApp no seu celular.</div>
+    <button class="wa-install-btn" onclick="closeWaInstall()">Entendi</button>
+  </div>
+</div>
+
 </body>
 </html>
