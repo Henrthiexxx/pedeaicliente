@@ -283,7 +283,7 @@
             <div class="store-banner">
                 <div class="store-logo" id="storeLogo">🏪</div>
                 <div class="store-name-big" id="storeName">Carregando...</div>
-                <div class="store-category" id="storeCategory">-</div>
+                
                 <div class="store-rating-big">
                     <div class="rating-stars-value">
                         <span>⭐</span>
@@ -527,7 +527,7 @@
         
         async function loadReviews() {
             try {
-                console.log('🔍 Carregando reviews para storeId:', storeId);
+                console.log('🔍 Buscando...', storeId);
                 
                 // Query simplificada (sem índice composto)
                 const reviewsSnapshot = await db.collection('reviews')
