@@ -1,539 +1,901 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Meus Pedidos - Pedrad</title>
-
-  <!-- (Opcional) seu CSS global -->
-  <link rel="stylesheet" href="index.css" />
-
+  <meta name="theme-color" content="#000000">
   <style>
-    body{margin:0;min-height:100vh;background:var(--bg,#000);color:var(--text,#fff);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
-    .wrap{max-width:920px;margin:0 auto;min-height:100vh;padding:86px 14px 22px}
-    .hdr{position:fixed;top:0;left:0;right:0;height:64px;background:var(--bg,#000);border-bottom:1px solid var(--border,rgba(255,255,255,.12));display:flex;align-items:center;gap:12px;padding:0 14px;z-index:9999;backdrop-filter:blur(10px)}
-    .btn-ic{width:44px;height:44px;border-radius:12px;border:1px solid var(--border,rgba(255,255,255,.12));background:var(--bg-input,rgba(255,255,255,.06));color:var(--text,#fff);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s}
-    .btn-ic:hover{border-color:var(--primary,#fff);transform:translateY(-1px)}
-    .btn-ic:active{transform:translateY(0)}
-    .title{flex:1;text-align:center;font-weight:900;letter-spacing:2px;text-transform:uppercase;font-size:.95rem;opacity:.92;pointer-events:none}
-    .chip{border:1px solid var(--border,rgba(255,255,255,.12));background:var(--bg-input,rgba(255,255,255,.06));color:var(--text-muted,rgba(255,255,255,.65));border-radius:999px;padding:6px 10px;font-size:.78rem;white-space:nowrap}
-    .tools{display:flex;gap:10px;margin:12px 0 14px}
-    .tool{flex:1;border-radius:14px;border:1px solid var(--border,rgba(255,255,255,.12));background:var(--bg-card,rgba(255,255,255,.04));color:var(--text,#fff);padding:12px;font-weight:900;cursor:pointer;transition:.15s;box-shadow:0 10px 28px rgba(0,0,0,.18)}
-    .tool:hover{border-color:var(--primary,#fff);transform:translateY(-1px)}
-    .tool:active{transform:translateY(0)}
-    .tool.secondary{background:var(--bg-input,rgba(255,255,255,.06));box-shadow:none}
-    .tool.danger:hover{border-color:var(--danger,#ff4d4d);color:var(--danger,#ff4d4d)}
-    .list{display:flex;flex-direction:column;gap:12px}
-    .card{background:var(--bg-card,rgba(255,255,255,.04));border:1px solid var(--border,rgba(255,255,255,.12));border-radius:16px;padding:14px;box-shadow:0 10px 28px rgba(0,0,0,.14);cursor:pointer;transition:.15s}
-    .card:hover{border-color:rgba(255,255,255,.20);transform:translateY(-1px)}
-    .row{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-    .store{font-weight:900;font-size:1rem;margin-bottom:6px;overflow-wrap:anywhere}
-    .muted{color:var(--text-muted,rgba(255,255,255,.65));font-size:.82rem}
-    .status{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);font-weight:900;font-size:.78rem;white-space:nowrap}
-    .dot{width:8px;height:8px;border-radius:999px;background:var(--primary,#fff)}
-    .items{margin-top:10px;color:var(--text-muted,rgba(255,255,255,.65));font-size:.86rem;line-height:1.25rem;overflow-wrap:anywhere}
-    .total{margin-top:10px;display:flex;justify-content:space-between;font-weight:900}
-    .empty{padding:64px 16px;text-align:center;border:1px solid var(--border,rgba(255,255,255,.12));border-radius:18px;background:var(--bg-card,rgba(255,255,255,.04))}
-    .empty b{display:block;margin-top:10px;font-size:1rem}
-    .modal-ui{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:99999;padding:16px}
-    .modal-ui.show{display:flex}
-    .modal-ui-card{width:min(520px,100%);background:var(--bg-card,rgba(255,255,255,.04));border:1px solid var(--border,rgba(255,255,255,.12));border-radius:18px;box-shadow:0 18px 60px rgba(0,0,0,.35);padding:16px}
-    .modal-ui-title{font-weight:900;margin-bottom:8px}
-    .modal-ui-text{color:var(--text-muted,rgba(255,255,255,.65));line-height:1.45;margin-bottom:14px;white-space:pre-wrap;overflow-wrap:anywhere}
-    .modal-ui-actions{display:flex;gap:10px;justify-content:flex-end}
-    .btn-ui{height:42px;padding:0 14px;border-radius:14px;border:1px solid rgba(255,255,255,.10);background:var(--bg-input,rgba(255,255,255,.06));color:var(--text,#fff);font-weight:900;cursor:pointer;transition:.15s}
-    .btn-ui:hover{border-color:var(--primary,#fff);transform:translateY(-1px)}
-    .btn-ui:active{transform:translateY(0)}
-    .btn-ui.primary{background:var(--primary,#fff);color:#000;border-color:transparent}
+    :root {
+      --bg: #000; --bg-card: #0a0a0a; --bg-input: #111;
+      --border: #262626; --text: #fafafa; --text-muted: #737373;
+      --primary: #fff; --danger: #ef4444; --success: #22c55e;
+      --warning: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 64px; background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 12px;
+      padding: 0 16px; padding-top: env(safe-area-inset-top);
+    }
+    .btn-back {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: var(--bg-input); border: 1px solid var(--border);
+      color: var(--text); font-size: 1.1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .header-title { flex: 1; font-size: 1rem; font-weight: 700; letter-spacing: 1px; }
+    .header-badge {
+      background: var(--bg-input); border: 1px solid var(--border);
+      border-radius: 20px; padding: 6px 12px; font-size: .75rem;
+      color: var(--text-muted);
+    }
+    .btn-refresh {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: var(--bg-input); border: 1px solid var(--border);
+      color: var(--text); font-size: 1.1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Container */
+    .container {
+      max-width: 600px; margin: 0 auto;
+      padding: 84px 16px 100px;
+    }
+
+    /* Stats */
+    .stats {
+      display: flex; gap: 10px; margin-bottom: 16px;
+    }
+    .stat {
+      flex: 1; background: var(--bg-card);
+      border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px; text-align: center;
+    }
+    .stat-value { font-size: 1.5rem; font-weight: 800; }
+    .stat-label { font-size: .7rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* Actions */
+    .actions {
+      display: flex; gap: 10px; margin-bottom: 16px;
+    }
+    .btn-action {
+      flex: 1; padding: 12px; border-radius: 12px;
+      border: 1px solid var(--border); background: var(--bg-card);
+      color: var(--text); font-size: .85rem; font-weight: 600;
+      cursor: pointer; transition: all .2s;
+    }
+    .btn-action:hover { border-color: var(--primary); }
+    .btn-action:disabled { opacity: .4; cursor: not-allowed; }
+    .btn-action.danger { color: var(--danger); border-color: rgba(239,68,68,.3); }
+    .btn-action.danger:hover { background: rgba(239,68,68,.1); }
+    .btn-action.active { background: var(--primary); color: #000; border-color: transparent; }
+
+    /* Filter Tabs */
+    .tabs {
+      display: flex; gap: 8px; margin-bottom: 16px;
+      overflow-x: auto; padding-bottom: 4px;
+    }
+    .tab {
+      padding: 10px 16px; border-radius: 20px;
+      border: 1px solid var(--border); background: var(--bg-card);
+      color: var(--text-muted); font-size: .8rem; font-weight: 600;
+      cursor: pointer; white-space: nowrap; transition: all .2s;
+    }
+    .tab:hover { border-color: var(--text-muted); }
+    .tab.active { background: var(--primary); color: #000; border-color: transparent; }
+
+    /* Orders List */
+    .orders-list { display: flex; flex-direction: column; gap: 12px; }
+
+    /* Order Card */
+    .order-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden; cursor: pointer;
+      transition: all .2s;
+    }
+    .order-card:hover { border-color: rgba(255,255,255,.2); }
+    .order-card.active-order { border-left: 3px solid var(--success); }
+
+    .order-header {
+      padding: 14px; display: flex; justify-content: space-between;
+      align-items: flex-start; gap: 12px;
+    }
+    .order-store { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
+    .order-meta { font-size: .8rem; color: var(--text-muted); }
+    .order-status {
+      padding: 6px 10px; border-radius: 20px; font-size: .75rem;
+      font-weight: 600; white-space: nowrap;
+    }
+    .status-pending { background: rgba(245,158,11,.15); color: #fbbf24; }
+    .status-confirmed { background: rgba(59,130,246,.15); color: #60a5fa; }
+    .status-preparing { background: rgba(168,85,247,.15); color: #c084fc; }
+    .status-ready { background: rgba(34,197,94,.15); color: #4ade80; }
+    .status-delivering { background: rgba(34,197,94,.2); color: #22c55e; }
+    .status-delivered { background: rgba(255,255,255,.1); color: var(--text-muted); }
+    .status-cancelled { background: rgba(239,68,68,.15); color: #f87171; }
+
+    .order-items {
+      padding: 0 14px 14px;
+      font-size: .85rem; color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .order-footer {
+      padding: 12px 14px; display: flex;
+      justify-content: space-between; align-items: center;
+    }
+    .order-total { font-weight: 700; }
+    .order-code { font-size: .75rem; color: var(--text-muted); }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center; padding: 60px 20px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 16px;
+    }
+    .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+    .empty-title { font-weight: 700; margin-bottom: 8px; }
+    .empty-desc { color: var(--text-muted); font-size: .9rem; line-height: 1.5; }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--bg-card); padding: 14px 24px;
+      border-radius: 12px; border: 1px solid var(--border);
+      z-index: 1000; opacity: 0; transition: all .3s;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    /* Modal */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.9); z-index: 9999;
+      overflow-y: auto; padding: 20px;
+    }
+    .modal-overlay.show { display: block; }
+    .modal-content {
+      max-width: 500px; margin: 40px auto;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 20px; overflow: hidden;
+    }
+    .modal-header {
+      padding: 20px; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .modal-title { font-weight: 700; font-size: 1.1rem; }
+    .modal-close {
+      width: 36px; height: 36px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--bg-input);
+      color: var(--text); font-size: 1.2rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .modal-body { padding: 20px; }
+
+    .detail-section { margin-bottom: 20px; }
+    .detail-section:last-child { margin-bottom: 0; }
+    .detail-title {
+      font-size: .75rem; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 1px;
+      margin-bottom: 10px; padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .detail-row {
+      display: flex; justify-content: space-between;
+      padding: 8px 0; font-size: .9rem;
+    }
+    .detail-row .label { color: var(--text-muted); }
+    .detail-row .value { font-weight: 500; text-align: right; }
+
+    .item-row {
+      display: flex; justify-content: space-between;
+      padding: 8px 0; font-size: .9rem;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+    .item-row:last-child { border-bottom: none; }
+    .item-name { flex: 1; }
+    .item-qty { color: var(--text-muted); margin-right: 12px; }
+    .item-price { font-weight: 500; }
+    .item-addons { font-size: .8rem; color: var(--text-muted); margin-top: 2px; }
+
+    .btn-review {
+      width: 100%; padding: 14px; margin-top: 20px;
+      border-radius: 12px; border: none;
+      background: var(--primary); color: #000;
+      font-size: .95rem; font-weight: 700; cursor: pointer;
+    }
+    .btn-review:disabled { opacity: .5; cursor: not-allowed; }
+    .reviewed-badge {
+      text-align: center; padding: 14px;
+      background: rgba(34,197,94,.1); border-radius: 12px;
+      color: var(--success); font-weight: 600; margin-top: 20px;
+    }
+
+    /* Cooldown info */
+    .cooldown-info {
+      background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.3);
+      border-radius: 12px; padding: 12px; margin-bottom: 16px;
+      font-size: .85rem; color: #fbbf24; text-align: center;
+    }
+
+    /* Confirm Popup */
+    .popup-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.85); z-index: 99999;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .popup-overlay.show { display: flex; }
+    .popup-box {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 16px; max-width: 360px; width: 100%; overflow: hidden;
+    }
+    .popup-header { padding: 24px 20px 0; text-align: center; }
+    .popup-icon { font-size: 3rem; margin-bottom: 12px; }
+    .popup-title { font-size: 1.1rem; font-weight: 700; }
+    .popup-message {
+      padding: 12px 20px 24px; text-align: center;
+      color: var(--text-muted); font-size: .9rem; line-height: 1.5;
+    }
+    .popup-actions { display: flex; border-top: 1px solid var(--border); }
+    .popup-btn {
+      flex: 1; padding: 16px; border: none; background: transparent;
+      color: var(--text); font-size: .95rem; cursor: pointer;
+    }
+    .popup-btn:hover { background: rgba(255,255,255,.05); }
+    .popup-btn.cancel { color: var(--text-muted); }
+    .popup-btn.danger { color: var(--danger); font-weight: 600; }
+    .popup-btn.primary { color: var(--primary); font-weight: 600; }
+    .popup-btn + .popup-btn { border-left: 1px solid var(--border); }
   </style>
 </head>
-
 <body>
-  <div class="hdr">
-    <button class="btn-ic" id="backBtn" type="button" aria-label="Voltar">←</button>
-    <div class="title">Meus pedidos</div>
-    <div class="chip" id="chipInfo" style="display:none;">—</div>
-    <button class="btn-ic" id="refreshBtn" type="button" aria-label="Atualizar">⟳</button>
-  </div>
+  <header class="header">
+    <button class="btn-back" onclick="goBack()">←</button>
+    <div class="header-title">Meus Pedidos</div>
+    <span class="header-badge" id="headerBadge">0 pedidos</span>
+    <button class="btn-refresh" onclick="refreshOrders()" title="Atualizar">⟳</button>
+  </header>
 
-  <div class="wrap">
-    <div class="tools">
-      <button class="tool secondary" id="toggleActiveBtn" type="button">Mostrar: Todos</button>
-      <button class="tool danger" id="clearCacheBtn" type="button">Limpar cache</button>
+  <div class="container">
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value" id="statActive">0</div>
+        <div class="stat-label">Em andamento</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="statDelivered">0</div>
+        <div class="stat-label">Entregues</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="statTotal">0</div>
+        <div class="stat-label">Total</div>
+      </div>
     </div>
 
-    <div class="list" id="ordersList"></div>
-  </div>
+    <!-- Cooldown Info -->
+    <div class="cooldown-info" id="cooldownInfo" style="display:none;">
+      ⏳ Próxima restauração disponível em <span id="cooldownTime">--</span>
+    </div>
 
-  <!-- Modal UI (sem alert/confirm do navegador) -->
-  <div id="uiModal" class="modal-ui" aria-hidden="true">
-    <div class="modal-ui-card" role="dialog" aria-modal="true">
-      <div class="modal-ui-title" id="uiModalTitle">Aviso</div>
-      <div class="modal-ui-text" id="uiModalText"></div>
-      <div class="modal-ui-actions">
-        <button class="btn-ui" id="uiModalCancel" type="button" style="display:none">Cancelar</button>
-        <button class="btn-ui primary" id="uiModalOk" type="button">OK</button>
+    <!-- Actions -->
+    <div class="actions">
+      <button class="btn-action" id="btnRestore" onclick="restoreOrders()">
+        🔄 Restaurar pedidos
+      </button>
+      <button class="btn-action danger" id="btnClear" onclick="confirmClearCache()">
+        🗑️ Limpar histórico
+      </button>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="tabs">
+      <div class="tab active" data-filter="all">Todos</div>
+      <div class="tab" data-filter="active">Em andamento</div>
+      <div class="tab" data-filter="delivered">Entregues</div>
+      <div class="tab" data-filter="cancelled">Cancelados</div>
+    </div>
+
+    <!-- Orders List -->
+    <div class="orders-list" id="ordersList">
+      <div class="empty-state">
+        <div class="empty-icon">📦</div>
+        <div class="empty-title">Carregando...</div>
       </div>
     </div>
   </div>
 
-  <!-- Firebase -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Order Detail Modal -->
+  <div class="modal-overlay" id="orderModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title" id="modalTitle">Detalhes do Pedido</div>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- Confirm Popup -->
+  <div class="popup-overlay" id="confirmPopup">
+    <div class="popup-box">
+      <div class="popup-header">
+        <div class="popup-icon" id="popupIcon">🗑️</div>
+        <div class="popup-title" id="popupTitle">Confirmar</div>
+      </div>
+      <div class="popup-message" id="popupMessage">Tem certeza?</div>
+      <div class="popup-actions">
+        <button class="popup-btn cancel" onclick="closePopup()">Cancelar</button>
+        <button class="popup-btn danger" id="popupConfirm">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
   <script>
-    // ==================== CONFIG ====================
     const firebaseConfig = {
       apiKey: "AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",
       authDomain: "pedrad-814d0.firebaseapp.com",
       projectId: "pedrad-814d0",
-      storageBucket: "pedrad-814d0.firebasestorage.app",
+      storageBucket: "pedrad-814d0.appspot.com",
       messagingSenderId: "293587190550",
       appId: "1:293587190550:web:80c9399f82847c80e20637"
     };
-
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // (Opcional) persistência offline do Firestore (não é localStorage)
-    db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+    // ===== CONSTANTS =====
+    const ACTIVE_STATUSES = ['pending', 'confirmed', 'preparing', 'ready', 'delivering'];
+    const FINAL_STATUSES = ['delivered', 'cancelled'];
+    const MAX_FETCH = 5; // Máximo de pedidos a buscar do servidor
+    const COOLDOWN_HOURS = 24;
+    const CACHE_KEY = 'pedrad_orders_cache';
+    const COOLDOWN_KEY = 'pedrad_restore_cooldown';
 
-    const ACTIVE_STATUSES = ['pending','confirmed','preparing','ready','delivering'];
-    const FINAL_STATUSES  = ['delivered','cancelled'];
-
-    const CACHE_DAYS = 30;
-    const RECENT_FETCH_LIMIT = 5; // pequeno (reduz leituras)
-    const STORAGE_VER = 1;
-
-    // ==================== MODAL UI ====================
-    const UIModal = (() => {
-      const el = document.getElementById('uiModal');
-      const titleEl = document.getElementById('uiModalTitle');
-      const textEl = document.getElementById('uiModalText');
-      const okBtn = document.getElementById('uiModalOk');
-      const cancelBtn = document.getElementById('uiModalCancel');
-
-      function open({ title='Aviso', text='', okText='OK', cancelText='Cancelar', showCancel=false }){
-        titleEl.textContent = title;
-        textEl.textContent = text;
-        okBtn.textContent = okText;
-        cancelBtn.textContent = cancelText;
-        cancelBtn.style.display = showCancel ? 'inline-flex' : 'none';
-        el.classList.add('show'); el.setAttribute('aria-hidden','false');
-      }
-      function close(){ el.classList.remove('show'); el.setAttribute('aria-hidden','true'); }
-
-      function alert({ title='Aviso', text='', okText='OK' }){
-        return new Promise(resolve => {
-          open({ title, text, okText, showCancel:false });
-          okBtn.onclick = () => { close(); resolve(true); };
-          cancelBtn.onclick = null;
-        });
-      }
-      function confirm({ title='Confirmar', text='', okText='Confirmar', cancelText='Cancelar' }){
-        return new Promise(resolve => {
-          open({ title, text, okText, cancelText, showCancel:true });
-          okBtn.onclick = () => { close(); resolve(true); };
-          cancelBtn.onclick = () => { close(); resolve(false); };
-        });
-      }
-      el.addEventListener('click', (e)=>{ if(e.target===el) close(); });
-
-      return { alert, confirm };
-    })();
-
-    // ==================== STATE ====================
+    // ===== STATE =====
     let currentUser = null;
-    let showOnlyActive = false;
+    let orders = []; // Todos os pedidos (cache + ativos)
+    let currentFilter = 'all';
+    let unsubscribeActive = null;
 
-    // Mantém em memória (rápido)
-    const OrdersState = {
-      map: new Map(),        // id -> order
-      lastRenderKey: '',     // evita render repetido
-      unsubActive: null,
-      loaded: false
-    };
+    // ===== AUTH =====
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        currentUser = user;
+        await init();
+      } else {
+        location.href = 'index.html';
+      }
+    });
 
-    // ==================== HELPERS ====================
-    function safeText(s){
-      return String(s ?? '')
-        .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
-        .replaceAll('"','&quot;').replaceAll("'","&#039;");
+    // ===== INIT =====
+    async function init() {
+      // 1. Carrega cache local
+      loadFromCache();
+      renderOrders();
+
+      // 2. Listener real-time para pedidos em andamento
+      listenActiveOrders();
+
+      // 3. Verifica cooldown
+      updateCooldownUI();
+
+      // 4. Bind tabs
+      bindTabs();
     }
 
-    function tsToMs(ts){
-      if (!ts) return 0;
+    // ===== CACHE =====
+    function getCacheData() {
       try {
-        if (typeof ts.toDate === 'function') return ts.toDate().getTime();
-        const d = new Date(ts);
-        return isNaN(d.getTime()) ? 0 : d.getTime();
-      } catch { return 0; }
+        const data = localStorage.getItem(CACHE_KEY);
+        if (!data) return { orders: [], userId: null };
+        const parsed = JSON.parse(data);
+        // Verifica se é do mesmo usuário
+        if (parsed.userId !== currentUser.uid) return { orders: [], userId: null };
+        return parsed;
+      } catch {
+        return { orders: [], userId: null };
+      }
     }
 
-    function formatCurrency(v){
-      return new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL' }).format(Number(v || 0));
+    function saveToCache() {
+      try {
+        // Salva APENAS pedidos finalizados (entregues/cancelados)
+        const finalOrders = orders.filter(o => FINAL_STATUSES.includes(o.status));
+        const data = {
+          userId: currentUser.uid,
+          orders: finalOrders,
+          updatedAt: Date.now()
+        };
+        localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+      } catch (e) {
+        console.error('Erro ao salvar cache:', e);
+      }
     }
 
-    function formatDate(ts){
-      const ms = tsToMs(ts);
+    function loadFromCache() {
+      const cached = getCacheData();
+      // Carrega apenas pedidos finalizados do cache
+      orders = cached.orders || [];
+    }
+
+    function clearCache() {
+      // Remove apenas pedidos finalizados, mantém em andamento
+      orders = orders.filter(o => ACTIVE_STATUSES.includes(o.status));
+      localStorage.removeItem(CACHE_KEY);
+      renderOrders();
+      showToast('✓ Histórico limpo');
+    }
+
+    // ===== COOLDOWN =====
+    function getCooldownEnd() {
+      try {
+        const data = localStorage.getItem(COOLDOWN_KEY);
+        if (!data) return null;
+        const parsed = JSON.parse(data);
+        if (parsed.userId !== currentUser.uid) return null;
+        return parsed.endsAt;
+      } catch {
+        return null;
+      }
+    }
+
+    function setCooldown() {
+      const endsAt = Date.now() + (COOLDOWN_HOURS * 60 * 60 * 1000);
+      localStorage.setItem(COOLDOWN_KEY, JSON.stringify({
+        userId: currentUser.uid,
+        endsAt: endsAt
+      }));
+      updateCooldownUI();
+    }
+
+    function isOnCooldown() {
+      const endsAt = getCooldownEnd();
+      if (!endsAt) return false;
+      return Date.now() < endsAt;
+    }
+
+    function updateCooldownUI() {
+      const endsAt = getCooldownEnd();
+      const infoEl = document.getElementById('cooldownInfo');
+      const btnRestore = document.getElementById('btnRestore');
+      const timeEl = document.getElementById('cooldownTime');
+
+      if (!endsAt || Date.now() >= endsAt) {
+        infoEl.style.display = 'none';
+        btnRestore.disabled = false;
+        return;
+      }
+
+      infoEl.style.display = 'block';
+      btnRestore.disabled = true;
+
+      // Atualiza tempo restante
+      const updateTime = () => {
+        const remaining = endsAt - Date.now();
+        if (remaining <= 0) {
+          infoEl.style.display = 'none';
+          btnRestore.disabled = false;
+          return;
+        }
+        const hours = Math.floor(remaining / (1000 * 60 * 60));
+        const mins = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+        timeEl.textContent = `${hours}h ${mins}min`;
+      };
+
+      updateTime();
+      setInterval(updateTime, 60000); // Atualiza a cada minuto
+    }
+
+    // ===== LISTEN ACTIVE ORDERS =====
+    function listenActiveOrders() {
+      if (unsubscribeActive) unsubscribeActive();
+
+      unsubscribeActive = db.collection('orders')
+        .where('userId', '==', currentUser.uid)
+        .where('status', 'in', ACTIVE_STATUSES)
+        .onSnapshot(snapshot => {
+          // Remove pedidos ativos antigos
+          orders = orders.filter(o => !ACTIVE_STATUSES.includes(o.status));
+
+          // Adiciona/atualiza pedidos ativos do servidor
+          snapshot.docs.forEach(doc => {
+            const order = { id: doc.id, ...doc.data() };
+            orders.push(order);
+          });
+
+          // Se algum pedido mudou para finalizado, salva no cache
+          saveToCache();
+          renderOrders();
+        }, err => {
+          console.error('Erro no listener:', err);
+        });
+    }
+
+    // ===== RESTORE ORDERS =====
+    async function restoreOrders() {
+      if (isOnCooldown()) {
+        showToast('⏳ Aguarde o cooldown');
+        return;
+      }
+
+      const btn = document.getElementById('btnRestore');
+      btn.disabled = true;
+      btn.textContent = '⏳ Restaurando...';
+
+      try {
+        // Busca os 5 pedidos FINALIZADOS mais recentes do servidor
+        const snapshot = await db.collection('orders')
+          .where('userId', '==', currentUser.uid)
+          .where('status', 'in', FINAL_STATUSES)
+          .orderBy('createdAt', 'desc')
+          .limit(MAX_FETCH)
+          .get();
+
+        let added = 0;
+        snapshot.docs.forEach(doc => {
+          const order = { id: doc.id, ...doc.data() };
+          // Só adiciona se não existir
+          if (!orders.find(o => o.id === order.id)) {
+            orders.push(order);
+            added++;
+          }
+        });
+
+        // Salva no cache
+        saveToCache();
+
+        // Ativa cooldown
+        setCooldown();
+
+        renderOrders();
+        showToast(`✓ ${added} pedido(s) restaurado(s)`);
+
+      } catch (err) {
+        console.error('Erro ao restaurar:', err);
+        showToast('Erro ao restaurar');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🔄 Restaurar pedidos';
+        updateCooldownUI();
+      }
+    }
+
+    // ===== REFRESH =====
+    async function refreshOrders() {
+      showToast('⏳ Atualizando...');
+      // O listener já mantém os ativos atualizados
+      // Apenas força re-render
+      renderOrders();
+      showToast('✓ Atualizado');
+    }
+
+    // ===== RENDER =====
+    function renderOrders() {
+      updateStats();
+      updateHeaderBadge();
+
+      const container = document.getElementById('ordersList');
+
+      // Filtra e ordena
+      let filtered = [...orders];
+
+      if (currentFilter === 'active') {
+        filtered = filtered.filter(o => ACTIVE_STATUSES.includes(o.status));
+      } else if (currentFilter === 'delivered') {
+        filtered = filtered.filter(o => o.status === 'delivered');
+      } else if (currentFilter === 'cancelled') {
+        filtered = filtered.filter(o => o.status === 'cancelled');
+      }
+
+      // Ordena: mais recentes primeiro
+      filtered.sort((a, b) => {
+        const dateA = toTimestamp(a.createdAt);
+        const dateB = toTimestamp(b.createdAt);
+        return dateB - dateA;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">📦</div>
+            <div class="empty-title">Nenhum pedido ${currentFilter !== 'all' ? 'nesta categoria' : ''}</div>
+            <div class="empty-desc">
+              ${currentFilter === 'all' ? 'Faça seu primeiro pedido!' : 'Tente outra categoria'}
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(order => {
+        const isActive = ACTIVE_STATUSES.includes(order.status);
+        const storeName = order.storeName || 'Loja';
+        const dateStr = formatDate(order.createdAt);
+        const itemsPreview = (order.items || []).slice(0, 3)
+          .map(i => `${i.qty}x ${i.name}`).join(', ');
+        const code = order.id.slice(-6).toUpperCase();
+
+        return `
+          <div class="order-card ${isActive ? 'active-order' : ''}" onclick="openOrderDetail('${order.id}')">
+            <div class="order-header">
+              <div>
+                <div class="order-store">${escapeHtml(storeName)}</div>
+                <div class="order-meta">${dateStr}</div>
+              </div>
+              <span class="order-status status-${order.status}">${getStatusLabel(order.status)}</span>
+            </div>
+            <div class="order-items">${escapeHtml(itemsPreview) || 'Itens do pedido'}</div>
+            <div class="order-footer">
+              <span class="order-total">${formatCurrency(order.total)}</span>
+              <span class="order-code">#${code}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateStats() {
+      const active = orders.filter(o => ACTIVE_STATUSES.includes(o.status)).length;
+      const delivered = orders.filter(o => o.status === 'delivered').length;
+      const total = orders.length;
+
+      document.getElementById('statActive').textContent = active;
+      document.getElementById('statDelivered').textContent = delivered;
+      document.getElementById('statTotal').textContent = total;
+    }
+
+    function updateHeaderBadge() {
+      const badge = document.getElementById('headerBadge');
+      badge.textContent = `${orders.length} pedido${orders.length !== 1 ? 's' : ''}`;
+    }
+
+    // ===== TABS =====
+    function bindTabs() {
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          currentFilter = tab.dataset.filter;
+          renderOrders();
+        });
+      });
+    }
+
+    // ===== ORDER DETAIL =====
+    function openOrderDetail(orderId) {
+      const order = orders.find(o => o.id === orderId);
+      if (!order) return;
+
+      const modal = document.getElementById('orderModal');
+      const title = document.getElementById('modalTitle');
+      const body = document.getElementById('modalBody');
+
+      const storeName = order.storeName || 'Loja';
+      const code = order.id.slice(-6).toUpperCase();
+
+      title.textContent = storeName;
+
+      const addr = order.address || {};
+      const fullAddress = [
+        addr.street,
+        addr.number ? `nº ${addr.number}` : '',
+        addr.neighborhood
+      ].filter(Boolean).join(', ');
+
+      const paymentLabels = {
+        pix: '💠 PIX', credit: '💳 Crédito', debit: '💳 Débito',
+        cash: '💵 Dinheiro', picpay: '💚 PicPay'
+      };
+      const paymentMethod = paymentLabels[order.paymentMethod] || order.paymentMethod || '—';
+
+      const deliveryFee = order.deliveryFee || 0;
+      const subtotal = (order.total || 0) - deliveryFee;
+
+      const isDelivered = order.status === 'delivered';
+      const isReviewed = order.reviewed === true;
+
+      body.innerHTML = `
+        <div class="detail-section">
+          <div class="detail-title">📋 Informações</div>
+          <div class="detail-row">
+            <span class="label">Código</span>
+            <span class="value">#${code}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Status</span>
+            <span class="value">${getStatusLabel(order.status)}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Data</span>
+            <span class="value">${formatDate(order.createdAt)}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Entrega</span>
+            <span class="value">${order.deliveryMode === 'pickup' ? 'Retirada' : 'Delivery'}</span>
+          </div>
+          ${fullAddress ? `
+          <div class="detail-row">
+            <span class="label">Endereço</span>
+            <span class="value">${escapeHtml(fullAddress)}</span>
+          </div>
+          ` : ''}
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-title">🛒 Itens</div>
+          ${(order.items || []).map(item => {
+            const addons = (item.addons || []).map(a => a.name).join(', ');
+            const itemPrice = (item.price || 0) * (item.qty || 1);
+            return `
+              <div class="item-row">
+                <span class="item-qty">${item.qty}x</span>
+                <span class="item-name">
+                  ${escapeHtml(item.name)}
+                  ${addons ? `<div class="item-addons">+ ${escapeHtml(addons)}</div>` : ''}
+                </span>
+                <span class="item-price">${formatCurrency(itemPrice)}</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-title">💰 Pagamento</div>
+          <div class="detail-row">
+            <span class="label">Forma</span>
+            <span class="value">${paymentMethod}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Subtotal</span>
+            <span class="value">${formatCurrency(subtotal)}</span>
+          </div>
+          ${deliveryFee > 0 ? `
+          <div class="detail-row">
+            <span class="label">Taxa de entrega</span>
+            <span class="value">${formatCurrency(deliveryFee)}</span>
+          </div>
+          ` : ''}
+          <div class="detail-row">
+            <span class="label"><strong>Total</strong></span>
+            <span class="value"><strong>${formatCurrency(order.total)}</strong></span>
+          </div>
+        </div>
+
+        ${isDelivered && !isReviewed ? `
+          <button class="btn-review" onclick="goToReview('${order.id}')">
+            ⭐ Avaliar Pedido
+          </button>
+        ` : ''}
+
+        ${isReviewed ? `
+          <div class="reviewed-badge">✓ Pedido avaliado</div>
+        ` : ''}
+      `;
+
+      modal.classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('orderModal').classList.remove('show');
+    }
+
+    function goToReview(orderId) {
+      closeModal();
+      location.href = `review.html?orderId=${orderId}`;
+    }
+
+    // ===== CONFIRM CLEAR =====
+    function confirmClearCache() {
+      const activeCount = orders.filter(o => ACTIVE_STATUSES.includes(o.status)).length;
+      const finalCount = orders.filter(o => FINAL_STATUSES.includes(o.status)).length;
+
+      if (finalCount === 0) {
+        showToast('Nenhum histórico para limpar');
+        return;
+      }
+
+      document.getElementById('popupIcon').textContent = '🗑️';
+      document.getElementById('popupTitle').textContent = 'Limpar histórico?';
+      document.getElementById('popupMessage').textContent = 
+        `${finalCount} pedido(s) finalizado(s) serão removidos do histórico local.\n\n` +
+        `${activeCount > 0 ? `✓ ${activeCount} pedido(s) em andamento serão mantidos.` : ''}`;
+      
+      document.getElementById('popupConfirm').className = 'popup-btn danger';
+      document.getElementById('popupConfirm').textContent = 'Limpar';
+      document.getElementById('popupConfirm').onclick = () => {
+        closePopup();
+        clearCache();
+      };
+
+      document.getElementById('confirmPopup').classList.add('show');
+    }
+
+    function closePopup() {
+      document.getElementById('confirmPopup').classList.remove('show');
+    }
+
+    // ===== UTILS =====
+    function toTimestamp(ts) {
+      if (!ts) return 0;
+      if (typeof ts.toDate === 'function') return ts.toDate().getTime();
+      if (typeof ts === 'number') return ts;
+      const d = new Date(ts);
+      return isNaN(d.getTime()) ? 0 : d.getTime();
+    }
+
+    function formatDate(ts) {
+      const ms = toTimestamp(ts);
       if (!ms) return '—';
       const d = new Date(ms);
-      return d.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+      return d.toLocaleDateString('pt-BR', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
     }
 
-    function statusLabel(status){
-      const map = {
-        pending: 'Pendente',
-        confirmed: 'Confirmado',
-        preparing: 'Preparando',
-        ready: 'Pronto',
-        delivering: 'Em entrega',
-        delivered: 'Entregue',
-        cancelled: 'Cancelado'
+    function formatCurrency(v) {
+      return new Intl.NumberFormat('pt-BR', {
+        style: 'currency', currency: 'BRL'
+      }).format(v || 0);
+    }
+
+    function getStatusLabel(status) {
+      const labels = {
+        pending: '🟡 Pendente',
+        confirmed: '🔵 Confirmado',
+        preparing: '🟣 Preparando',
+        ready: '🟢 Pronto',
+        delivering: '🚀 Em entrega',
+        delivered: '✅ Entregue',
+        cancelled: '❌ Cancelado'
       };
-      return map[status] || String(status || '—');
+      return labels[status] || status;
     }
 
-    function cacheKey(uid){ return `orders_cache_${uid}`; }
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
 
-    function nowMs(){ return Date.now(); }
-    function daysToMs(d){ return d * 24 * 60 * 60 * 1000; }
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
 
-    // ==================== CACHE (localStorage 30 dias) ====================
-    function loadCache(){
-      OrdersState.map.clear();
-      OrdersState.loaded = true;
-
-      const key = cacheKey(currentUser.uid);
-      let payload = null;
-
-      try { payload = JSON.parse(localStorage.getItem(key) || 'null'); } catch { payload = null; }
-      if (!payload || payload.v !== STORAGE_VER || !Array.isArray(payload.items)) return;
-
-      // limpa expirados FINAL
-      const cutoff = nowMs() - daysToMs(CACHE_DAYS);
-
-      for (const o of payload.items) {
-        const created = tsToMs(o.createdAt) || 0;
-        const updated = tsToMs(o.updatedAt) || created;
-        const isFinal = FINAL_STATUSES.includes(o.status);
-
-        if (isFinal && updated && updated < cutoff) continue;
-        OrdersState.map.set(o.id, o);
+    function goBack() {
+      if (document.referrer.includes(location.host)) {
+        history.back();
+      } else {
+        location.href = 'index.html';
       }
     }
 
-    function saveCache(){
-      const key = cacheKey(currentUser.uid);
-      const items = Array.from(OrdersState.map.values());
-
-      // limita tamanho (mantém histórico útil)
-      items.sort((a,b)=> (tsToMs(b.createdAt)||0) - (tsToMs(a.createdAt)||0));
-      const limited = items.slice(0, 60);
-
-      const payload = { v: STORAGE_VER, savedAt: nowMs(), items: limited };
-      try { localStorage.setItem(key, JSON.stringify(payload)); } catch {}
-    }
-
-    function upsertOrder(order){
-      if (!order?.id) return;
-
-      const prev = OrdersState.map.get(order.id);
-      const prevU = tsToMs(prev?.updatedAt) || tsToMs(prev?.createdAt);
-      const nextU = tsToMs(order.updatedAt) || tsToMs(order.createdAt);
-
-      // se cache tem versão mais nova, ignora
-      if (prev && prevU && nextU && prevU > nextU) return;
-
-      OrdersState.map.set(order.id, { ...(prev||{}), ...order });
-    }
-
-    function removeOrder(id){
-      if (!id) return;
-      OrdersState.map.delete(id);
-    }
-
-    // ==================== NETWORK (mínimo) ====================
-async function fetchRecentOnce(){
-  let docs = [];
-  try {
-    const snap = await db.collection('orders')
-      .where('userId','==',currentUser.uid)
-      .orderBy('createdAt','desc')
-      .limit(RECENT_FETCH_LIMIT)
-      .get();
-    docs = snap.docs;
-  } catch (e) {
-    // fallback SEM orderBy, mas AINDA limitado
-    const snap = await db.collection('orders')
-      .where('userId','==',currentUser.uid)
-      .limit(RECENT_FETCH_LIMIT)
-      .get();
-    docs = snap.docs;
-  }
-
-  let changed = false;
-  for (const d of docs){
-    const o = { id:d.id, ...d.data() };
-    const before = OrdersState.map.get(o.id);
-    upsertOrder(o);
-    if (!before || before.status !== o.status) changed = true;
-  }
-  if (changed){ saveCache(); renderOrders(); }
-}
-
-const MAX_KEEP = 5; // quantos cards no máximo
-
-function pruneState(){
-  const arr = Array.from(OrdersState.map.values());
-  arr.sort((a,b)=>(tsToMs(b.updatedAt)||tsToMs(b.createdAt)||0)-(tsToMs(a.updatedAt)||tsToMs(a.createdAt)||0));
-  OrdersState.map.clear();
-  arr.slice(0, MAX_KEEP).forEach(o => OrdersState.map.set(o.id, o));
-}
-
-function saveCache(){
-  pruneState();
-  const items = Array.from(OrdersState.map.values());
-  try { localStorage.setItem(cacheKey(currentUser.uid), JSON.stringify({ v: STORAGE_VER, savedAt: nowMs(), items })); } catch {}
-}
-
-    function listenActive(){
-      // Listener pequeno: só pedidos em andamento.
-      // Isso resolve “status só muda depois de limpar cache”.
-      if (OrdersState.unsubActive) OrdersState.unsubActive();
-
-      OrdersState.unsubActive = db.collection('orders')
-        .where('userId','==',currentUser.uid)
-        .where('status','in',ACTIVE_STATUSES)
-        .onSnapshot((snap)=>{
-          let changed = false;
-
-          snap.docChanges().forEach(ch=>{
-            const id = ch.doc.id;
-            if (ch.type === 'removed') {
-              // se saiu do "in", provavelmente virou final; não removemos do histórico,
-              // apenas deixamos o recente ser corrigido via fetchRecentOnce.
-              changed = true;
-              return;
-            }
-
-            const o = { id, ...ch.doc.data() };
-            const prev = OrdersState.map.get(id);
-            const prevStatus = prev?.status;
-
-            upsertOrder(o);
-
-            // se acabou de virar final, continua no histórico (e some do listener automaticamente)
-            if (prevStatus !== o.status) changed = true;
-            else {
-              // mudanças (ex: driver, timeline, total) também contam
-              const prevU = tsToMs(prev?.updatedAt) || tsToMs(prev?.createdAt);
-              const nextU = tsToMs(o.updatedAt) || tsToMs(o.createdAt);
-              if (nextU && nextU !== prevU) changed = true;
-            }
-          });
-
-          if (changed){
-            saveCache();
-            renderOrders();
-          }
-        }, async (err)=>{
-          // Se "in" ou regras/index derem ruim, ainda funciona com fetchRecentOnce manual
-          console.log('Active listener error:', err?.code || err);
-        });
-    }
-
-    // ==================== RENDER ====================
-    function getSortedList(){
-      const all = Array.from(OrdersState.map.values());
-
-      const filtered = showOnlyActive
-        ? all.filter(o => ACTIVE_STATUSES.includes(o.status))
-        : all;
-
-      filtered.sort((a,b)=>{
-        const ua = tsToMs(a.updatedAt) || tsToMs(a.createdAt) || 0;
-        const ub = tsToMs(b.updatedAt) || tsToMs(b.createdAt) || 0;
-        return ub - ua;
-      });
-
-      return filtered.slice(0, 60);
-    }
-
-    function updateChip(){
-      const chip = document.getElementById('chipInfo');
-      if (!chip) return;
-
-      const all = Array.from(OrdersState.map.values());
-      const activeCount = all.filter(o => ACTIVE_STATUSES.includes(o.status)).length;
-      const total = all.length;
-
-      if (!total){
-        chip.style.display = 'none';
-        return;
-      }
-      chip.style.display = 'inline-flex';
-      chip.textContent = activeCount ? `${activeCount} em andamento` : `${total} no histórico`;
-    }
-
-    function renderOrders(){
-      const container = document.getElementById('ordersList');
-      if (!container) return;
-
-      updateChip();
-
-      const list = getSortedList();
-      const renderKey = `${showOnlyActive}|${list.length}|` + list.map(o=>`${o.id}:${o.status}:${tsToMs(o.updatedAt)||tsToMs(o.createdAt)||0}`).join('|');
-      if (OrdersState.lastRenderKey === renderKey) return;
-      OrdersState.lastRenderKey = renderKey;
-
-      if (!list.length){
-        container.innerHTML = `
-          <div class="empty">
-            <div style="opacity:.7">📦</div>
-            <b>${showOnlyActive ? 'Nenhum pedido em andamento' : 'Nenhum pedido ainda'}</b>
-            <div class="muted" style="margin-top:8px">Se você acabou de pedir, toque em “⟳ Atualizar”.</div>
-            <div class="tools" style="margin-top:16px">
-              <button class="tool secondary" type="button" onclick="manualRefresh()">Atualizar</button>
-              <button class="tool" type="button" onclick="window.location.href='index.html'">Fazer pedido</button>
-            </div>
-          </div>
-        `;
-        return;
-      }
-
-      const frag = document.createDocumentFragment();
-
-      for (const o of list){
-        const idShort = (o.id || '').slice(-6).toUpperCase();
-        const storeName = safeText(o.storeName || 'Loja');
-        const dateStr = formatDate(o.createdAt);
-        const st = safeText(statusLabel(o.status));
-        const items = Array.isArray(o.items) ? o.items.slice(0, 6).map(i => `${Number(i.qty||0)}x ${safeText(i.name||'')}`).join(', ') : '';
-        const total = formatCurrency(o.total);
-
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.setAttribute('data-order-id', o.id);
-        card.innerHTML = `
-          <div class="store">${storeName}</div>
-          <div class="row">
-            <div>
-              <div style="font-weight:900">Pedido #${safeText(idShort)}</div>
-              <div class="muted">${safeText(dateStr)}</div>
-            </div>
-            <div style="text-align:right">
-              <div class="status"><span class="dot"></span><span>${st}</span></div>
-            </div>
-          </div>
-          <div class="items">${items ? items : '<span class="muted">Itens indisponíveis</span>'}</div>
-          <div class="total"><span class="muted">Total</span><span>${safeText(total)}</span></div>
-        `;
-
-        card.addEventListener('click', ()=>{
-          // se você já tem um order modal em outro arquivo, aqui pode redirecionar:
-          // window.location.href = `order-detail.html?id=${encodeURIComponent(o.id)}`;
-          UIModal.alert({
-            title: `Pedido #${idShort}`,
-            text: `Status: ${statusLabel(o.status)}\nLoja: ${o.storeName || 'Loja'}\nTotal: ${formatCurrency(o.total)}`
-          });
-        });
-
-        frag.appendChild(card);
-      }
-
-      container.innerHTML = '';
-      container.appendChild(frag);
-    }
-
-    // ==================== UI ACTIONS ====================
-    async function manualRefresh(){
-      await fetchRecentOnce();
-      await UIModal.alert({ title:'Atualizado', text:'Verificação rápida concluída.' });
-    }
-
-    async function clearCache(){
-      const ok = await UIModal.confirm({
-        title: 'Limpar cache?',
-        text: 'Isso remove os pedidos salvos localmente deste usuário (30 dias). O app vai rebaixar e buscar novamente alguns recentes.',
-        okText: 'Limpar',
-        cancelText: 'Cancelar'
-      });
-      if (!ok) return;
-
-      try { localStorage.removeItem(cacheKey(currentUser.uid)); } catch {}
-      OrdersState.map.clear();
-      OrdersState.lastRenderKey = '';
-      renderOrders();
-
-      // repõe mínimo
-      await fetchRecentOnce();
-    }
-
-    function updateToggleBtn(){
-      const btn = document.getElementById('toggleActiveBtn');
-      if (!btn) return;
-      btn.textContent = `Mostrar: ${showOnlyActive ? 'Em andamento' : 'Todos'}`;
-    }
-
-    // ==================== NAV ====================
-    function bindBack(){
-      const btn = document.getElementById('backBtn');
-      if (!btn) return;
-      btn.addEventListener('click', (e)=>{
-        e.preventDefault(); e.stopPropagation();
-        if (window.history.length > 1) window.history.back();
-        else window.location.href = 'index.html';
-      }, true);
-    }
-
-    // ==================== INIT ====================
-    function bindUI(){
-      bindBack();
-
-      document.getElementById('refreshBtn')?.addEventListener('click', (e)=>{ e.preventDefault(); manualRefresh(); }, true);
-      document.getElementById('clearCacheBtn')?.addEventListener('click', (e)=>{ e.preventDefault(); clearCache(); }, true);
-
-      const toggleBtn = document.getElementById('toggleActiveBtn');
-      toggleBtn?.addEventListener('click', ()=>{
-        showOnlyActive = !showOnlyActive;
-        updateToggleBtn();
-        OrdersState.lastRenderKey = '';
-        renderOrders();
-      });
-
-      updateToggleBtn();
-    }
-
-    auth.onAuthStateChanged(async (user)=>{
-      if (!user){
-        window.location.href = 'index.html';
-        return;
-      }
-
-      currentUser = user;
-      bindUI();
-
-      // 1) Render imediato do cache (zero leituras)
-      loadCache();
-      renderOrders();
-
-      // 2) Listener leve só de pedidos ativos (atualiza status sem “limpar cache”)
-      listenActive();
-
-      // 3) Busca pequena de recentes para “descobrir novos” (poucas leituras)
-      await fetchRecentOnce();
-
-      // 4) Se outra aba atualizar cache, reflete aqui sem polling
-      window.addEventListener('storage', (e)=>{
-        if (e.key === cacheKey(currentUser.uid)) {
-          loadCache();
-          OrdersState.lastRenderKey = '';
-          renderOrders();
-        }
-      });
+    // Close modals on overlay click
+    document.getElementById('orderModal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+    document.getElementById('confirmPopup').addEventListener('click', function(e) {
+      if (e.target === this) closePopup();
     });
   </script>
 </body>
