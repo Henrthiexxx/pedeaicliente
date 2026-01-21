@@ -796,7 +796,7 @@
 
     function goToReview(orderId) {
       closeModal();
-      location.href = `review.html?orderId=${orderId}`;
+      location.href = `pending-reviews.html?orderId=${orderId}`;
     }
 
     // ===== CONFIRM CLEAR =====
@@ -832,8 +832,13 @@
     // ===== UTILS =====
     function toTimestamp(ts) {
       if (!ts) return 0;
+      // Firestore Timestamp com método toDate()
       if (typeof ts.toDate === 'function') return ts.toDate().getTime();
+      // Firestore Timestamp serializado do localStorage {seconds, nanoseconds}
+      if (ts.seconds !== undefined) return ts.seconds * 1000;
+      // Já é número (ms)
       if (typeof ts === 'number') return ts;
+      // String ISO ou outro formato
       const d = new Date(ts);
       return isNaN(d.getTime()) ? 0 : d.getTime();
     }
