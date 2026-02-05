@@ -4,9 +4,35 @@
 const StoresModule = {
     filters: [],
     activeFilter: 'all',
+    storeRatings: {},
 
     init() {
         this.loadFilters();
+        this.loadRatings(); // Não bloqueia, roda em background
+    },
+
+    async loadRatings() {
+        try {
+            if (typeof db === 'undefined') return;
+            const snapshot = await db.collection('reviews').get();
+            const byStore = {};
+            
+            snapshot.docs.forEach(doc => {
+                const r = doc.data();
+                if (!r.storeId || typeof r.storeRating !== 'number') return;
+                if (!byStore[r.storeId]) byStore[r.storeId] = [];
+                byStore[r.storeId].push(r.storeRating);
+            });
+            
+            for (const storeId in byStore) {
+                const ratings = byStore[storeId];
+                this.storeRatings[storeId] = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+            }
+            
+            this.render();
+        } catch (e) {
+            console.error('loadRatings error:', e);
+        }
     },
 
     loadFilters() {
@@ -53,7 +79,6 @@ const StoresModule = {
             filtered = filtered.filter(s => s.category === this.activeFilter);
         }
 
-        // Ordena: abertos primeiro
         filtered = filtered.sort((a, b) => {
             if (a.open === false && b.open !== false) return 1;
             if (a.open !== false && b.open === false) return -1;
@@ -77,13 +102,14 @@ const StoresModule = {
         const isOpen = store.open !== false;
         const isClosed = !isOpen;
         
-        // Usa ImageHelper se disponível
         const imgSrc = typeof ImageHelper !== 'undefined' 
             ? ImageHelper.getSrc(store)
             : (store.imageData || store.imageUrl || '').trim();
         
         const hasImage = !!imgSrc && (imgSrc.startsWith('data:image/') || /^https?:\/\//.test(imgSrc));
         const fallback = store.emoji || '🏪';
+
+        const rating = this.storeRatings[store.id];
 
         return `
             <div class="store-item ${isClosed ? 'closed' : ''}" onclick="selectStore('${store.id}')">
@@ -96,7 +122,7 @@ const StoresModule = {
                     <div class="store-item-name">${store.name || 'Loja'}</div>
                     <div class="store-item-category">${store.category || ''}</div>
                     <div class="store-item-meta">
-                        ${store.rating ? `<span class="store-item-rating">⭐ ${store.rating.toFixed(1)}</span>` : ''}
+                        ${rating ? `<span class="store-item-rating">⭐ ${rating.toFixed(1)}</span>` : ''}
                         ${store.deliveryTime ? `<span class="store-item-time">🕐 ${store.deliveryTime}</span>` : ''}
                         ${store.minOrder ? `<span class="store-item-fee">Min R$ ${store.minOrder}</span>` : ''}
                     </div>
@@ -106,7 +132,6 @@ const StoresModule = {
         `;
     },
 
-    // Atualiza uma loja específica (chamado pelo realtime listener)
     updateStore(storeId, data) {
         const idx = (stores || []).findIndex(s => s.id === storeId);
         if (idx !== -1) {
