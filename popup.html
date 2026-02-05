@@ -1,341 +1,349 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no" />
-  <title>Produto</title>
-  <style>
-    :root{
-      --bg:#0a0a0a;--card:#111;--input:#171717;--text:#fff;--muted:#737373;
-      --border:#262626;--primary:#fff;--radius:14px;
-    }
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
-    .wrap{padding:16px;max-width:520px;margin:0 auto}
-    .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-    .title{font-weight:700;font-size:1.05rem}
-    .btn-x{width:38px;height:38px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px}
-    .img{width:100%;height:180px;border-radius:14px;border:1px solid var(--border);background:var(--input);overflow:hidden;display:flex;align-items:center;justify-content:center}
-    .img img{width:100%;height:100%;object-fit:cover;display:block}
-    .name{font-weight:800;font-size:1.15rem;margin-top:12px}
-    .desc{color:var(--muted);font-size:.88rem;margin-top:6px;line-height:1.35}
-    .row{display:flex;align-items:center;justify-content:space-between;margin-top:12px}
-    .price{font-weight:800;font-size:1.08rem}
-    .qty{display:flex;gap:10px;align-items:center}
-    .qty button{width:36px;height:36px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;font-size:1.1rem}
-    .qty span{min-width:24px;text-align:center;font-weight:700}
-    .sec-title{font-weight:800;font-size:.9rem;margin-bottom:8px}
-    .hint{color:var(--muted);font-size:.78rem;margin:-2px 0 10px 0}
-    .chips{display:flex;flex-wrap:wrap;gap:8px}
-    .chip{
-      padding:10px 12px;border-radius:999px;border:1px solid var(--border);
-      background:transparent;color:var(--text);cursor:pointer;font-size:.88rem
-    }
-    .chip.active{background:var(--primary);color:#000;border-color:var(--primary)}
-    .line{height:1px;background:var(--border);margin:12px 0}
-    .check{
-      display:flex;align-items:center;justify-content:space-between;
-      padding:10px 12px;border:1px solid var(--border);border-radius:14px;background:var(--input);
-      margin-bottom:8px;cursor:pointer
-    }
-    .check small{color:var(--muted)}
-    .btn-main{
-      width:100%;padding:14px;border-radius:14px;border:1px solid var(--primary);
-      background:var(--primary);color:#000;font-weight:900;cursor:pointer
-    }
-    .toast{
-      position:fixed;left:50%;bottom:16px;transform:translateX(-50%);
-      background:var(--card);border:1px solid var(--border);padding:10px 14px;border-radius:12px;
-      opacity:0;pointer-events:none;transition:.2s
-    }
-    .toast.show{opacity:1}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produto - Pedrad</title>
+    <style>
+        :root {
+            --bg: #000; --card: #0a0a0a; --input: #171717;
+            --text: #fff; --muted: #737373; --border: #262626;
+            --primary: #fff; --success: #22c55e;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg); color: var(--text);
+            min-height: 100vh; padding: 0;
+        }
+        .header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 20px; border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; background: var(--bg); z-index: 10;
+        }
+        .header h1 { font-size: 1rem; font-weight: 500; }
+        .close-btn {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: var(--input); border: 1px solid var(--border);
+            color: var(--text); font-size: 1.2rem; cursor: pointer;
+        }
+        .close-btn:hover { border-color: var(--primary); }
+        .product-image {
+            width: 100%; aspect-ratio: 1; max-height: 300px;
+            background: var(--input); display: flex;
+            align-items: center; justify-content: center;
+            font-size: 4rem; background-size: cover; background-position: center;
+        }
+        .product-image.has-image { font-size: 0; }
+        .content { padding: 20px; }
+        .product-name { font-size: 1.3rem; font-weight: 600; margin-bottom: 8px; }
+        .product-desc { color: var(--muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 16px; }
+        .product-price { font-size: 1.5rem; font-weight: 600; color: var(--primary); margin-bottom: 24px; }
+        .section { margin-bottom: 20px; }
+        .section-title { font-size: 0.85rem; font-weight: 600; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .option {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px; background: var(--input); border: 1px solid var(--border);
+            border-radius: 10px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s;
+        }
+        .option:hover { border-color: var(--muted); }
+        .option.selected { border-color: var(--primary); background: rgba(255,255,255,0.05); }
+        .option input { display: none; }
+        .option-check {
+            width: 20px; height: 20px; border: 2px solid var(--border);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        }
+        .option.selected .option-check { border-color: var(--primary); background: var(--primary); }
+        .option.selected .option-check::after { content: "✓"; color: #000; font-size: 12px; font-weight: bold; }
+        .option-info { flex: 1; }
+        .option-name { font-size: 0.95rem; }
+        .option-price { color: var(--primary); font-size: 0.9rem; font-weight: 500; }
+        .qty-selector {
+            display: flex; align-items: center; justify-content: center;
+            gap: 20px; padding: 16px; background: var(--card);
+            border-radius: 12px; margin-bottom: 20px;
+        }
+        .qty-btn {
+            width: 44px; height: 44px; border-radius: 10px;
+            background: var(--input); border: 1px solid var(--border);
+            color: var(--text); font-size: 1.3rem; cursor: pointer;
+        }
+        .qty-btn:hover { border-color: var(--primary); }
+        .qty-value { font-size: 1.3rem; font-weight: 600; min-width: 40px; text-align: center; }
+        .total-bar {
+            position: sticky; bottom: 0; background: var(--bg);
+            padding: 16px 20px; border-top: 1px solid var(--border);
+        }
+        .total-row { display: flex; justify-content: space-between; margin-bottom: 12px; }
+        .total-label { color: var(--muted); }
+        .total-value { font-size: 1.2rem; font-weight: 600; }
+        .add-btn {
+            width: 100%; padding: 16px; background: var(--primary);
+            color: #000; border: none; border-radius: 10px;
+            font-size: 1rem; font-weight: 600; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .add-btn:hover { opacity: 0.9; }
+        .loading { text-align: center; padding: 60px; color: var(--muted); }
+        .error { text-align: center; padding: 60px; color: var(--muted); }
+        .error-icon { font-size: 3rem; margin-bottom: 16px; }
+    </style>
 </head>
 <body>
-  <div class="toast" id="toast"></div>
-
-  <div class="wrap">
-    <div class="top">
-      <div class="title">Produto</div>
-      <button class="btn-x" onclick="closeMe()">✕</button>
-    </div>
-
-    <div class="card">
-      <div class="img" id="pImg"><div style="color:var(--muted)">Carregando...</div></div>
-      <div class="name" id="pName">-</div>
-      <div class="desc" id="pDesc"></div>
-
-      <div class="row">
-        <div class="price" id="pPrice">R$ 0,00</div>
-        <div class="qty">
-          <button onclick="setQty(-1)">−</button>
-          <span id="qtyVal">1</span>
-          <button onclick="setQty(1)">+</button>
+    <div id="loading" class="loading">Carregando...</div>
+    <div id="content" style="display:none;">
+        <div class="header">
+            <h1 id="headerTitle">Produto</h1>
+            <button class="close-btn" onclick="closePopup()">×</button>
         </div>
-      </div>
-    </div>
-
-    <div class="card" id="optFlavors" style="display:none;">
-      <div class="sec-title">🍕 Sabores</div>
-      <div class="hint">Escolha 1</div>
-      <div class="chips" id="flavorsChips"></div>
-    </div>
-
-    <div class="card" id="optSizes" style="display:none;">
-      <div class="sec-title">📏 Tamanhos</div>
-      <div class="hint">Escolha 1</div>
-      <div class="chips" id="sizesChips"></div>
-    </div>
-
-    <div class="card" id="optExtras" style="display:none;">
-      <div class="sec-title">➕ Extras</div>
-      <div class="hint">Escolha quantos quiser</div>
-      <div id="extrasList"></div>
-    </div>
-
-    <div class="card">
-      <div class="row">
-        <div style="color:var(--muted);font-size:.9rem">Total</div>
-        <div class="price" id="totalPrice">R$ 0,00</div>
-      </div>
-      <div class="line"></div>
-      <button class="btn-main" onclick="sendToCart()">Adicionar ao carrinho</button>
-    </div>
-  </div>
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",
-      authDomain: "pedrad-814d0.firebaseapp.com",
-      projectId: "pedrad-814d0",
-      storageBucket: "pedrad-814d0.firebasestorage.app",
-      messagingSenderId: "293587190550",
-      appId: "1:293587190550:web:80c9399f82847c80e20637"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    // ====== state ======
-    const qs = new URLSearchParams(location.search);
-    const storeId = qs.get("storeId") || localStorage.getItem("currentStoreId");
-    const productId = qs.get("productId");
-    let product = null;
-
-    let qty = 1;
-    let selectedFlavor = null; // {name, price}
-    let selectedSize = null;   // {name, price}
-    let selectedExtras = [];   // [{name,price}]
-
-    // ====== utils ======
-    const money = (v)=> new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(Number(v||0));
-    const toast = (m)=>{
-      const t=document.getElementById("toast");
-      t.textContent=m; t.classList.add("show");
-      setTimeout(()=>t.classList.remove("show"),1800);
-    };
-    const hasHttpImage = (u)=>{
-      if(!u) return false;
-      const s=String(u).trim();
-      if(!s) return false;
-      if(!/^https?:\/\//i.test(s)) return false;
-      if(s.includes(" ")) return false;
-      return true;
-    };
-
-    function closeMe(){
-      window.parent?.postMessage({type:"closePopup"}, "*");
-    }
-
-    function setQty(delta){
-      qty = Math.max(1, qty + delta);
-      document.getElementById("qtyVal").textContent = qty;
-      calcTotal();
-    }
-
-    function sanitizeOpts(arr){
-      if(!Array.isArray(arr)) return [];
-      return arr
-        .filter(x=>x && typeof x==="object")
-        .map((x,i)=>({
-          name:String(x.name||"").trim(),
-          price: Number(parseFloat(x.price)) || 0,
-          order: typeof x.order==="number" ? x.order : i
-        }))
-        .filter(x=>x.name)
-        .sort((a,b)=>a.order-b.order);
-    }
-
-    function calcTotal(){
-      if(!product) return;
-      const base = Number(product.price||0);
-      const f = selectedFlavor?.price || 0;
-      const s = selectedSize?.price || 0;
-      const ex = selectedExtras.reduce((sum,e)=>sum+(e.price||0),0);
-      const unit = base + f + s + ex;
-      document.getElementById("pPrice").textContent = money(unit); // preço unitário atual
-      document.getElementById("totalPrice").textContent = money(unit * qty);
-    }
-
-    function pickFlavor(i){
-      const opts = sanitizeOpts(product.flavors);
-      selectedFlavor = opts[i] || null;
-      document.querySelectorAll("#flavorsChips .chip").forEach((c,idx)=>c.classList.toggle("active", idx===i));
-      calcTotal();
-    }
-
-    function pickSize(i){
-      const opts = sanitizeOpts(product.sizes);
-      selectedSize = opts[i] || null;
-      document.querySelectorAll("#sizesChips .chip").forEach((c,idx)=>c.classList.toggle("active", idx===i));
-      calcTotal();
-    }
-
-    function toggleExtra(i){
-      const opts = sanitizeOpts(product.extras);
-      const it = opts[i];
-      if(!it) return;
-
-      const exists = selectedExtras.find(x=>x.name===it.name);
-      if(exists) selectedExtras = selectedExtras.filter(x=>x.name!==it.name);
-      else selectedExtras.push(it);
-
-      renderExtras(); // atualiza check visual
-      calcTotal();
-    }
-
-    // ====== render ======
-    function renderProduct(){
-      document.getElementById("pName").textContent = product.name || "Produto";
-      document.getElementById("pDesc").textContent = product.description || "";
-
-      // imagem
-      const imgBox = document.getElementById("pImg");
-      const imgUrl = (product.imageUrl || "").trim();
-      if(hasHttpImage(imgUrl)){
-        imgBox.innerHTML = `<img src="${imgUrl}" alt="${(product.name||"").replaceAll('"',"")}" onerror="this.remove();this.parentElement.innerHTML='<div style=color:var(--muted)>Sem imagem</div>';">`;
-      }else{
-        imgBox.innerHTML = `<div style="color:var(--muted);font-size:.9rem;">Sem imagem</div>`;
-      }
-
-      // sabores
-      const flavors = sanitizeOpts(product.flavors);
-      const flavorsWrap = document.getElementById("optFlavors");
-      const flavorsChips = document.getElementById("flavorsChips");
-      if(flavors.length){
-        flavorsWrap.style.display="block";
-        flavorsChips.innerHTML = flavors.map((f,idx)=>`
-          <button class="chip ${idx===0?'active':''}" onclick="pickFlavor(${idx})">
-            ${escapeHtml(f.name)}${f.price?` (+${money(f.price)})`:``}
-          </button>
-        `).join("");
-        selectedFlavor = flavors[0]; // default 1º
-      }else{
-        flavorsWrap.style.display="none";
-        selectedFlavor = null;
-      }
-
-      // tamanhos
-      const sizes = sanitizeOpts(product.sizes);
-      const sizesWrap = document.getElementById("optSizes");
-      const sizesChips = document.getElementById("sizesChips");
-      if(sizes.length){
-        sizesWrap.style.display="block";
-        sizesChips.innerHTML = sizes.map((s,idx)=>`
-          <button class="chip ${idx===0?'active':''}" onclick="pickSize(${idx})">
-            ${escapeHtml(s.name)}${s.price?` (+${money(s.price)})`:``}
-          </button>
-        `).join("");
-        selectedSize = sizes[0]; // default 1º
-      }else{
-        sizesWrap.style.display="none";
-        selectedSize = null;
-      }
-
-      // extras
-      const extras = sanitizeOpts(product.extras);
-      const extrasWrap = document.getElementById("optExtras");
-      if(extras.length){
-        extrasWrap.style.display="block";
-        selectedExtras = [];
-        renderExtras();
-      }else{
-        extrasWrap.style.display="none";
-        selectedExtras = [];
-      }
-
-      calcTotal();
-    }
-
-    function renderExtras(){
-      const extras = sanitizeOpts(product.extras);
-      const box = document.getElementById("extrasList");
-      box.innerHTML = extras.map((e,idx)=>{
-        const on = !!selectedExtras.find(x=>x.name===e.name);
-        return `
-          <div class="check" onclick="toggleExtra(${idx})">
-            <div>
-              <div style="font-weight:800">${escapeHtml(e.name)}</div>
-              <small>+ ${money(e.price||0)}</small>
+        <div class="product-image" id="productImage">🍽️</div>
+        <div class="content">
+            <div class="product-name" id="productName"></div>
+            <div class="product-desc" id="productDesc"></div>
+            <div class="product-price" id="productPrice"></div>
+            
+            <div id="flavorsSection" class="section" style="display:none;">
+                <div class="section-title">🍕 Sabores</div>
+                <div id="flavorsList"></div>
             </div>
-            <div style="font-size:1.05rem">${on ? "✅" : "⬜"}</div>
-          </div>
-        `;
-      }).join("");
-    }
+            
+            <div id="sizesSection" class="section" style="display:none;">
+                <div class="section-title">📏 Tamanhos</div>
+                <div id="sizesList"></div>
+            </div>
+            
+            <div id="extrasSection" class="section" style="display:none;">
+                <div class="section-title">➕ Extras</div>
+                <div id="extrasList"></div>
+            </div>
+            
+            <div class="qty-selector">
+                <button class="qty-btn" onclick="changeQty(-1)">−</button>
+                <span class="qty-value" id="qtyValue">1</span>
+                <button class="qty-btn" onclick="changeQty(1)">+</button>
+            </div>
+        </div>
+        <div class="total-bar">
+            <div class="total-row">
+                <span class="total-label">Total</span>
+                <span class="total-value" id="totalValue">R$ 0,00</span>
+            </div>
+            <button class="add-btn" onclick="addToCart()">Adicionar ao carrinho</button>
+        </div>
+    </div>
+    <div id="error" class="error" style="display:none;">
+        <div class="error-icon">😕</div>
+        <div>Produto não encontrado</div>
+    </div>
 
-    function escapeHtml(str){
-      return String(str||"")
-        .replaceAll("&","&amp;").replaceAll("<","&lt;")
-        .replaceAll(">","&gt;").replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",
+            authDomain: "pedrad-814d0.firebaseapp.com",
+            projectId: "pedrad-814d0",
+            storageBucket: "pedrad-814d0.firebasestorage.app",
+            messagingSenderId: "293587190550",
+            appId: "1:293587190550:web:80c9399f82847c80e20637"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-    // ====== send ======
-    function sendToCart(){
-      if(!product) return;
+        // State
+        let product = null;
+        let qty = 1;
+        let selectedFlavor = null;
+        let selectedSize = null;
+        let selectedExtras = [];
 
-      // ✅ pacote único (produto + opções)
-      const selections = {
-        flavor: selectedFlavor ? { name:selectedFlavor.name, price:selectedFlavor.price } : null,
-        size: selectedSize ? { name:selectedSize.name, price:selectedSize.price } : null,
-        extras: (selectedExtras||[]).map(x=>({name:x.name,price:x.price}))
-      };
+        // Get IDs from URL
+        const params = new URLSearchParams(window.location.search);
+        const storeId = params.get('storeId');
+        const productId = params.get('productId');
 
-      window.parent?.postMessage({
-        type: "ADD_TO_CART",
-        payload: { productId: product.id, qty, selections }
-      }, "*");
-
-      toast("Adicionado!");
-      setTimeout(closeMe, 250);
-    }
-
-    // ====== load ======
-    async function load(){
-      if(!storeId || !productId){
-        document.getElementById("pImg").innerHTML = `<div style="color:var(--muted)">Erro: IDs ausentes</div>`;
-        return;
-      }
-      try{
-        const doc = await db.collection("products").doc(productId).get();
-        if(!doc.exists){
-          document.getElementById("pImg").innerHTML = `<div style="color:var(--muted)">Produto não encontrado</div>`;
-          return;
+        function formatCurrency(v) {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
         }
-        product = { id: doc.id, ...doc.data() };
-        renderProduct();
-      }catch(e){
-        console.error(e);
-        document.getElementById("pImg").innerHTML = `<div style="color:var(--muted)">Erro ao carregar</div>`;
-      }
-    }
 
-    load();
-  </script>
+        function closePopup() {
+            if (window.parent !== window) {
+                window.parent.postMessage({ type: 'closePopup' }, '*');
+            } else {
+                window.close();
+            }
+        }
+
+        function getImageSrc(item) {
+            if (!item) return null;
+            const data = (item.imageData || '').trim();
+            const url = (item.imageUrl || '').trim();
+            if (data && (data.startsWith('data:image/') || /^https?:\/\//.test(data))) return data;
+            if (url && /^https?:\/\//.test(url)) return url;
+            return null;
+        }
+
+        async function loadProduct() {
+            if (!storeId || !productId) {
+                showError();
+                return;
+            }
+
+            try {
+                const doc = await db.collection('products').doc(productId).get();
+                if (!doc.exists) {
+                    showError();
+                    return;
+                }
+
+                product = { id: doc.id, ...doc.data() };
+                renderProduct();
+            } catch (e) {
+                console.error('Error:', e);
+                showError();
+            }
+        }
+
+        function showError() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'block';
+        }
+
+        function renderProduct() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+
+            document.getElementById('headerTitle').textContent = product.name || 'Produto';
+            document.getElementById('productName').textContent = product.name || '';
+            document.getElementById('productDesc').textContent = product.description || '';
+            document.getElementById('productPrice').textContent = formatCurrency(product.price);
+
+            // Image (prioriza imageData)
+            const imgSrc = getImageSrc(product);
+            const imgEl = document.getElementById('productImage');
+            if (imgSrc) {
+                imgEl.style.backgroundImage = `url('${imgSrc}')`;
+                imgEl.classList.add('has-image');
+                imgEl.textContent = '';
+            } else {
+                imgEl.textContent = product.emoji || '🍽️';
+            }
+
+            // Flavors
+            const flavors = product.flavors || [];
+            if (flavors.length > 0) {
+                document.getElementById('flavorsSection').style.display = 'block';
+                document.getElementById('flavorsList').innerHTML = flavors.map((f, i) => `
+                    <label class="option" onclick="selectFlavor(${i})">
+                        <input type="radio" name="flavor" value="${i}">
+                        <div class="option-check"></div>
+                        <div class="option-info">
+                            <div class="option-name">${f.name}</div>
+                        </div>
+                        <div class="option-price">${f.price > 0 ? '+' + formatCurrency(f.price) : 'Incluso'}</div>
+                    </label>
+                `).join('');
+            }
+
+            // Sizes
+            const sizes = product.sizes || [];
+            if (sizes.length > 0) {
+                document.getElementById('sizesSection').style.display = 'block';
+                document.getElementById('sizesList').innerHTML = sizes.map((s, i) => `
+                    <label class="option" onclick="selectSize(${i})">
+                        <input type="radio" name="size" value="${i}">
+                        <div class="option-check"></div>
+                        <div class="option-info">
+                            <div class="option-name">${s.name}</div>
+                        </div>
+                        <div class="option-price">${s.price > 0 ? '+' + formatCurrency(s.price) : 'Incluso'}</div>
+                    </label>
+                `).join('');
+            }
+
+            // Extras
+            const extras = product.extras || [];
+            if (extras.length > 0) {
+                document.getElementById('extrasSection').style.display = 'block';
+                document.getElementById('extrasList').innerHTML = extras.map((e, i) => `
+                    <label class="option" onclick="toggleExtra(${i})">
+                        <input type="checkbox" value="${i}">
+                        <div class="option-check"></div>
+                        <div class="option-info">
+                            <div class="option-name">${e.name}</div>
+                        </div>
+                        <div class="option-price">+${formatCurrency(e.price)}</div>
+                    </label>
+                `).join('');
+            }
+
+            updateTotal();
+        }
+
+        function selectFlavor(idx) {
+            selectedFlavor = product.flavors[idx];
+            document.querySelectorAll('#flavorsList .option').forEach((el, i) => {
+                el.classList.toggle('selected', i === idx);
+            });
+            updateTotal();
+        }
+
+        function selectSize(idx) {
+            selectedSize = product.sizes[idx];
+            document.querySelectorAll('#sizesList .option').forEach((el, i) => {
+                el.classList.toggle('selected', i === idx);
+            });
+            updateTotal();
+        }
+
+        function toggleExtra(idx) {
+            const extra = product.extras[idx];
+            const exists = selectedExtras.findIndex(e => e.name === extra.name);
+            if (exists >= 0) {
+                selectedExtras.splice(exists, 1);
+            } else {
+                selectedExtras.push(extra);
+            }
+            document.querySelectorAll('#extrasList .option').forEach((el, i) => {
+                el.classList.toggle('selected', selectedExtras.some(e => e.name === product.extras[i].name));
+            });
+            updateTotal();
+        }
+
+        function changeQty(delta) {
+            qty = Math.max(1, qty + delta);
+            document.getElementById('qtyValue').textContent = qty;
+            updateTotal();
+        }
+
+        function updateTotal() {
+            let total = product.price || 0;
+            if (selectedFlavor) total += selectedFlavor.price || 0;
+            if (selectedSize) total += selectedSize.price || 0;
+            selectedExtras.forEach(e => total += e.price || 0);
+            total *= qty;
+            document.getElementById('totalValue').textContent = formatCurrency(total);
+        }
+
+        function addToCart() {
+            const selections = {
+                flavor: selectedFlavor,
+                size: selectedSize,
+                extras: selectedExtras
+            };
+
+            window.parent.postMessage({
+                type: 'ADD_TO_CART',
+                payload: {
+                    productId: product.id,
+                    qty: qty,
+                    selections: selections
+                }
+            }, '*');
+        }
+
+        // Init
+        loadProduct();
+    </script>
 </body>
 </html>

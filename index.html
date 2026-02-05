@@ -2,109 +2,60 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Pedrad - Delivery</title>
     <meta name="theme-color" content="#000000">
-     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link rel="stylesheet" href="client-review-modal.css">
-    
     <style>
-/*        
-body:not(.auth-ready) #authPage,
-body:not(.auth-ready) #mainApp {
-opacity: 0;
-pointer-events: none;
-}
-
-/* Loading */
-.product-img img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-}
-.main{ padding-top: 70px; padding-bottom: 80px; }
-
-
-.auth-loading {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 2rem;
-    z-index: 9999;
-}
-
-body.auth-ready .auth-loading {
-    display: none;
-}
-
-/* Transição suave */
-#authPage,
-#mainApp {
-    transition: opacity 0.3s ease;
-}
-        /* CSS adicional para botão de avaliações pendentes */
-        .profile-menu-content {
-            flex: 1;
-        }
+        /* Esconde tudo até decidir qual tela mostrar */
+        #authPage, #mainApp { display: none; }
         
-        .profile-menu-title {
-            font-weight: 600;
-            font-size: 0.95rem;
-            margin-bottom: 2px;
-        }
-        
-        .profile-menu-subtitle {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-        
-        .profile-menu-badge {
-            min-width: 24px;
-            height: 24px;
-            background: var(--primary);
-            color: #000;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
+        /* Loading inicial */
+        .app-loading {
+            position: fixed;
+            inset: 0;
+            background: #000;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 0 8px;
+            z-index: 9999;
+            transition: opacity 0.3s;
         }
+        .app-loading.hide { opacity: 0; pointer-events: none; }
+        .app-loading-spinner {
+            width: 40px; height: 40px;
+            border: 3px solid #262626;
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
         
-        .profile-menu-badge:empty {
-            display: none;
-        }
-        
-        /* FIX: Limita scroll das páginas */
-        .page {
-            overflow-y: auto !important;
-            overflow-x: hidden !important;
-            max-height: calc(100vh - 120px) !important;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        /* FIX: Garante que profile-menu é visível */
-        .profile-menu {
-            display: flex !important;
-            flex-direction: column !important;
-            gap: 0 !important;
-        }
-        
-        .profile-menu-item {
-            display: flex !important;
-            opacity: 1 !important;
-            visibility: visible !important;
-        }
+        .product-img img { width:100%; height:100%; object-fit:cover; display:block; }
+        .main { padding-top: 70px; padding-bottom: 80px; }
+        .page { overflow-y: auto !important; overflow-x: hidden !important; max-height: calc(100vh - 120px) !important; -webkit-overflow-scrolling: touch; }
+        .profile-menu { display: flex !important; flex-direction: column !important; }
+        .profile-menu-item { display: flex !important; opacity: 1 !important; visibility: visible !important; }
     </style>
+    <script>
+        // Decide UI inicial ANTES de carregar Firebase
+        (function() {
+            var hasSession = localStorage.getItem('auth_uid');
+            var lastCheck = parseInt(localStorage.getItem('auth_last_check') || '0');
+            var isRecent = Date.now() - lastCheck < 24 * 60 * 60 * 1000;
+            
+            // Define qual mostrar após DOMContentLoaded
+            window._showAuth = !(hasSession && isRecent);
+        })();
+    </script>
 </head>
 <body>
-     
+    <!-- Loading inicial -->
+    <div class="app-loading" id="appLoading">
+        <div class="app-loading-spinner"></div>
+    </div>
 
     <div class="offline-banner" id="offlineBanner">Você está offline</div>
     <div class="toast" id="toast"></div>
@@ -115,12 +66,10 @@ body.auth-ready .auth-loading {
             <h1>Pedra Delivery</h1>
             <p>Delivery</p>
         </div>
-        
         <div class="auth-tabs">
             <button class="auth-tab active" onclick="switchAuthTab('login')">Entrar</button>
             <button class="auth-tab" onclick="switchAuthTab('register')">Criar conta</button>
         </div>
-        
         <form id="loginForm" class="auth-form active" onsubmit="handleLogin(event)">
             <div class="input-group">
                 <label>E-mail</label>
@@ -132,7 +81,6 @@ body.auth-ready .auth-loading {
             </div>
             <button type="submit" class="btn btn-primary">Entrar</button>
         </form>
-        
         <form id="registerForm" class="auth-form" onsubmit="handleRegister(event)">
             <div class="input-group">
                 <label>Nome completo</label>
@@ -155,7 +103,7 @@ body.auth-ready .auth-loading {
     </div>
     
     <!-- Main App -->
-    <div id="mainApp" style="display: none;">
+    <div id="mainApp">
         <header class="header">
             <div class="header-title">PEDRA DELIVERY</div>
             <div class="header-actions">
@@ -177,24 +125,19 @@ body.auth-ready .auth-loading {
         <div id="notificationsPage" class="page">
             <h2 style="margin-bottom:24px;font-weight:400;letter-spacing:1px;">Notificações</h2>
             <div id="notificationsList"></div>
-            <button class="btn btn-secondary" onclick="NotificationSync.clearAll(); NotificationSync.renderHistory('notificationsList')">
-                Limpar tudo
-            </button>
+            <button class="btn btn-secondary" onclick="NotificationSync.clearAll();NotificationSync.renderHistory('notificationsList')">Limpar tudo</button>
         </div>
 
         <!-- Home Page -->
         <div id="homePage" class="page active">            
             <div id="storeSelection">
-                <h2 style="margin-bottom: 8px; font-weight: 400; letter-spacing: 1px;">Escolha uma loja</h2>
-                <p style="color: var(--text-muted); margin-bottom: 24px; font-size: 0.85rem;">Selecione onde você quer pedir</p>
-                
-                <!-- Filtros -->
+                <h2 style="margin-bottom:8px;font-weight:400;letter-spacing:1px;">Escolha uma loja</h2>
+                <p style="color:var(--text-muted);margin-bottom:24px;font-size:0.85rem;">Selecione onde você quer pedir</p>
                 <div id="storeFilters"></div>
-                
                 <div id="storesGrid" class="stores-grid"></div>
             </div>
             
-            <div id="storeMenu" style="display: none;">
+            <div id="storeMenu" style="display:none;">
                 <div class="store-header-bar" onclick="backToStores()">
                     <span class="back-btn">←</span>
                     <div class="store-header-info">
@@ -202,11 +145,9 @@ body.auth-ready .auth-loading {
                         <span class="store-header-status" id="selectedStoreStatus">Aberto</span>
                     </div>
                 </div>
-                
                 <div class="search-bar">
                     <input type="text" class="search-input" placeholder="Buscar produtos..." id="searchInput" oninput="filterProducts()">
                 </div>
-                
                 <div class="categories" id="categoriesContainer"></div>
                 <div class="products-grid" id="productsGrid"></div>
             </div>
@@ -214,93 +155,62 @@ body.auth-ready .auth-loading {
         
         <!-- Cart Page -->
         <div id="cartPage" class="page">
-            <h2 style="margin-bottom: 24px; font-weight: 400; letter-spacing: 1px;">Carrinho</h2>
+            <h2 style="margin-bottom:24px;font-weight:400;letter-spacing:1px;">Carrinho</h2>
             <div id="cartItems"></div>
-            <div id="cartSummary" style="display: none;">
-                <div class="card" style="margin-top: 16px;">
-                    <div class="summary-row">
-                        <span>Subtotal</span>
-                        <span id="cartSubtotal">R$ 0,00</span>
-                    </div>
-                    <div class="summary-row" id="cartDiscountRow" style="display:none; color: var(--primary);">
-                        <span>Desconto</span>
-                        <span id="cartDiscount">- R$ 0,00</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Taxa de entrega</span>
-                        <span id="cartDelivery">R$ 0,00</span>
-                    </div>
-                    <div class="summary-row total">
-                        <span>Total</span>
-                        <span id="cartTotal">R$ 0,00</span>
-                    </div>
+            <div id="cartSummary" style="display:none;">
+                <div class="card" style="margin-top:16px;">
+                    <div class="summary-row"><span>Subtotal</span><span id="cartSubtotal">R$ 0,00</span></div>
+                    <div class="summary-row" id="cartDiscountRow" style="display:none;color:var(--primary);"><span>Desconto</span><span id="cartDiscount">- R$ 0,00</span></div>
+                    <div class="summary-row"><span>Taxa de entrega</span><span id="cartDelivery">R$ 0,00</span></div>
+                    <div class="summary-row total"><span>Total</span><span id="cartTotal">R$ 0,00</span></div>
                 </div>
-                <!-- TROQUE O onclick DO BOTÃO "Finalizar pedido" (no Cart Page) -->
-
-<button class="btn btn-primary" onclick="window.location.href='checkout.html'" style="margin-top: 16px;">
-  Finalizar pedido
-</button>
-
-                 
+                <button class="btn btn-primary" onclick="window.location.href='checkout.html'" style="margin-top:16px;">Finalizar pedido</button>
             </div>
         </div>
         
         <!-- Orders Page -->
         <div id="ordersPage" class="page">
-            <h2 style="margin-bottom: 24px; font-weight: 400; letter-spacing: 1px;">Meus Pedidos</h2>
+            <h2 style="margin-bottom:24px;font-weight:400;letter-spacing:1px;">Meus Pedidos</h2>
             <div id="ordersList"></div>
         </div>
         
-
-        
- <!-- Meus Endereços -->
-
-        
         <!-- Tracking Page -->
         <div id="trackingPage" class="page"></div>
-        
-<!-- Navigation -->
-<nav class="nav">
-    <div class="nav-item active" onclick="showPage('home')">
-        <span>⌂</span>
-        Início
+
+        <!-- Navigation -->
+        <nav class="nav">
+            <div class="nav-item active" onclick="showPage('home')"><span>⌂</span>Início</div>
+            <div class="nav-item" onclick="window.location.href='orders.html'"><span>≡</span>Pedidos</div>
+            <div class="nav-item" onclick="window.location.href='profile.html'"><span>○</span>Perfil</div>
+        </nav>
     </div>
-    <div class="nav-item" onclick="window.location.href='orders.html'">
-        <span>≡</span>
-        Pedidos
-    </div>
-    <div class="nav-item" onclick="window.location.href='profile.html'">
-        <span>○</span>
-        Perfil
-    </div>
-</nav>
     
-<!-- Product Modal -->
-<!-- Product View Modal (CLIENTE) -->
-<div class="modal" id="productModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <div class="modal-title" id="modalProductName">Produto</div>
-            <button class="modal-close" onclick="closeModal('productModal')">×</button>
-        </div>
-        <div class="modal-body">
-            <div class="product-modal-img" id="modalProductImg">🍽️</div>
-            <p class="product-modal-desc" id="modalProductDesc"></p>
-            <div id="modalAddons"></div>
-            <div class="product-modal-footer">
-                <div class="qty-control">
-                    <button class="qty-btn" onclick="changeModalQty(-1)">−</button>
-                    <span class="qty-value" id="modalQty">1</span>
-                    <button class="qty-btn" onclick="changeModalQty(1)">+</button>
+    <!-- Product Modal -->
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modalProductName">Produto</div>
+                <button class="modal-close" onclick="closeModal('productModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="product-modal-img" id="modalProductImg">🍽️</div>
+                <p class="product-modal-desc" id="modalProductDesc"></p>
+                <div id="modalAddons"></div>
+                <div class="product-modal-footer">
+                    <div class="qty-control">
+                        <button class="qty-btn" onclick="changeModalQty(-1)">−</button>
+                        <span class="qty-value" id="modalQty">1</span>
+                        <button class="qty-btn" onclick="changeModalQty(1)">+</button>
+                    </div>
+                    <div class="product-modal-price" id="modalProductPrice">R$ 0,00</div>
                 </div>
-                <div class="product-modal-price" id="modalProductPrice">R$ 0,00</div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" style="width:100%" onclick="addToCartFromModal()">Adicionar ao carrinho</button>
             </div>
         </div>
-        <div class="modal-footer">
-            <button class="btn btn-primary" style="width:100%" onclick="addToCartFromModal()">Adicionar ao carrinho</button>
-        </div>
     </div>
-</div>
+    
     <!-- Checkout Modal -->
     <div class="modal" id="checkoutModal">
         <div class="modal-content">
@@ -309,92 +219,41 @@ body.auth-ready .auth-loading {
                 <button class="modal-close" onclick="closeModal('checkoutModal')">×</button>
             </div>
             <div class="modal-body">
-                <h3 style="margin-bottom: 12px; font-weight: 400; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Tipo de pedido</h3>
+                <h3 style="margin-bottom:12px;font-weight:400;font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;">Tipo de pedido</h3>
                 <div class="delivery-mode-selector" style="display:flex;gap:8px;margin-bottom:24px;">
-                    <div class="mode-option selected" id="modeDelivery" onclick="setDeliveryMode('delivery')">
-                        <span>🛵</span> Entrega
-                    </div>
-                    <div class="mode-option" id="modePickup" onclick="setDeliveryMode('pickup')">
-                        <span>🏪</span> Retirar na Loja
-                    </div>
+                    <div class="mode-option selected" id="modeDelivery" onclick="setDeliveryMode('delivery')"><span>🛵</span> Entrega</div>
+                    <div class="mode-option" id="modePickup" onclick="setDeliveryMode('pickup')"><span>🏪</span> Retirar</div>
                 </div>
-
                 <div id="addressSection">
-                    <h3 style="margin-bottom: 12px; font-weight: 400; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Endereço de entrega</h3>
+                    <h3 style="margin-bottom:12px;font-weight:400;font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;">Endereço</h3>
                     <div id="checkoutAddresses"></div>
-                    <button class="btn btn-secondary btn-sm" onclick="showAddAddressModal()" style="margin-bottom: 24px;">
-                        + Adicionar novo endereço
-                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="showAddAddressModal()" style="margin-bottom:24px;">+ Novo endereço</button>
                 </div>
-
-                <h3 style="margin-bottom: 12px; font-weight: 400; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Cupom de desconto</h3>
+                <h3 style="margin-bottom:12px;font-weight:400;font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;">Cupom</h3>
                 <div class="coupon-box">
-                    <input type="text" class="input" id="couponInput" placeholder="Digite o código">
+                    <input type="text" class="input" id="couponInput" placeholder="Código">
                     <button class="btn btn-secondary btn-sm" onclick="applyCoupon()">Aplicar</button>
                 </div>
                 <div id="couponStatus" class="coupon-status"></div>
-
-                <h3 style="margin-bottom: 12px; font-weight: 400; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Forma de pagamento</h3>
+                <h3 style="margin-bottom:12px;font-weight:400;font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;">Pagamento</h3>
                 <div class="payment-options" id="paymentOptions">
-                    <label class="payment-option selected">
-                        <input type="radio" name="payment" value="pix" checked onchange="selectPayment(this)">
-                        <span class="payment-icon">◉</span>
-                        <span class="payment-info"><span class="payment-name">PIX</span><span class="payment-desc">Pagamento instantâneo</span></span>
-                    </label>
-                    <label class="payment-option">
-                        <input type="radio" name="payment" value="credit" onchange="selectPayment(this)">
-                        <span class="payment-icon">💳</span>
-                        <span class="payment-info"><span class="payment-name">Crédito</span><span class="payment-desc">Cartão de crédito</span></span>
-                    </label>
-                    <label class="payment-option">
-                        <input type="radio" name="payment" value="debit" onchange="selectPayment(this)">
-                        <span class="payment-icon">💳</span>
-                        <span class="payment-info"><span class="payment-name">Débito</span><span class="payment-desc">Cartão de débito</span></span>
-                    </label>
-                    <label class="payment-option">
-                        <input type="radio" name="payment" value="cash" onchange="selectPayment(this)">
-                        <span class="payment-icon">💵</span>
-                        <span class="payment-info"><span class="payment-name">Dinheiro</span><span class="payment-desc">Pagar na entrega/retirada</span></span>
-                    </label>
-                    <label class="payment-option">
-                        <input type="radio" name="payment" value="picpay" onchange="selectPayment(this)">
-                        <span class="payment-icon">📱</span>
-                        <span class="payment-info"><span class="payment-name">PicPay</span><span class="payment-desc">Carteira digital</span></span>
-                    </label>
-                    <label class="payment-option">
-                        <input type="radio" name="payment" value="alimentacao" onchange="selectPayment(this)">
-                        <span class="payment-icon">🍽️</span>
-                        <span class="payment-info"><span class="payment-name">Alimentação</span><span class="payment-desc">Vale alimentação/refeição</span></span>
-                    </label>
+                    <label class="payment-option selected"><input type="radio" name="payment" value="pix" checked onchange="selectPayment(this)"><span class="payment-icon">◉</span><span class="payment-info"><span class="payment-name">PIX</span></span></label>
+                    <label class="payment-option"><input type="radio" name="payment" value="credit" onchange="selectPayment(this)"><span class="payment-icon">💳</span><span class="payment-info"><span class="payment-name">Crédito</span></span></label>
+                    <label class="payment-option"><input type="radio" name="payment" value="debit" onchange="selectPayment(this)"><span class="payment-icon">💳</span><span class="payment-info"><span class="payment-name">Débito</span></span></label>
+                    <label class="payment-option"><input type="radio" name="payment" value="cash" onchange="selectPayment(this)"><span class="payment-icon">💵</span><span class="payment-info"><span class="payment-name">Dinheiro</span></span></label>
                 </div>
-
                 <div class="card">
-                    <div class="summary-row">
-                        <span>Subtotal</span>
-                        <span id="checkoutSubtotal">R$ 0,00</span>
-                    </div>
-                    <div class="summary-row" id="checkoutDiscountRow" style="display:none; color: var(--primary);">
-                        <span>Desconto</span>
-                        <span id="checkoutDiscount">- R$ 0,00</span>
-                    </div>
-                    <div class="summary-row" id="checkoutDeliveryRow">
-                        <span>Entrega (<span id="checkoutNeighborhood">-</span>)</span>
-                        <span id="checkoutDelivery">R$ 0,00</span>
-                    </div>
-                    <div class="summary-row total">
-                        <span>Total</span>
-                        <span id="checkoutTotal">R$ 0,00</span>
-                    </div>
+                    <div class="summary-row"><span>Subtotal</span><span id="checkoutSubtotal">R$ 0,00</span></div>
+                    <div class="summary-row" id="checkoutDiscountRow" style="display:none;color:var(--primary);"><span>Desconto</span><span id="checkoutDiscount">- R$ 0,00</span></div>
+                    <div class="summary-row" id="checkoutDeliveryRow"><span>Entrega (<span id="checkoutNeighborhood">-</span>)</span><span id="checkoutDelivery">R$ 0,00</span></div>
+                    <div class="summary-row total"><span>Total</span><span id="checkoutTotal">R$ 0,00</span></div>
                 </div>
-
-                <button class="btn btn-primary" onclick="submitOrder()" style="margin-top: 16px;">
-                    Confirmar pedido
-                </button>
+                <button class="btn btn-primary" onclick="submitOrder()" style="margin-top:16px;">Confirmar pedido</button>
             </div>
         </div>
     </div>
     
-    <!-- Add Address Modal -->
+    <!-- Address Modal -->
     <div class="modal" id="addressModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -403,45 +262,20 @@ body.auth-ready .auth-loading {
             </div>
             <div class="modal-body">
                 <form onsubmit="saveAddress(event)">
-                    <div class="input-group">
-                        <label>Apelido (ex: Casa, Trabalho)</label>
-                        <input type="text" class="input" id="addressLabel" placeholder="Casa" required>
-                    </div>
-                    <div class="input-group">
-                        <label>Rua</label>
-                        <input type="text" class="input" id="addressStreet" placeholder="Nome da rua" required>
-                    </div>
-                    <div class="input-group">
-                        <label>Número</label>
-                        <input type="text" class="input" id="addressNumber" placeholder="123" required>
-                    </div>
-                    <div class="input-group">
-                        <label>Complemento</label>
-                        <input type="text" class="input" id="addressComplement" placeholder="Apto, Bloco...">
-                    </div>
-                    <div class="input-group">
-                        <label>Bairro</label>
-                        <select class="input" id="addressNeighborhood" required>
-                            <option value="">Selecione o bairro</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Ponto de referência</label>
-                        <input type="text" class="input" id="addressReference" placeholder="Próximo a...">
-                    </div>
-                    
+                    <div class="input-group"><label>Apelido</label><input type="text" class="input" id="addressLabel" placeholder="Casa" required></div>
+                    <div class="input-group"><label>Rua</label><input type="text" class="input" id="addressStreet" required></div>
+                    <div class="input-group"><label>Número</label><input type="text" class="input" id="addressNumber" required></div>
+                    <div class="input-group"><label>Complemento</label><input type="text" class="input" id="addressComplement"></div>
+                    <div class="input-group"><label>Bairro</label><select class="input" id="addressNeighborhood" required><option value="">Selecione</option></select></div>
+                    <div class="input-group"><label>Referência</label><input type="text" class="input" id="addressReference"></div>
                     <div class="location-box" id="addressLocationBox">
-                        <div class="location-status" id="addressLocationStatus">
-                            <span class="location-icon">◎</span>
-                            <span>Localização não capturada</span>
-                        </div>
+                        <div class="location-status" id="addressLocationStatus"><span>📍</span><span>Localização não capturada</span></div>
                         <div style="display:flex;gap:8px;margin-top:12px;">
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="captureAddressLocation()" style="flex:1;">GPS automático</button>
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="openMapPicker()" style="flex:1;">Escolher no mapa</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="captureAddressLocation()" style="flex:1;">GPS</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="openMapPicker()" style="flex:1;">Mapa</button>
                         </div>
                     </div>
-                    
-                    <button type="submit" class="btn btn-primary">Salvar endereço</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
                 </form>
             </div>
         </div>
@@ -453,161 +287,84 @@ body.auth-ready .auth-loading {
             <div class="modal-header">
                 <div class="modal-title">Detalhes do Pedido</div>
                 <button class="modal-close" onclick="closeModal('orderModal')">×</button>
-                
             </div>
             <div class="modal-body" id="orderDetailContent"></div>
         </div>
     </div>
     
-    <!-- Scripts do Firebase e módulos -->
+    <!-- Product Popup -->
+    <div id="htmlPopup" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.6)">
+        <div style="width:min(520px,92vw);height:min(820px,92vh);margin:4vh auto;background:#0a0a0a;border:1px solid #262626;border-radius:14px;overflow:hidden">
+            <iframe id="popupFrame" style="width:100%;height:100%;border:0" onerror="window.location.href='404.html?auto=1'"></iframe>
+        </div>
+    </div>
+
+    <!-- Scripts -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-   <script src="index.js"></script>
-<script src="modules/stores.js"></script>
-<script src="modules/notifications.js"></script>
-<script src="modules/tracking.js"></script>
-<script src="modules/store-cache.js"></script>
     
-    <!-- SCRIPT DE AVALIAÇÕES - DEVE VIR DEPOIS DO INDEX.JS -->
+    <!-- Módulos otimizados -->
+    <script src="modules/image-helper.js"></script>
+    <script src="modules/data-cache.js"></script>
+    <script src="modules/auth-manager.js"></script>
+    <script src="modules/user-metrics.js"></script>
+    
+    <!-- App principal -->
+    <script src="index.js"></script>
+    <script src="modules/stores.js"></script>
+    <script src="modules/notifications.js"></script>
+    <script src="modules/tracking.js"></script>
+    <script src="modules/store-cache.js"></script>
+    <script src="modules/polish.js"></script>
+    
     <script>
-    window.addEventListener('load', function() {
-        console.log('🔧 Inicializando sistema de avaliações pendentes...');
-        
-        window.updatePendingReviewsBadge = async function() {
-            if (!window.currentUser) {
-                console.log('⚠️ currentUser ainda não disponível');
-                return;
+        // Mostra UI correta imediatamente
+        document.addEventListener('DOMContentLoaded', function() {
+            var authPage = document.getElementById('authPage');
+            var mainApp = document.getElementById('mainApp');
+            var loading = document.getElementById('appLoading');
+            
+            if (window._showAuth) {
+                authPage.style.display = 'flex';
+                mainApp.style.display = 'none';
+            } else {
+                authPage.style.display = 'none';
+                mainApp.style.display = 'block';
             }
             
-            try {
-                const snapshot = await db.collection('orders')
-                    .where('userId', '==', window.currentUser.uid)
-                    .where('status', '==', 'delivered')
-                    .where('reviewed', '==', false)
-                    .get();
-                
-                const count = snapshot.size;
-                const badge = document.getElementById('pendingReviewsBadge');
-                
-                if (badge) {
-                    badge.textContent = count;
-                    badge.style.display = count > 0 ? 'flex' : 'none';
-                    console.log(`✅ Badge atualizado: ${count} avaliações pendentes`);
-                } else {
-                    console.error('❌ Badge não encontrado no DOM');
-                }
-                
-            } catch (err) {
-                console.error('❌ Erro ao contar avaliações pendentes:', err);
+            // Remove loading após breve delay
+            setTimeout(function() {
+                loading.classList.add('hide');
+                setTimeout(function() { loading.remove(); }, 300);
+            }, 200);
+        });
+        
+        // Popup message handler
+        window.addEventListener("message", function(ev) {
+            if (!ev.data) return;
+            if (ev.data.type === "closePopup") {
+                document.getElementById("htmlPopup").style.display = "none";
+                document.getElementById("popupFrame").src = "about:blank";
             }
-        };
-        
-        const _originalShowPage = window.showPage;
-        
-        if (typeof _originalShowPage === 'function') {
-            window.showPage = function(pageId) {
-                _originalShowPage(pageId);
-                
-                if (pageId === 'profile' && window.currentUser) {
-                    setTimeout(window.updatePendingReviewsBadge, 500);
-                }
-            };
-            
-            console.log('✅ showPage interceptado com sucesso');
-        } else {
-            console.error('❌ showPage não está definido. Tentando novamente em 1s...');
-            setTimeout(arguments.callee, 1000);
-            return;
-        }
-        
-        document.addEventListener('visibilitychange', function() {
-            if (!document.hidden && window.currentUser) {
-                const profilePage = document.getElementById('profilePage');
-                if (profilePage && profilePage.classList.contains('active')) {
-                    window.updatePendingReviewsBadge();
-                }
+            if (ev.data.type === "cartUpdated") {
+                if (typeof loadCart === 'function') loadCart();
+                if (typeof renderCart === 'function') renderCart();
+                if (typeof updateCartBadge === 'function') updateCartBadge();
             }
         });
         
-        console.log('✅ Sistema de avaliações inicializado');
-    });
+        // Inicialização de lojas após auth
+        window.addEventListener("load", async function() {
+            firebase.auth().onAuthStateChanged(async function(user) {
+                if (!user) return;
+                if (typeof loadStores === "function") await loadStores();
+                if (typeof StoresModule !== 'undefined' && typeof StoresModule.render === 'function') {
+                    StoresModule.render();
+                }
+            });
+        });
     </script>
-    <!-- OPCIONAL: se existir algum lugar chamando showPage('orders'), crie esse fallback (cole em um <script> após index.js) -->
-<script>
-  (function(){
-    const _showPage = window.showPage;
-    window.showPage = function(pageId){
-      if (pageId === 'orders') {
-        window.location.href = 'orders.html';
-        return;
-      }
-      if (typeof _showPage === 'function') return _showPage(pageId);
-    };
-  })();
-
-  
-</script>
-
-    <script src="modules/polish.js"></script>
-    <script>
-  window.addEventListener("load", async () => {
-    firebase.auth().onAuthStateChanged(async (user) => {
-      if (!user) return;
-
-      // chama seu carregamento real (precisa existir no seu JS)
-      if (typeof loadStores === "function") await loadStores();
-      if (typeof renderStores === "function") await renderStores();
-    });
-  });
-
-
-function closeProductPopup(){
-  document.getElementById("htmlPopup").style.display = "none";
-  document.getElementById("popupFrame").src = "about:blank";
-}
-
-function addToCartFromPopup(product, qty, addons){
-  const key = "cart"; // ⚠️ troque aqui se seu carrinho usa outra chave
-  const cart = JSON.parse(localStorage.getItem(key) || "[]");
-
-  cart.push({
-    productId: product.id,
-    storeId: product.storeId,
-    name: product.name,
-    price: Number(product.price||0),
-    qty: Number(qty||1),
-    addons: addons || [],
-    createdAt: Date.now()
-  });
-
-  localStorage.setItem(key, JSON.stringify(cart));
-
-  if (typeof renderCart === "function") renderCart();
-  if (typeof updateCartBadge === "function") updateCartBadge();
-}
-window.addEventListener("message", (ev) => {
-  if (!ev.data) return;
-
-  if (ev.data.type === "closePopup") {
-    document.getElementById("htmlPopup").style.display = "none";
-    document.getElementById("popupFrame").src = "about:blank";
-  }
-
-  if (ev.data.type === "cartUpdated") {
-    loadCartFromStorage();
-    renderCart();
-    updateCartBadge?.();
-  }
-});
-
-</script>
-<div id="htmlPopup" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.6)">
-  <div style="width:min(520px,92vw);height:min(820px,92vh);margin:4vh auto;background:#0a0a0a;border:1px solid #262626;border-radius:14px;overflow:hidden">
-    <iframe id="popupFrame" style="width:100%;height:100%;border:0"></iframe>
-  </div>
-</div>
-<script src="modules/user-order.js"></script>
 </body>
 </html>
