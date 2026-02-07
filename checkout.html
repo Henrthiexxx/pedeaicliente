@@ -881,7 +881,7 @@ if (selectedPayment === 'cash'){
           timeline: [{ status:'pending', timestamp:new Date().toISOString(), message:'Pedido realizado' }]
         };
 
-        await db.collection('').add(order);
+        await db.collection('orders').add(order);
 
         // limpa todos os formatos possíveis
         try{
