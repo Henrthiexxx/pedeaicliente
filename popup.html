@@ -41,23 +41,29 @@
         .product-price { font-size: 1.5rem; font-weight: 600; color: var(--primary); margin-bottom: 24px; }
         .section { margin-bottom: 20px; }
         .section-title { font-size: 0.85rem; font-weight: 600; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* FIX: Usa div em vez de label pra evitar double-toggle */
         .option {
             display: flex; align-items: center; gap: 12px;
             padding: 12px; background: var(--input); border: 1px solid var(--border);
             border-radius: 10px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s;
+            user-select: none;
         }
         .option:hover { border-color: var(--muted); }
         .option.selected { border-color: var(--primary); background: rgba(255,255,255,0.05); }
-        .option input { display: none; }
         .option-check {
             width: 20px; height: 20px; border: 2px solid var(--border);
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
         }
         .option.selected .option-check { border-color: var(--primary); background: var(--primary); }
         .option.selected .option-check::after { content: "✓"; color: #000; font-size: 12px; font-weight: bold; }
+        /* Checkbox extras: quadrado */
+        .option.multi .option-check { border-radius: 4px; }
         .option-info { flex: 1; }
         .option-name { font-size: 0.95rem; }
         .option-price { color: var(--primary); font-size: 0.9rem; font-weight: 500; }
+        
         .qty-selector {
             display: flex; align-items: center; justify-content: center;
             gap: 20px; padding: 16px; background: var(--card);
@@ -150,14 +156,12 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // State
         let product = null;
         let qty = 1;
         let selectedFlavor = null;
         let selectedSize = null;
         let selectedExtras = [];
 
-        // Get IDs from URL
         const params = new URLSearchParams(window.location.search);
         const storeId = params.get('storeId');
         const productId = params.get('productId');
@@ -184,18 +188,10 @@
         }
 
         async function loadProduct() {
-            if (!storeId || !productId) {
-                showError();
-                return;
-            }
-
+            if (!storeId || !productId) { showError(); return; }
             try {
                 const doc = await db.collection('products').doc(productId).get();
-                if (!doc.exists) {
-                    showError();
-                    return;
-                }
-
+                if (!doc.exists) { showError(); return; }
                 product = { id: doc.id, ...doc.data() };
                 renderProduct();
             } catch (e) {
@@ -218,7 +214,6 @@
             document.getElementById('productDesc').textContent = product.description || '';
             document.getElementById('productPrice').textContent = formatCurrency(product.price);
 
-            // Image (prioriza imageData)
             const imgSrc = getImageSrc(product);
             const imgEl = document.getElementById('productImage');
             if (imgSrc) {
@@ -229,55 +224,56 @@
                 imgEl.textContent = product.emoji || '🍽️';
             }
 
-            // Flavors
+            // Flavors (radio - single select)
             const flavors = product.flavors || [];
             if (flavors.length > 0) {
                 document.getElementById('flavorsSection').style.display = 'block';
                 document.getElementById('flavorsList').innerHTML = flavors.map((f, i) => `
-                    <label class="option" onclick="selectFlavor(${i})">
-                        <input type="radio" name="flavor" value="${i}">
+                    <div class="option" onclick="selectFlavor(${i})">
                         <div class="option-check"></div>
                         <div class="option-info">
-                            <div class="option-name">${f.name}</div>
+                            <div class="option-name">${escHtml(f.name)}</div>
                         </div>
                         <div class="option-price">${f.price > 0 ? '+' + formatCurrency(f.price) : 'Incluso'}</div>
-                    </label>
+                    </div>
                 `).join('');
             }
 
-            // Sizes
+            // Sizes (radio - single select)
             const sizes = product.sizes || [];
             if (sizes.length > 0) {
                 document.getElementById('sizesSection').style.display = 'block';
                 document.getElementById('sizesList').innerHTML = sizes.map((s, i) => `
-                    <label class="option" onclick="selectSize(${i})">
-                        <input type="radio" name="size" value="${i}">
+                    <div class="option" onclick="selectSize(${i})">
                         <div class="option-check"></div>
                         <div class="option-info">
-                            <div class="option-name">${s.name}</div>
+                            <div class="option-name">${escHtml(s.name)}</div>
                         </div>
                         <div class="option-price">${s.price > 0 ? '+' + formatCurrency(s.price) : 'Incluso'}</div>
-                    </label>
+                    </div>
                 `).join('');
             }
 
-            // Extras
+            // Extras (multi select) - FIX: usa div, não label
             const extras = product.extras || [];
             if (extras.length > 0) {
                 document.getElementById('extrasSection').style.display = 'block';
                 document.getElementById('extrasList').innerHTML = extras.map((e, i) => `
-                    <label class="option" onclick="toggleExtra(${i})">
-                        <input type="checkbox" value="${i}">
+                    <div class="option multi" onclick="toggleExtra(${i})">
                         <div class="option-check"></div>
                         <div class="option-info">
-                            <div class="option-name">${e.name}</div>
+                            <div class="option-name">${escHtml(e.name)}</div>
                         </div>
                         <div class="option-price">+${formatCurrency(e.price)}</div>
-                    </label>
+                    </div>
                 `).join('');
             }
 
             updateTotal();
+        }
+
+        function escHtml(s) {
+            return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
         }
 
         function selectFlavor(idx) {
@@ -302,10 +298,11 @@
             if (exists >= 0) {
                 selectedExtras.splice(exists, 1);
             } else {
-                selectedExtras.push(extra);
+                selectedExtras.push({ ...extra });
             }
             document.querySelectorAll('#extrasList .option').forEach((el, i) => {
-                el.classList.toggle('selected', selectedExtras.some(e => e.name === product.extras[i].name));
+                const isSelected = selectedExtras.some(e => e.name === product.extras[i].name);
+                el.classList.toggle('selected', isSelected);
             });
             updateTotal();
         }
@@ -326,23 +323,20 @@
         }
 
         function addToCart() {
-            const selections = {
-                flavor: selectedFlavor,
-                size: selectedSize,
-                extras: selectedExtras
-            };
-
             window.parent.postMessage({
                 type: 'ADD_TO_CART',
                 payload: {
                     productId: product.id,
                     qty: qty,
-                    selections: selections
+                    selections: {
+                        flavor: selectedFlavor,
+                        size: selectedSize,
+                        extras: selectedExtras
+                    }
                 }
             }, '*');
         }
 
-        // Init
         loadProduct();
     </script>
 </body>
