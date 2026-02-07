@@ -16,15 +16,19 @@
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: var(--bg); color: var(--text); min-height: 100vh;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
     }
 
     /* Header */
     .header {
       position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      height: 64px; background: var(--bg);
+      background: var(--bg);
       border-bottom: 1px solid var(--border);
       display: flex; align-items: center; gap: 12px;
-      padding: 0 16px; padding-top: env(safe-area-inset-top);
+      padding: 0 16px;
+      padding-top: env(safe-area-inset-top);
+      height: calc(64px + env(safe-area-inset-top));
     }
     .btn-back {
       width: 44px; height: 44px; border-radius: 12px;
@@ -48,13 +52,11 @@
     /* Container */
     .container {
       max-width: 600px; margin: 0 auto;
-      padding: 84px 16px 100px;
+      padding: calc(84px + env(safe-area-inset-top)) 16px 100px;
     }
 
     /* Stats */
-    .stats {
-      display: flex; gap: 10px; margin-bottom: 16px;
-    }
+    .stats { display: flex; gap: 10px; margin-bottom: 16px; }
     .stat {
       flex: 1; background: var(--bg-card);
       border: 1px solid var(--border); border-radius: 12px;
@@ -64,9 +66,7 @@
     .stat-label { font-size: .7rem; color: var(--text-muted); margin-top: 2px; }
 
     /* Actions */
-    .actions {
-      display: flex; gap: 10px; margin-bottom: 16px;
-    }
+    .actions { display: flex; gap: 10px; margin-bottom: 16px; }
     .btn-action {
       flex: 1; padding: 12px; border-radius: 12px;
       border: 1px solid var(--border); background: var(--bg-card);
@@ -77,7 +77,6 @@
     .btn-action:disabled { opacity: .4; cursor: not-allowed; }
     .btn-action.danger { color: var(--danger); border-color: rgba(239,68,68,.3); }
     .btn-action.danger:hover { background: rgba(239,68,68,.1); }
-    .btn-action.active { background: var(--primary); color: #000; border-color: transparent; }
 
     /* Filter Tabs */
     .tabs {
@@ -252,7 +251,6 @@
     .popup-btn:hover { background: rgba(255,255,255,.05); }
     .popup-btn.cancel { color: var(--text-muted); }
     .popup-btn.danger { color: var(--danger); font-weight: 600; }
-    .popup-btn.primary { color: var(--primary); font-weight: 600; }
     .popup-btn + .popup-btn { border-left: 1px solid var(--border); }
   </style>
 </head>
@@ -265,7 +263,6 @@
   </header>
 
   <div class="container">
-    <!-- Stats -->
     <div class="stats">
       <div class="stat">
         <div class="stat-value" id="statActive">0</div>
@@ -281,12 +278,10 @@
       </div>
     </div>
 
-    <!-- Cooldown Info -->
     <div class="cooldown-info" id="cooldownInfo" style="display:none;">
       ⏳ Próxima restauração disponível em <span id="cooldownTime">--</span>
     </div>
 
-    <!-- Actions -->
     <div class="actions">
       <button class="btn-action" id="btnRestore" onclick="restoreOrders()">
         🔄 Restaurar pedidos
@@ -296,7 +291,6 @@
       </button>
     </div>
 
-    <!-- Filter Tabs -->
     <div class="tabs">
       <div class="tab active" data-filter="all">Todos</div>
       <div class="tab" data-filter="active">Em andamento</div>
@@ -304,7 +298,6 @@
       <div class="tab" data-filter="cancelled">Cancelados</div>
     </div>
 
-    <!-- Orders List -->
     <div class="orders-list" id="ordersList">
       <div class="empty-state">
         <div class="empty-icon">📦</div>
@@ -361,14 +354,15 @@
     // ===== CONSTANTS =====
     const ACTIVE_STATUSES = ['pending', 'confirmed', 'preparing', 'ready', 'delivering'];
     const FINAL_STATUSES = ['delivered', 'cancelled'];
-    const MAX_FETCH = 5; // Máximo de pedidos a buscar do servidor
+    const MAX_FETCH = 5;
     const COOLDOWN_HOURS = 24;
     const CACHE_KEY = 'pedrad_orders_cache';
     const COOLDOWN_KEY = 'pedrad_restore_cooldown';
 
     // ===== STATE =====
     let currentUser = null;
-    let orders = []; // Todos os pedidos (cache + ativos)
+    let orders = [];
+    let knownActiveIds = new Set(); // IDs que sabemos estar ativos
     let currentFilter = 'all';
     let unsubscribeActive = null;
 
@@ -384,17 +378,10 @@
 
     // ===== INIT =====
     async function init() {
-      // 1. Carrega cache local
       loadFromCache();
       renderOrders();
-
-      // 2. Listener real-time para pedidos em andamento
       listenActiveOrders();
-
-      // 3. Verifica cooldown
       updateCooldownUI();
-
-      // 4. Bind tabs
       bindTabs();
     }
 
@@ -404,7 +391,6 @@
         const data = localStorage.getItem(CACHE_KEY);
         if (!data) return { orders: [], userId: null };
         const parsed = JSON.parse(data);
-        // Verifica se é do mesmo usuário
         if (parsed.userId !== currentUser.uid) return { orders: [], userId: null };
         return parsed;
       } catch {
@@ -414,7 +400,6 @@
 
     function saveToCache() {
       try {
-        // Salva APENAS pedidos finalizados (entregues/cancelados)
         const finalOrders = orders.filter(o => FINAL_STATUSES.includes(o.status));
         const data = {
           userId: currentUser.uid,
@@ -429,12 +414,10 @@
 
     function loadFromCache() {
       const cached = getCacheData();
-      // Carrega apenas pedidos finalizados do cache
       orders = cached.orders || [];
     }
 
     function clearCache() {
-      // Remove apenas pedidos finalizados, mantém em andamento
       orders = orders.filter(o => ACTIVE_STATUSES.includes(o.status));
       localStorage.removeItem(CACHE_KEY);
       renderOrders();
@@ -449,16 +432,13 @@
         const parsed = JSON.parse(data);
         if (parsed.userId !== currentUser.uid) return null;
         return parsed.endsAt;
-      } catch {
-        return null;
-      }
+      } catch { return null; }
     }
 
     function setCooldown() {
       const endsAt = Date.now() + (COOLDOWN_HOURS * 60 * 60 * 1000);
       localStorage.setItem(COOLDOWN_KEY, JSON.stringify({
-        userId: currentUser.uid,
-        endsAt: endsAt
+        userId: currentUser.uid, endsAt
       }));
       updateCooldownUI();
     }
@@ -484,7 +464,6 @@
       infoEl.style.display = 'block';
       btnRestore.disabled = true;
 
-      // Atualiza tempo restante
       const updateTime = () => {
         const remaining = endsAt - Date.now();
         if (remaining <= 0) {
@@ -496,12 +475,11 @@
         const mins = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
         timeEl.textContent = `${hours}h ${mins}min`;
       };
-
       updateTime();
-      setInterval(updateTime, 60000); // Atualiza a cada minuto
+      setInterval(updateTime, 60000);
     }
 
-    // ===== LISTEN ACTIVE ORDERS =====
+    // ===== LISTEN ACTIVE ORDERS (FIX: captura transições) =====
     function listenActiveOrders() {
       if (unsubscribeActive) unsubscribeActive();
 
@@ -509,21 +487,73 @@
         .where('userId', '==', currentUser.uid)
         .where('status', 'in', ACTIVE_STATUSES)
         .onSnapshot(snapshot => {
-          // Remove pedidos ativos antigos
+
+          // IDs atualmente ativos no servidor
+          const currentActiveIds = new Set(snapshot.docs.map(d => d.id));
+
+          // Detecta pedidos que SAÍRAM do listener (transicionaram pra final)
+          // Busca o estado final deles
+          const disappeared = [...knownActiveIds].filter(id => !currentActiveIds.has(id));
+          disappeared.forEach(id => {
+            db.collection('orders').doc(id).get().then(doc => {
+              if (!doc.exists) return;
+              const order = { id: doc.id, ...doc.data() };
+              // Atualiza no array (substitui versão antiga)
+              const idx = orders.findIndex(o => o.id === order.id);
+              if (idx >= 0) {
+                orders[idx] = order;
+              } else {
+                orders.push(order);
+              }
+              saveToCache();
+              renderOrders();
+            }).catch(() => {});
+          });
+
+          // Atualiza knownActiveIds
+          knownActiveIds = currentActiveIds;
+
+          // Remove pedidos ativos antigos do array
           orders = orders.filter(o => !ACTIVE_STATUSES.includes(o.status));
 
-          // Adiciona/atualiza pedidos ativos do servidor
+          // Adiciona pedidos ativos atuais do servidor
           snapshot.docs.forEach(doc => {
             const order = { id: doc.id, ...doc.data() };
+            // Remove duplicata se existir nos finalizados
+            orders = orders.filter(o => o.id !== order.id);
             orders.push(order);
           });
 
-          // Se algum pedido mudou para finalizado, salva no cache
           saveToCache();
           renderOrders();
         }, err => {
           console.error('Erro no listener:', err);
+          // Fallback: tenta buscar pedidos recentes diretamente
+          fetchRecentOrders();
         });
+    }
+
+    // Fallback caso o listener falhe
+    async function fetchRecentOrders() {
+      try {
+        const snap = await db.collection('orders')
+          .where('userId', '==', currentUser.uid)
+          .orderBy('createdAt', 'desc')
+          .limit(10)
+          .get();
+
+        snap.docs.forEach(doc => {
+          const order = { id: doc.id, ...doc.data() };
+          const idx = orders.findIndex(o => o.id === order.id);
+          if (idx >= 0) orders[idx] = order;
+          else orders.push(order);
+        });
+
+        saveToCache();
+        renderOrders();
+      } catch (e) {
+        console.error('Fallback fetch falhou:', e);
+      }
     }
 
     // ===== RESTORE ORDERS =====
@@ -538,7 +568,6 @@
       btn.textContent = '⏳ Restaurando...';
 
       try {
-        // Busca os 5 pedidos FINALIZADOS mais recentes do servidor
         const snapshot = await db.collection('orders')
           .where('userId', '==', currentUser.uid)
           .where('status', 'in', FINAL_STATUSES)
@@ -549,22 +578,16 @@
         let added = 0;
         snapshot.docs.forEach(doc => {
           const order = { id: doc.id, ...doc.data() };
-          // Só adiciona se não existir
           if (!orders.find(o => o.id === order.id)) {
             orders.push(order);
             added++;
           }
         });
 
-        // Salva no cache
         saveToCache();
-
-        // Ativa cooldown
         setCooldown();
-
         renderOrders();
         showToast(`✓ ${added} pedido(s) restaurado(s)`);
-
       } catch (err) {
         console.error('Erro ao restaurar:', err);
         showToast('Erro ao restaurar');
@@ -578,10 +601,28 @@
     // ===== REFRESH =====
     async function refreshOrders() {
       showToast('⏳ Atualizando...');
-      // O listener já mantém os ativos atualizados
-      // Apenas força re-render
-      renderOrders();
-      showToast('✓ Atualizado');
+      // Busca ativos + recentes finalizados
+      try {
+        const snap = await db.collection('orders')
+          .where('userId', '==', currentUser.uid)
+          .orderBy('createdAt', 'desc')
+          .limit(15)
+          .get();
+
+        snap.docs.forEach(doc => {
+          const order = { id: doc.id, ...doc.data() };
+          const idx = orders.findIndex(o => o.id === order.id);
+          if (idx >= 0) orders[idx] = order;
+          else orders.push(order);
+        });
+
+        saveToCache();
+        renderOrders();
+        showToast('✓ Atualizado');
+      } catch (e) {
+        renderOrders();
+        showToast('✓ Atualizado');
+      }
     }
 
     // ===== RENDER =====
@@ -590,8 +631,6 @@
       updateHeaderBadge();
 
       const container = document.getElementById('ordersList');
-
-      // Filtra e ordena
       let filtered = [...orders];
 
       if (currentFilter === 'active') {
@@ -602,12 +641,7 @@
         filtered = filtered.filter(o => o.status === 'cancelled');
       }
 
-      // Ordena: mais recentes primeiro
-      filtered.sort((a, b) => {
-        const dateA = toTimestamp(a.createdAt);
-        const dateB = toTimestamp(b.createdAt);
-        return dateB - dateA;
-      });
+      filtered.sort((a, b) => toTimestamp(b.createdAt) - toTimestamp(a.createdAt));
 
       if (filtered.length === 0) {
         container.innerHTML = `
@@ -617,8 +651,7 @@
             <div class="empty-desc">
               ${currentFilter === 'all' ? 'Faça seu primeiro pedido!' : 'Tente outra categoria'}
             </div>
-          </div>
-        `;
+          </div>`;
         return;
       }
 
@@ -644,19 +677,16 @@
               <span class="order-total">${formatCurrency(order.total)}</span>
               <span class="order-code">#${code}</span>
             </div>
-          </div>
-        `;
+          </div>`;
       }).join('');
     }
 
     function updateStats() {
       const active = orders.filter(o => ACTIVE_STATUSES.includes(o.status)).length;
       const delivered = orders.filter(o => o.status === 'delivered').length;
-      const total = orders.length;
-
       document.getElementById('statActive').textContent = active;
       document.getElementById('statDelivered').textContent = delivered;
-      document.getElementById('statTotal').textContent = total;
+      document.getElementById('statTotal').textContent = orders.length;
     }
 
     function updateHeaderBadge() {
@@ -687,112 +717,57 @@
 
       const storeName = order.storeName || 'Loja';
       const code = order.id.slice(-6).toUpperCase();
-
       title.textContent = storeName;
 
       const addr = order.address || {};
-      const fullAddress = [
-        addr.street,
-        addr.number ? `nº ${addr.number}` : '',
-        addr.neighborhood
-      ].filter(Boolean).join(', ');
+      const fullAddress = [addr.street, addr.number ? `nº ${addr.number}` : '', addr.neighborhood].filter(Boolean).join(', ');
 
       const paymentLabels = {
         pix: '💠 PIX', credit: '💳 Crédito', debit: '💳 Débito',
         cash: '💵 Dinheiro', picpay: '💚 PicPay'
       };
       const paymentMethod = paymentLabels[order.paymentMethod] || order.paymentMethod || '—';
-
       const deliveryFee = order.deliveryFee || 0;
       const subtotal = (order.total || 0) - deliveryFee;
-
       const isDelivered = order.status === 'delivered';
       const isReviewed = order.reviewed === true;
 
       body.innerHTML = `
         <div class="detail-section">
           <div class="detail-title">📋 Informações</div>
-          <div class="detail-row">
-            <span class="label">Código</span>
-            <span class="value">#${code}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Status</span>
-            <span class="value">${getStatusLabel(order.status)}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Data</span>
-            <span class="value">${formatDate(order.createdAt)}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Entrega</span>
-            <span class="value">${order.deliveryMode === 'pickup' ? 'Retirada' : 'Delivery'}</span>
-          </div>
-          ${fullAddress ? `
-          <div class="detail-row">
-            <span class="label">Endereço</span>
-            <span class="value">${escapeHtml(fullAddress)}</span>
-          </div>
-          ` : ''}
+          <div class="detail-row"><span class="label">Código</span><span class="value">#${code}</span></div>
+          <div class="detail-row"><span class="label">Status</span><span class="value">${getStatusLabel(order.status)}</span></div>
+          <div class="detail-row"><span class="label">Data</span><span class="value">${formatDate(order.createdAt)}</span></div>
+          <div class="detail-row"><span class="label">Entrega</span><span class="value">${order.deliveryMode === 'pickup' ? 'Retirada' : 'Delivery'}</span></div>
+          ${fullAddress ? `<div class="detail-row"><span class="label">Endereço</span><span class="value">${escapeHtml(fullAddress)}</span></div>` : ''}
         </div>
-
         <div class="detail-section">
           <div class="detail-title">🛒 Itens</div>
           ${(order.items || []).map(item => {
             const addons = (item.addons || []).map(a => a.name).join(', ');
             const itemPrice = (item.price || 0) * (item.qty || 1);
-            return `
-              <div class="item-row">
-                <span class="item-qty">${item.qty}x</span>
-                <span class="item-name">
-                  ${escapeHtml(item.name)}
-                  ${addons ? `<div class="item-addons">+ ${escapeHtml(addons)}</div>` : ''}
-                </span>
-                <span class="item-price">${formatCurrency(itemPrice)}</span>
-              </div>
-            `;
+            return `<div class="item-row">
+              <span class="item-qty">${item.qty}x</span>
+              <span class="item-name">${escapeHtml(item.name)}${addons ? `<div class="item-addons">+ ${escapeHtml(addons)}</div>` : ''}</span>
+              <span class="item-price">${formatCurrency(itemPrice)}</span>
+            </div>`;
           }).join('')}
         </div>
-
         <div class="detail-section">
           <div class="detail-title">💰 Pagamento</div>
-          <div class="detail-row">
-            <span class="label">Forma</span>
-            <span class="value">${paymentMethod}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Subtotal</span>
-            <span class="value">${formatCurrency(subtotal)}</span>
-          </div>
-          ${deliveryFee > 0 ? `
-          <div class="detail-row">
-            <span class="label">Taxa de entrega</span>
-            <span class="value">${formatCurrency(deliveryFee)}</span>
-          </div>
-          ` : ''}
-          <div class="detail-row">
-            <span class="label"><strong>Total</strong></span>
-            <span class="value"><strong>${formatCurrency(order.total)}</strong></span>
-          </div>
+          <div class="detail-row"><span class="label">Forma</span><span class="value">${paymentMethod}</span></div>
+          <div class="detail-row"><span class="label">Subtotal</span><span class="value">${formatCurrency(subtotal)}</span></div>
+          ${deliveryFee > 0 ? `<div class="detail-row"><span class="label">Taxa de entrega</span><span class="value">${formatCurrency(deliveryFee)}</span></div>` : ''}
+          <div class="detail-row"><span class="label"><strong>Total</strong></span><span class="value"><strong>${formatCurrency(order.total)}</strong></span></div>
         </div>
-
-        ${isDelivered && !isReviewed ? `
-          <button class="btn-review" onclick="goToReview('${order.id}')">
-            ⭐ Avaliar Pedido
-          </button>
-        ` : ''}
-
-        ${isReviewed ? `
-          <div class="reviewed-badge">✓ Pedido avaliado</div>
-        ` : ''}
+        ${isDelivered && !isReviewed ? `<button class="btn-review" onclick="goToReview('${order.id}')">⭐ Avaliar Pedido</button>` : ''}
+        ${isReviewed ? `<div class="reviewed-badge">✓ Pedido avaliado</div>` : ''}
       `;
 
       modal.classList.add('show');
     }
 
-    function closeModal() {
-      document.getElementById('orderModal').classList.remove('show');
-    }
+    function closeModal() { document.getElementById('orderModal').classList.remove('show'); }
 
     function goToReview(orderId) {
       closeModal();
@@ -804,41 +779,28 @@
       const activeCount = orders.filter(o => ACTIVE_STATUSES.includes(o.status)).length;
       const finalCount = orders.filter(o => FINAL_STATUSES.includes(o.status)).length;
 
-      if (finalCount === 0) {
-        showToast('Nenhum histórico para limpar');
-        return;
-      }
+      if (finalCount === 0) { showToast('Nenhum histórico para limpar'); return; }
 
       document.getElementById('popupIcon').textContent = '🗑️';
       document.getElementById('popupTitle').textContent = 'Limpar histórico?';
-      document.getElementById('popupMessage').textContent = 
+      document.getElementById('popupMessage').textContent =
         `${finalCount} pedido(s) finalizado(s) serão removidos do histórico local.\n\n` +
         `${activeCount > 0 ? `✓ ${activeCount} pedido(s) em andamento serão mantidos.` : ''}`;
       
       document.getElementById('popupConfirm').className = 'popup-btn danger';
       document.getElementById('popupConfirm').textContent = 'Limpar';
-      document.getElementById('popupConfirm').onclick = () => {
-        closePopup();
-        clearCache();
-      };
-
+      document.getElementById('popupConfirm').onclick = () => { closePopup(); clearCache(); };
       document.getElementById('confirmPopup').classList.add('show');
     }
 
-    function closePopup() {
-      document.getElementById('confirmPopup').classList.remove('show');
-    }
+    function closePopup() { document.getElementById('confirmPopup').classList.remove('show'); }
 
     // ===== UTILS =====
     function toTimestamp(ts) {
       if (!ts) return 0;
-      // Firestore Timestamp com método toDate()
       if (typeof ts.toDate === 'function') return ts.toDate().getTime();
-      // Firestore Timestamp serializado do localStorage {seconds, nanoseconds}
       if (ts.seconds !== undefined) return ts.seconds * 1000;
-      // Já é número (ms)
       if (typeof ts === 'number') return ts;
-      // String ISO ou outro formato
       const d = new Date(ts);
       return isNaN(d.getTime()) ? 0 : d.getTime();
     }
@@ -846,38 +808,29 @@
     function formatDate(ts) {
       const ms = toTimestamp(ts);
       if (!ms) return '—';
-      const d = new Date(ms);
-      return d.toLocaleDateString('pt-BR', {
+      return new Date(ms).toLocaleDateString('pt-BR', {
         day: '2-digit', month: '2-digit', year: 'numeric',
         hour: '2-digit', minute: '2-digit'
       });
     }
 
     function formatCurrency(v) {
-      return new Intl.NumberFormat('pt-BR', {
-        style: 'currency', currency: 'BRL'
-      }).format(v || 0);
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
     }
 
     function getStatusLabel(status) {
       const labels = {
-        pending: '🟡 Pendente',
-        confirmed: '🔵 Confirmado',
-        preparing: '🟣 Preparando',
-        ready: '🟢 Pronto',
-        delivering: '🚀 Em entrega',
-        delivered: '✅ Entregue',
+        pending: '🟡 Pendente', confirmed: '🔵 Confirmado',
+        preparing: '🟣 Preparando', ready: '🟢 Pronto',
+        delivering: '🚀 Em entrega', delivered: '✅ Entregue',
         cancelled: '❌ Cancelado'
       };
       return labels[status] || status;
     }
 
     function escapeHtml(str) {
-      return String(str || '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
+      return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
     function showToast(msg) {
@@ -888,20 +841,12 @@
     }
 
     function goBack() {
-      if (document.referrer.includes(location.host)) {
-        history.back();
-      } else {
-        location.href = 'index.html';
-      }
+      if (document.referrer.includes(location.host)) history.back();
+      else location.href = 'index.html';
     }
 
-    // Close modals on overlay click
-    document.getElementById('orderModal').addEventListener('click', function(e) {
-      if (e.target === this) closeModal();
-    });
-    document.getElementById('confirmPopup').addEventListener('click', function(e) {
-      if (e.target === this) closePopup();
-    });
+    document.getElementById('orderModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+    document.getElementById('confirmPopup').addEventListener('click', function(e) { if (e.target === this) closePopup(); });
   </script>
 </body>
 </html>
