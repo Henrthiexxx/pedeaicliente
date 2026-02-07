@@ -166,7 +166,7 @@ const SearchModule = (() => {
         const store = allStores.find(s => s.id === prod.storeId);
         results.push({
           type: 'product', id: prod.id, name: prod.name || 'Produto',
-          subtitle: store ? store.name : '', emoji: prod.emoji || '🍽️',
+          subtitle: cfg.tag || '', emoji: prod.emoji || '🍽️',
           imageData: prod.imageData || '', price: prod.price,
           priority: cfg.priority || 0, absolute: !!cfg.absolute,
           score: match ? (name.startsWith(q) ? 100 : 50) : 0,
@@ -203,7 +203,7 @@ const SearchModule = (() => {
       if (cfg.absolute && cfg.visible !== false) {
         const store = allStores.find(s => s.id === p.storeId);
         abs.push({ type:'product', id:p.id, name:p.name||'Produto',
-          subtitle:store?store.name:'', emoji:p.emoji||'🍽️',
+          subtitle: cfg.tag || '', emoji:p.emoji||'🍽️',
           imageData:p.imageData||'', price:p.price,
           priority:cfg.priority||0, storeId:p.storeId, productId:p.id });
       }
