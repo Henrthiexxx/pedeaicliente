@@ -1,357 +1,315 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Produto - Pedrad</title>
-    <style>
-        :root {
-            --bg: #000; --card: #0a0a0a; --input: #171717;
-            --text: #fff; --muted: #737373; --border: #262626;
-            --primary: #fff; --success: #22c55e;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--bg); color: var(--text);
-            min-height: 100vh; padding: 0;
-        }
-        .header {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 16px 20px; border-bottom: 1px solid var(--border);
-            position: sticky; top: 0; background: var(--bg); z-index: 10;
-        }
-        .header h1 { font-size: 1rem; font-weight: 500; }
-        .close-btn {
-            width: 36px; height: 36px; border-radius: 50%;
-            background: var(--input); border: 1px solid var(--border);
-            color: var(--text); font-size: 1.2rem; cursor: pointer;
-        }
-        .close-btn:hover { border-color: var(--primary); }
-        .product-image {
-            width: 100%; aspect-ratio: 1; max-height: 300px;
-            background: var(--input); display: flex;
-            align-items: center; justify-content: center;
-            font-size: 4rem; background-size: cover; background-position: center;
-        }
-        .product-image.has-image { font-size: 0; }
-        .content { padding: 20px; }
-        .product-name { font-size: 1.3rem; font-weight: 600; margin-bottom: 8px; }
-        .product-desc { color: var(--muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 16px; }
-        .product-price { font-size: 1.5rem; font-weight: 600; color: var(--primary); margin-bottom: 24px; }
-        .section { margin-bottom: 20px; }
-        .section-title { font-size: 0.85rem; font-weight: 600; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
-        
-        /* FIX: Usa div em vez de label pra evitar double-toggle */
-        .option {
-            display: flex; align-items: center; gap: 12px;
-            padding: 12px; background: var(--input); border: 1px solid var(--border);
-            border-radius: 10px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s;
-            user-select: none;
-        }
-        .option:hover { border-color: var(--muted); }
-        .option.selected { border-color: var(--primary); background: rgba(255,255,255,0.05); }
-        .option-check {
-            width: 20px; height: 20px; border: 2px solid var(--border);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-        }
-        .option.selected .option-check { border-color: var(--primary); background: var(--primary); }
-        .option.selected .option-check::after { content: "✓"; color: #000; font-size: 12px; font-weight: bold; }
-        /* Checkbox extras: quadrado */
-        .option.multi .option-check { border-radius: 4px; }
-        .option-info { flex: 1; }
-        .option-name { font-size: 0.95rem; }
-        .option-price { color: var(--primary); font-size: 0.9rem; font-weight: 500; }
-        
-        .qty-selector {
-            display: flex; align-items: center; justify-content: center;
-            gap: 20px; padding: 16px; background: var(--card);
-            border-radius: 12px; margin-bottom: 20px;
-        }
-        .qty-btn {
-            width: 44px; height: 44px; border-radius: 10px;
-            background: var(--input); border: 1px solid var(--border);
-            color: var(--text); font-size: 1.3rem; cursor: pointer;
-        }
-        .qty-btn:hover { border-color: var(--primary); }
-        .qty-value { font-size: 1.3rem; font-weight: 600; min-width: 40px; text-align: center; }
-        .total-bar {
-            position: sticky; bottom: 0; background: var(--bg);
-            padding: 16px 20px; border-top: 1px solid var(--border);
-        }
-        .total-row { display: flex; justify-content: space-between; margin-bottom: 12px; }
-        .total-label { color: var(--muted); }
-        .total-value { font-size: 1.2rem; font-weight: 600; }
-        .add-btn {
-            width: 100%; padding: 16px; background: var(--primary);
-            color: #000; border: none; border-radius: 10px;
-            font-size: 1rem; font-weight: 600; cursor: pointer;
-            text-transform: uppercase; letter-spacing: 1px;
-        }
-        .add-btn:hover { opacity: 0.9; }
-        .loading { text-align: center; padding: 60px; color: var(--muted); }
-        .error { text-align: center; padding: 60px; color: var(--muted); }
-        .error-icon { font-size: 3rem; margin-bottom: 16px; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Produto - Pedrad</title>
+  <style>
+    :root { --bg:#000; --card:#0a0a0a; --input:#171717; --text:#fff; --muted:#737373; --border:#262626; --primary:#fff; --success:#22c55e; }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:0}
+    .header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:10}
+    .header h1{font-size:1rem;font-weight:500}
+    .close-btn{width:36px;height:36px;border-radius:50%;background:var(--input);border:1px solid var(--border);color:var(--text);font-size:1.2rem;cursor:pointer}
+    .close-btn:hover{border-color:var(--primary)}
+    .product-image{width:100%;aspect-ratio:1;max-height:300px;background:var(--input);display:flex;align-items:center;justify-content:center;font-size:4rem;background-size:cover;background-position:center}
+    .product-image.has-image{font-size:0}
+    .content{padding:20px}
+    .product-name{font-size:1.3rem;font-weight:600;margin-bottom:8px}
+    .product-desc{color:var(--muted);font-size:.9rem;line-height:1.5;margin-bottom:16px}
+    .product-price{font-size:1.5rem;font-weight:600;color:var(--primary);margin-bottom:24px}
+    .section{margin-bottom:20px}
+    .section-title{font-size:.85rem;font-weight:600;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px}
+
+    .option{display:flex;align-items:center;gap:12px;padding:12px;background:var(--input);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;cursor:pointer;transition:all .2s;user-select:none}
+    .option:hover{border-color:var(--muted)}
+    .option.selected{border-color:var(--primary);background:rgba(255,255,255,.05)}
+    .option-check{width:20px;height:20px;border:2px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .option.selected .option-check{border-color:var(--primary);background:var(--primary)}
+    .option.selected .option-check::after{content:"✓";color:#000;font-size:12px;font-weight:bold}
+    .option.multi .option-check{border-radius:4px}
+    .option-info{flex:1}
+    .option-name{font-size:.95rem}
+    .option-price{color:var(--primary);font-size:.9rem;font-weight:500}
+
+    .qty-selector{display:flex;align-items:center;justify-content:center;gap:20px;padding:16px;background:var(--card);border-radius:12px;margin-bottom:20px}
+    .qty-btn{width:44px;height:44px;border-radius:10px;background:var(--input);border:1px solid var(--border);color:var(--text);font-size:1.3rem;cursor:pointer}
+    .qty-btn:hover{border-color:var(--primary)}
+    .qty-value{font-size:1.3rem;font-weight:600;min-width:40px;text-align:center}
+    .total-bar{position:sticky;bottom:0;background:var(--bg);padding:16px 20px;border-top:1px solid var(--border)}
+    .total-row{display:flex;justify-content:space-between;margin-bottom:12px}
+    .total-label{color:var(--muted)}
+    .total-value{font-size:1.2rem;font-weight:600}
+    .add-btn{width:100%;padding:16px;background:var(--primary);color:#000;border:none;border-radius:10px;font-size:1rem;font-weight:600;cursor:pointer;text-transform:uppercase;letter-spacing:1px}
+    .add-btn:hover{opacity:.9}
+    .loading{text-align:center;padding:60px;color:var(--muted)}
+    .error{text-align:center;padding:60px;color:var(--muted)}
+    .error-icon{font-size:3rem;margin-bottom:16px}
+  </style>
 </head>
+
 <body>
-    <div id="loading" class="loading">Carregando...</div>
-    <div id="content" style="display:none;">
-        <div class="header">
-            <h1 id="headerTitle">Produto</h1>
-            <button class="close-btn" onclick="closePopup()">×</button>
-        </div>
-        <div class="product-image" id="productImage">🍽️</div>
-        <div class="content">
-            <div class="product-name" id="productName"></div>
-            <div class="product-desc" id="productDesc"></div>
-            <div class="product-price" id="productPrice"></div>
-            
-            <div id="flavorsSection" class="section" style="display:none;">
-                <div class="section-title">🍕 Sabores</div>
-                <div id="flavorsList"></div>
-            </div>
-            
-            <div id="sizesSection" class="section" style="display:none;">
-                <div class="section-title">📏 Tamanhos</div>
-                <div id="sizesList"></div>
-            </div>
-            
-            <div id="extrasSection" class="section" style="display:none;">
-                <div class="section-title">➕ Extras</div>
-                <div id="extrasList"></div>
-            </div>
-            
-            <div class="qty-selector">
-                <button class="qty-btn" onclick="changeQty(-1)">−</button>
-                <span class="qty-value" id="qtyValue">1</span>
-                <button class="qty-btn" onclick="changeQty(1)">+</button>
-            </div>
-        </div>
-        <div class="total-bar">
-            <div class="total-row">
-                <span class="total-label">Total</span>
-                <span class="total-value" id="totalValue">R$ 0,00</span>
-            </div>
-            <button class="add-btn" onclick="addToCart()">Adicionar ao carrinho</button>
-        </div>
-    </div>
-    <div id="error" class="error" style="display:none;">
-        <div class="error-icon">😕</div>
-        <div>Produto não encontrado</div>
+  <div id="loading" class="loading">Carregando...</div>
+
+  <div id="content" style="display:none;">
+    <div class="header">
+      <h1 id="headerTitle">Produto</h1>
+      <button class="close-btn" onclick="closePopup()">×</button>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",
-            authDomain: "pedrad-814d0.firebaseapp.com",
-            projectId: "pedrad-814d0",
-            storageBucket: "pedrad-814d0.firebasestorage.app",
-            messagingSenderId: "293587190550",
-            appId: "1:293587190550:web:80c9399f82847c80e20637"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+    <div class="product-image" id="productImage">🍽️</div>
 
-        let product = null;
-        let qty = 1;
-        let selectedFlavor = null;
-        let selectedSize = null;
-        let selectedExtras = [];
+    <div class="content">
+      <div class="product-name" id="productName"></div>
+      <div class="product-desc" id="productDesc"></div>
+      <div class="product-price" id="productPrice"></div>
 
-        const params = new URLSearchParams(window.location.search);
-        const storeId = params.get('storeId');
-        const productId = params.get('productId');
+      <div id="flavorsSection" class="section" style="display:none;">
+        <div class="section-title">🍕 Sabores</div>
+        <div id="flavorsList"></div>
+      </div>
 
-        function formatCurrency(v) {
-            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
-        }
+      <div id="sizesSection" class="section" style="display:none;">
+        <div class="section-title">📏 Tamanhos</div>
+        <div id="sizesList"></div>
+      </div>
 
-        function closePopup() {
-            if (window.parent !== window) {
-                window.parent.postMessage({ type: 'closePopup' }, '*');
-            } else {
-                window.close();
-            }
-        }
+      <div id="extrasSection" class="section" style="display:none;">
+        <div class="section-title">➕ Extras</div>
+        <div id="extrasList"></div>
+      </div>
 
-        function getImageSrc(item) {
-            if (!item) return null;
-            const data = (item.imageData || '').trim();
-            const url = (item.imageUrl || '').trim();
-            if (data && (data.startsWith('data:image/') || /^https?:\/\//.test(data))) return data;
-            if (url && /^https?:\/\//.test(url)) return url;
-            return null;
-        }
+      <div class="qty-selector">
+        <button class="qty-btn" onclick="changeQty(-1)">−</button>
+        <span class="qty-value" id="qtyValue">1</span>
+        <button class="qty-btn" onclick="changeQty(1)">+</button>
+      </div>
+    </div>
 
-        async function loadProduct() {
-            if (!storeId || !productId) { showError(); return; }
-            try {
-                const doc = await db.collection('products').doc(productId).get();
-                if (!doc.exists) { showError(); return; }
-                product = { id: doc.id, ...doc.data() };
-                renderProduct();
-            } catch (e) {
-                console.error('Error:', e);
-                showError();
-            }
-        }
+    <div class="total-bar">
+      <div class="total-row">
+        <span class="total-label">Total</span>
+        <span class="total-value" id="totalValue">R$ 0,00</span>
+      </div>
+      <button class="add-btn" onclick="addToCart()">Adicionar ao carrinho</button>
+    </div>
+  </div>
 
-        function showError() {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('error').style.display = 'block';
-        }
+  <div id="error" class="error" style="display:none;">
+    <div class="error-icon">😕</div>
+    <div>Produto não encontrado</div>
+  </div>
 
-        function renderProduct() {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('content').style.display = 'block';
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
-            document.getElementById('headerTitle').textContent = product.name || 'Produto';
-            document.getElementById('productName').textContent = product.name || '';
-            document.getElementById('productDesc').textContent = product.description || '';
-            document.getElementById('productPrice').textContent = formatCurrency(product.price);
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",
+      authDomain: "pedrad-814d0.firebaseapp.com",
+      projectId: "pedrad-814d0",
+      storageBucket: "pedrad-814d0.firebasestorage.app",
+      messagingSenderId: "293587190550",
+      appId: "1:293587190550:web:80c9399f82847c80e20637"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-            // Após renderizar produtos da loja, verifica se veio da pesquisa
-const pendingProd = sessionStorage.getItem('pendingProductId');
-if (pendingProd) {
-  sessionStorage.removeItem('pendingProductId');
-  setTimeout(() => {
-    const popup = document.getElementById('htmlPopup');
-    const frame = document.getElementById('popupFrame');
-    const sid = localStorage.getItem('currentStoreId');
-    if (popup && frame && sid) {
-      frame.src = `popup.html?storeId=${sid}&productId=${pendingProd}`;
-      popup.style.display = 'block';
+    let product = null;
+    let qty = 1;
+    let selectedFlavor = null;
+    let selectedSize = null;
+    let selectedExtras = [];
+
+    const params = new URLSearchParams(window.location.search);
+    const storeId = params.get('storeId');
+    const productId = params.get('productId');
+
+    function toNumber(v) {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
     }
-  }, 400);
-}
-            const imgSrc = getImageSrc(product);
-            const imgEl = document.getElementById('productImage');
-            if (imgSrc) {
-                imgEl.style.backgroundImage = `url('${imgSrc}')`;
-                imgEl.classList.add('has-image');
-                imgEl.textContent = '';
-            } else {
-                imgEl.textContent = product.emoji || '🍽️';
-            }
 
-            // Flavors (radio - single select)
-            const flavors = product.flavors || [];
-            if (flavors.length > 0) {
-                document.getElementById('flavorsSection').style.display = 'block';
-                document.getElementById('flavorsList').innerHTML = flavors.map((f, i) => `
-                    <div class="option" onclick="selectFlavor(${i})">
-                        <div class="option-check"></div>
-                        <div class="option-info">
-                            <div class="option-name">${escHtml(f.name)}</div>
-                        </div>
-                        <div class="option-price">${f.price > 0 ? '+' + formatCurrency(f.price) : 'Incluso'}</div>
-                    </div>
-                `).join('');
-            }
+    function formatCurrency(v) {
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(toNumber(v));
+    }
 
-            // Sizes (radio - single select)
-            const sizes = product.sizes || [];
-            if (sizes.length > 0) {
-                document.getElementById('sizesSection').style.display = 'block';
-                document.getElementById('sizesList').innerHTML = sizes.map((s, i) => `
-                    <div class="option" onclick="selectSize(${i})">
-                        <div class="option-check"></div>
-                        <div class="option-info">
-                            <div class="option-name">${escHtml(s.name)}</div>
-                        </div>
-                        <div class="option-price">${s.price > 0 ? '+' + formatCurrency(s.price) : 'Incluso'}</div>
-                    </div>
-                `).join('');
-            }
+    function closePopup() {
+      if (window.parent !== window) window.parent.postMessage({ type: 'closePopup' }, '*');
+      else window.close();
+    }
 
-            // Extras (multi select) - FIX: usa div, não label
-            const extras = product.extras || [];
-            if (extras.length > 0) {
-                document.getElementById('extrasSection').style.display = 'block';
-                document.getElementById('extrasList').innerHTML = extras.map((e, i) => `
-                    <div class="option multi" onclick="toggleExtra(${i})">
-                        <div class="option-check"></div>
-                        <div class="option-info">
-                            <div class="option-name">${escHtml(e.name)}</div>
-                        </div>
-                        <div class="option-price">+${formatCurrency(e.price)}</div>
-                    </div>
-                `).join('');
-            }
+    function getImageSrc(item) {
+      if (!item) return null;
+      const data = (item.imageData || '').trim();
+      const url  = (item.imageUrl || '').trim();
+      if (data && (data.startsWith('data:image/') || /^https?:\/\//.test(data))) return data;
+      if (url && /^https?:\/\//.test(url)) return url;
+      return null;
+    }
 
-            updateTotal();
+    async function loadProduct() {
+      if (!storeId || !productId) { showError(); return; }
+
+      try {
+        const doc = await db.collection('products').doc(productId).get();
+        if (!doc.exists) { showError(); return; }
+
+        product = { id: doc.id, ...doc.data() };
+
+        // Correção: garante que o produto pertence à loja da URL
+        if (product.storeId && product.storeId !== storeId) { showError(); return; }
+
+        // (Opcional, mas ajuda o fluxo do carrinho/checkout)
+        localStorage.setItem('currentStoreId', storeId);
+        localStorage.setItem('checkoutStoreId', storeId);
+
+        renderProduct();
+      } catch (e) {
+        console.error('Error:', e);
+        showError();
+      }
+    }
+
+    function showError() {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error').style.display = 'block';
+    }
+
+    function renderProduct() {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('content').style.display = 'block';
+
+      document.getElementById('headerTitle').textContent = product.name || 'Produto';
+      document.getElementById('productName').textContent  = product.name || '';
+      document.getElementById('productDesc').textContent  = product.description || '';
+      document.getElementById('productPrice').textContent = formatCurrency(product.price);
+
+      const imgSrc = getImageSrc(product);
+      const imgEl = document.getElementById('productImage');
+      if (imgSrc) {
+        imgEl.style.backgroundImage = `url('${imgSrc}')`;
+        imgEl.classList.add('has-image');
+        imgEl.textContent = '';
+      } else {
+        imgEl.textContent = product.emoji || '🍽️';
+      }
+
+      // Flavors (radio - single select)
+      const flavors = product.flavors || [];
+      if (flavors.length > 0) {
+        document.getElementById('flavorsSection').style.display = 'block';
+        document.getElementById('flavorsList').innerHTML = flavors.map((f, i) => `
+          <div class="option" onclick="selectFlavor(${i})">
+            <div class="option-check"></div>
+            <div class="option-info">
+              <div class="option-name">${escHtml(f.name)}</div>
+            </div>
+            <div class="option-price">${toNumber(f.price) > 0 ? '+' + formatCurrency(f.price) : 'Incluso'}</div>
+          </div>
+        `).join('');
+      }
+
+      // Sizes (radio - single select)
+      const sizes = product.sizes || [];
+      if (sizes.length > 0) {
+        document.getElementById('sizesSection').style.display = 'block';
+        document.getElementById('sizesList').innerHTML = sizes.map((s, i) => `
+          <div class="option" onclick="selectSize(${i})">
+            <div class="option-check"></div>
+            <div class="option-info">
+              <div class="option-name">${escHtml(s.name)}</div>
+            </div>
+            <div class="option-price">${toNumber(s.price) > 0 ? '+' + formatCurrency(s.price) : 'Incluso'}</div>
+          </div>
+        `).join('');
+      }
+
+      // Extras (multi select) - (mantido como está, sem alterar lógica)
+      const extras = product.extras || [];
+      if (extras.length > 0) {
+        document.getElementById('extrasSection').style.display = 'block';
+        document.getElementById('extrasList').innerHTML = extras.map((e, i) => `
+          <div class="option multi" onclick="toggleExtra(${i})">
+            <div class="option-check"></div>
+            <div class="option-info">
+              <div class="option-name">${escHtml(e.name)}</div>
+            </div>
+            <div class="option-price">+${formatCurrency(e.price)}</div>
+          </div>
+        `).join('');
+      }
+
+      updateTotal();
+    }
+
+    function escHtml(s) {
+      return String(s || '')
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;');
+    }
+
+    function selectFlavor(idx) {
+      selectedFlavor = (product.flavors || [])[idx] || null;
+      document.querySelectorAll('#flavorsList .option').forEach((el, i) => {
+        el.classList.toggle('selected', i === idx);
+      });
+      updateTotal();
+    }
+
+    function selectSize(idx) {
+      selectedSize = (product.sizes || [])[idx] || null;
+      document.querySelectorAll('#sizesList .option').forEach((el, i) => {
+        el.classList.toggle('selected', i === idx);
+      });
+      updateTotal();
+    }
+
+    function toggleExtra(idx) {
+      const extra = product.extras[idx];
+      const exists = selectedExtras.findIndex(e => e.name === extra.name);
+      if (exists >= 0) selectedExtras.splice(exists, 1);
+      else selectedExtras.push({ ...extra });
+
+      document.querySelectorAll('#extrasList .option').forEach((el, i) => {
+        const isSelected = selectedExtras.some(e => e.name === product.extras[i].name);
+        el.classList.toggle('selected', isSelected);
+      });
+      updateTotal();
+    }
+
+    function changeQty(delta) {
+      qty = Math.max(1, qty + delta);
+      document.getElementById('qtyValue').textContent = qty;
+      updateTotal();
+    }
+
+    function updateTotal() {
+      let total = toNumber(product && product.price);
+      if (selectedFlavor) total += toNumber(selectedFlavor.price);
+      if (selectedSize) total += toNumber(selectedSize.price);
+      selectedExtras.forEach(e => total += toNumber(e.price));
+      total *= qty;
+      document.getElementById('totalValue').textContent = formatCurrency(total);
+    }
+
+    function addToCart() {
+      window.parent.postMessage({
+        type: 'ADD_TO_CART',
+        payload: {
+          productId: product.id,
+          qty: qty,
+          selections: {
+            flavor: selectedFlavor,
+            size: selectedSize,
+            extras: selectedExtras
+          }
         }
+      }, '*');
+    }
 
-        function escHtml(s) {
-            return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        }
-
-        function selectFlavor(idx) {
-            selectedFlavor = product.flavors[idx];
-            document.querySelectorAll('#flavorsList .option').forEach((el, i) => {
-                el.classList.toggle('selected', i === idx);
-            });
-            updateTotal();
-        }
-
-        function selectSize(idx) {
-            selectedSize = product.sizes[idx];
-            document.querySelectorAll('#sizesList .option').forEach((el, i) => {
-                el.classList.toggle('selected', i === idx);
-            });
-            updateTotal();
-        }
-
-        function toggleExtra(idx) {
-            const extra = product.extras[idx];
-            const exists = selectedExtras.findIndex(e => e.name === extra.name);
-            if (exists >= 0) {
-                selectedExtras.splice(exists, 1);
-            } else {
-                selectedExtras.push({ ...extra });
-            }
-            document.querySelectorAll('#extrasList .option').forEach((el, i) => {
-                const isSelected = selectedExtras.some(e => e.name === product.extras[i].name);
-                el.classList.toggle('selected', isSelected);
-            });
-            updateTotal();
-        }
-
-        function changeQty(delta) {
-            qty = Math.max(1, qty + delta);
-            document.getElementById('qtyValue').textContent = qty;
-            updateTotal();
-        }
-
-        function updateTotal() {
-            let total = product.price || 0;
-            if (selectedFlavor) total += selectedFlavor.price || 0;
-            if (selectedSize) total += selectedSize.price || 0;
-            selectedExtras.forEach(e => total += e.price || 0);
-            total *= qty;
-            document.getElementById('totalValue').textContent = formatCurrency(total);
-        }
-
-        function addToCart() {
-            window.parent.postMessage({
-                type: 'ADD_TO_CART',
-                payload: {
-                    productId: product.id,
-                    qty: qty,
-                    selections: {
-                        flavor: selectedFlavor,
-                        size: selectedSize,
-                        extras: selectedExtras
-                    }
-                }
-            }, '*');
-        }
-
-        loadProduct();
-    </script>
+    loadProduct();
+  </script>
 </body>
 </html>
