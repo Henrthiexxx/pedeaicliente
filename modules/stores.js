@@ -94,6 +94,8 @@ const StoresModule = {
             `;
             return;
         }
+        window._allStores = stores;
+window._allProducts = products;
 
         container.innerHTML = filtered.map(store => this.renderStoreCard(store)).join('');
     },
