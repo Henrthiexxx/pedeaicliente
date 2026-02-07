@@ -261,20 +261,22 @@ const SearchModule = (() => {
 
     if (type === 'store' && storeId) {
       if (typeof openStore === 'function') openStore(storeId);
-      else if (typeof StoresModule !== 'undefined' && StoresModule.openStore) StoresModule.openStore(storeId);
-} else if (type === 'product' && storeId && productId) {
-  // Garante contexto da loja antes de abrir popup (mesmo fluxo de entrar na loja)
-  localStorage.setItem('checkoutStoreId', storeId);
-  localStorage.setItem('currentStoreId', storeId);
+      else if (typeof StoresModule !== 'undefined' && StoresModule.openStore) {
+        StoresModule.openStore(storeId);
+      }
+    } else if (type === 'product' && storeId && productId) {
+      // Garante contexto da loja antes de abrir popup (mesmo fluxo de entrar na loja)
+      localStorage.setItem('checkoutStoreId', storeId);
+      localStorage.setItem('currentStoreId', storeId);
 
-  const popup = document.getElementById('htmlPopup');
-  const frame = document.getElementById('popupFrame');
-  if (popup && frame) {
-    frame.src = `popup.html?storeId=${storeId}&productId=${productId}`;
-    popup.style.display = 'block';
+      const popup = document.getElementById('htmlPopup');
+      const frame = document.getElementById('popupFrame');
+      if (popup && frame) {
+        frame.src = `popup.html?storeId=${storeId}&productId=${productId}`;
+        popup.style.display = 'block';
+      }
+    }
   }
-}
-
 
   function hideResults() {
     const el = document.getElementById('globalSearchResults');
@@ -287,7 +289,11 @@ const SearchModule = (() => {
     const d = (r.imageData||'').trim();
     return (d && (d.startsWith('data:image/') || /^https?:\/\//.test(d))) ? d : null;
   }
-  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function esc(s) { return String(s||'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;'); }
   function fmtCur(v) { return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0); }
 
   return { init, goTo };
