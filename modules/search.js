@@ -21,8 +21,22 @@ const SearchModule = (() => {
   }
 
   // ===== LOAD DATA FROM FIRESTORE =====
-  async function loadData() {
+ async function loadData() {
     if (dataLoaded) return;
+
+    // Tenta cache local primeiro (TTL 30min)
+    const TTL = 1000 * 60 * 30;
+    try {
+      const cached = JSON.parse(localStorage.getItem('searchCache') || 'null');
+      if (cached && cached.ts && (Date.now() - cached.ts) < TTL) {
+        cached.stores.forEach(s => allStores.push(s));
+        cached.products.forEach(p => allProducts.push(p));
+        (cached.config || []).forEach(c => { if (c.refId) searchConfig[c.refId] = c; });
+        dataLoaded = true;
+        return;
+      }
+    } catch (_) {}
+
     try {
       const [cfgSnap, storeSnap, prodSnap] = await Promise.all([
         db.collection('searchConfig').get().catch(() => ({ docs: [] })),
@@ -30,9 +44,10 @@ const SearchModule = (() => {
         db.collection('products').get()
       ]);
 
+      const cfgArr = [];
       cfgSnap.docs.forEach(doc => {
         const d = doc.data();
-        if (d.refId) searchConfig[d.refId] = d;
+        if (d.refId) { searchConfig[d.refId] = d; cfgArr.push(d); }
       });
 
       storeSnap.docs.forEach(doc => {
@@ -44,6 +59,21 @@ const SearchModule = (() => {
       });
 
       dataLoaded = true;
+
+      // Salva no cache (sem imageData pesado pra não estourar storage)
+      try {
+        const lite = s => ({ id:s.id, name:s.name, category:s.category, emoji:s.emoji,
+          bannerData:s.bannerData||'', imageData:s.imageData||'', imageUrl:s.imageUrl||'',
+          storeId:s.storeId, open:s.open, deliveryTime:s.deliveryTime });
+        const liteProd = p => ({ id:p.id, name:p.name, description:p.description,
+          price:p.price, emoji:p.emoji, storeId:p.storeId });
+        localStorage.setItem('searchCache', JSON.stringify({
+          ts: Date.now(),
+          stores: allStores.map(lite),
+          products: allProducts.map(liteProd),
+          config: cfgArr
+        }));
+      } catch(_){}
     } catch (e) {
       console.warn('SearchModule: erro ao carregar dados', e);
     }
@@ -148,7 +178,7 @@ const SearchModule = (() => {
         results.push({
           type: 'store', id: store.id, name: store.name || 'Loja',
           subtitle: store.category || '', emoji: store.emoji || '🏪',
-          imageData: store.bannerData || store.imageData || '',
+          imageData: store.bannerData || store.imageData || store.imageUrl || '',
           priority: cfg.priority || 0, absolute: !!cfg.absolute,
           score: match ? (name.startsWith(q) ? 100 : 50) : 0,
           storeId: store.id
