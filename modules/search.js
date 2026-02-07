@@ -262,15 +262,19 @@ const SearchModule = (() => {
     if (type === 'store' && storeId) {
       if (typeof openStore === 'function') openStore(storeId);
       else if (typeof StoresModule !== 'undefined' && StoresModule.openStore) StoresModule.openStore(storeId);
-    } else if (type === 'product' && storeId && productId) {
-      const popup = document.getElementById('htmlPopup');
-      const frame = document.getElementById('popupFrame');
-      if (popup && frame) {
-        frame.src = `popup.html?storeId=${storeId}&productId=${productId}`;
-        popup.style.display = 'block';
-      }
-    }
+} else if (type === 'product' && storeId && productId) {
+  // Garante contexto da loja antes de abrir popup (mesmo fluxo de entrar na loja)
+  localStorage.setItem('checkoutStoreId', storeId);
+  localStorage.setItem('currentStoreId', storeId);
+
+  const popup = document.getElementById('htmlPopup');
+  const frame = document.getElementById('popupFrame');
+  if (popup && frame) {
+    frame.src = `popup.html?storeId=${storeId}&productId=${productId}`;
+    popup.style.display = 'block';
   }
+}
+
 
   function hideResults() {
     const el = document.getElementById('globalSearchResults');
