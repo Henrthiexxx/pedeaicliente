@@ -214,6 +214,20 @@
             document.getElementById('productDesc').textContent = product.description || '';
             document.getElementById('productPrice').textContent = formatCurrency(product.price);
 
+            // Após renderizar produtos da loja, verifica se veio da pesquisa
+const pendingProd = sessionStorage.getItem('pendingProductId');
+if (pendingProd) {
+  sessionStorage.removeItem('pendingProductId');
+  setTimeout(() => {
+    const popup = document.getElementById('htmlPopup');
+    const frame = document.getElementById('popupFrame');
+    const sid = localStorage.getItem('currentStoreId');
+    if (popup && frame && sid) {
+      frame.src = `popup.html?storeId=${sid}&productId=${pendingProd}`;
+      popup.style.display = 'block';
+    }
+  }, 400);
+}
             const imgSrc = getImageSrc(product);
             const imgEl = document.getElementById('productImage');
             if (imgSrc) {
