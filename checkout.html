@@ -881,7 +881,7 @@ if (selectedPayment === 'cash'){
           timeline: [{ status:'pending', timestamp:new Date().toISOString(), message:'Pedido realizado' }]
         };
 
-        await db.collection('orders').add(order);
+        await db.collection('').add(order);
 
         // limpa todos os formatos possíveis
         try{
@@ -893,8 +893,9 @@ if (selectedPayment === 'cash'){
           localStorage.removeItem(LS.cartDigest);
         }catch(_){}
 
-        await UIModal.alert({ title:'Sucesso', text:'Pedido realizado com sucesso.' });
-        window.location.href = 'orders.html';
+await UIModal.alert({ title:'Sucesso', text:'Pedido realizado com sucesso.' });
+window.location.href = 'index.html';
+
 
       }catch(err){
         console.error('Erro ao finalizar pedido:', err);
