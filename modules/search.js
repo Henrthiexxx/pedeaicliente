@@ -352,3 +352,5 @@ else if (typeof openStore === 'function') openStore(storeId);
     if (tryInit() || ++att > 15) clearInterval(iv);
   }, 1000);
 })();
+
+window.SearchModule = SearchModule;
