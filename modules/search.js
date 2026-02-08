@@ -290,8 +290,8 @@ function goTo(type, storeId, productId) {
     if (clear) clear.style.display = 'none';
 
     if (type === 'store' && storeId) {
-      if (typeof openStore === 'function') openStore(storeId);
-      else if (typeof StoresModule !== 'undefined' && StoresModule.openStore) StoresModule.openStore(storeId);
+      if (typeof selectStore === 'function') selectStore(storeId);
+else if (typeof openStore === 'function') openStore(storeId);
     } else if (type === 'product' && storeId) {
       // Seta o produto pra abrir automaticamente após carregar a loja
       sessionStorage.setItem('pendingProductId', productId);
