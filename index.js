@@ -1112,7 +1112,11 @@ const NotificationSync = {
     }
 };
 
-window.openNotifications = function() {
+window.openNotifications = async function() {
+    // Pede permissão push no primeiro clique no sino
+    if (typeof setupClientPushNotifications === 'function' && Notification.permission === 'default') {
+        await setupClientPushNotifications();
+    }
     showPage('notifications');
     NotificationSync.renderHistory('notificationsList');
 };
