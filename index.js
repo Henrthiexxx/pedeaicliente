@@ -90,9 +90,14 @@ auth.onAuthStateChanged(async (user) => {
         if (typeof StoresModule !== 'undefined') StoresModule.render();
         if (typeof ProfileModule !== 'undefined') ProfileModule.render();
         
-        // Sincroniza notificações
+// Sincroniza notificações
         if (typeof NotificationSync !== 'undefined') {
             await NotificationSync.syncNotifications();
+        }
+
+        // FCM Push Notifications - pede permissão se ainda não pediu
+        if (typeof setupClientPushNotifications === 'function' && Notification.permission === 'granted') {
+            setupClientPushNotifications();
         }
     } else {
         currentUser = null;
