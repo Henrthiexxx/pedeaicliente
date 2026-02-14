@@ -1105,3 +1105,13 @@ document.querySelectorAll('.modal').forEach(m => m.addEventListener('click', e =
         if (typeof _showPage === 'function') return _showPage(page);
     };
 })();
+window.openNotifications = async function() {
+    if (typeof setupClientPushNotifications === 'function' && Notification.permission === 'default') {
+        await setupClientPushNotifications();
+    }
+    showPage('notifications');
+    if (typeof NotificationSync !== 'undefined') {
+        NotificationSync.renderHistory('notificationsList');
+        NotificationSync.markAllAsDelivered();
+    }
+};
