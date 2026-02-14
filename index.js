@@ -94,7 +94,9 @@ auth.onAuthStateChanged(async (user) => {
         if (typeof NotificationSync !== 'undefined') {
             await NotificationSync.syncNotifications();
         }
-
+     if (typeof Checker !== 'undefined') {
+            await Checker.init();
+        }
         // FCM Push Notifications - pede permissão se ainda não pediu
         if (typeof setupClientPushNotifications === 'function' && Notification.permission === 'granted') {
             setupClientPushNotifications();
