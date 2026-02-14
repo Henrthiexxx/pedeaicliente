@@ -360,8 +360,9 @@
         });
         
         // Inicialização de lojas após auth
-        window.addEventListener("load", async function() {
-            firebase.auth().onAuthStateChanged(async function(user) {
+      window.addEventListener("load", async function() {
+    if (typeof firebase === 'undefined') return;
+    firebase.auth().onAuthStateChanged(async function(user) {
                 if (!user) return;
                 if (typeof loadStores === "function") await loadStores();
                 if (typeof StoresModule !== 'undefined' && typeof StoresModule.render === 'function') {
