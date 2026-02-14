@@ -1071,65 +1071,65 @@ function showToast(msg) {
 }
 
 // ==================== NOTIFICATION SYNC ====================
-const NotificationSync = {
-    async syncNotifications() {
-        if (!currentUser) return;
-        try {
-            const userDoc = await db.collection('users').doc(currentUser.uid).get();
-            const pending = userDoc.data()?.pendingNotifications || [];
-            if (!pending.length) return;
+//const NotificationSync = {
+ //   async syncNotifications() {
+   //     if (!currentUser) return;
+     //   try {
+       //     const userDoc = await db.collection('users').doc(currentUser.uid).get();
+         //   const pending = userDoc.data()?.pendingNotifications || [];
+           // if (!pending.length) return;
             
-            const local = JSON.parse(localStorage.getItem('notifications') || '[]');
-            const ids = new Set(local.map(n => n.id));
-            const newOnes = pending.filter(n => !ids.has(n.id));
+            //const local = JSON.parse(localStorage.getItem('notifications') || '[]');
+            //const ids = new Set(local.map(n => n.id));
+            //const newOnes = pending.filter(n => !ids.has(n.id));
             
-            if (newOnes.length) {
-                localStorage.setItem('notifications', JSON.stringify([...newOnes, ...local].slice(0, 50)));
-                this.showPopup(newOnes[0]);
-                await db.collection('users').doc(currentUser.uid).update({ pendingNotifications: [] });
-            }
-        } catch (e) { console.error('Sync error:', e); }
-    },
-    showPopup(n) {
-        const el = document.createElement('div');
-        el.className = 'notification-popup';
-        el.innerHTML = `<div class="notification-popup-content"><div class="notification-popup-icon">📢</div><div class="notification-popup-text"><div class="notification-popup-title">${n.title}</div><div class="notification-popup-message">${n.message}</div></div><button class="notification-popup-close" onclick="this.parentElement.parentElement.remove()">×</button></div>`;
-        document.body.appendChild(el);
-        setTimeout(() => el.classList.add('show'), 100);
-        setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 300); }, 5000);
-        navigator.vibrate?.([200, 100, 200]);
-    },
-    getHistory() { return JSON.parse(localStorage.getItem('notifications') || '[]'); },
-    markAsRead(id) { const n = this.getHistory(); localStorage.setItem('notifications', JSON.stringify(n.map(x => x.id === id ? { ...x, read: true } : x))); },
-    deleteNotification(id) { localStorage.setItem('notifications', JSON.stringify(this.getHistory().filter(x => x.id !== id))); },
-    clearAll() { localStorage.setItem('notifications', '[]'); },
-    renderHistory(containerId) {
-        const c = document.getElementById(containerId);
-        if (!c) return;
-        const n = this.getHistory();
-        if (!n.length) { c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔔</div><div class="empty-state-title">Nenhuma notificação</div></div>'; return; }
-        c.innerHTML = n.map(x => `
-            <div class="notification-item ${x.read ? '' : 'unread'}" onclick="NotificationSync.markAsRead('${x.id}')">
-                <div class="notification-item-icon">${x.read ? '⚪' : '🔵'}</div>
-                <div class="notification-item-content">
-                    <div class="notification-item-title">${x.title}</div>
-                    <div class="notification-item-message">${x.message}</div>
-                    <div class="notification-item-time">${new Date(x.createdAt).toLocaleString('pt-BR')}</div>
-                </div>
-                <button class="notification-item-delete" onclick="event.stopPropagation();NotificationSync.deleteNotification('${x.id}');NotificationSync.renderHistory('${containerId}')">🗑️</button>
-            </div>
-        `).join('');
-    }
-};
+            //if (newOnes.length) {
+              //  localStorage.setItem('notifications', JSON.stringify([...newOnes, ...local].slice(0, 50)));
+                //this.showPopup(newOnes[0]);
+                //await db.collection('users').doc(currentUser.uid).update({ pendingNotifications: [] });
+            //}
+        //} catch (e) { console.error('Sync error:', e); }
+    //},
+    //showPopup(n) {
+      //  const el = document.createElement('div');
+        //el.className = 'notification-popup';
+        //el.innerHTML = `<div class="notification-popup-content"><div class="notification-popup-icon">📢</div><div class="notification-popup-text"><div class="notification-popup-title">${n.title}</div><div class="notification-popup-message">${n.message}</div></div><button class="notification-popup-close" onclick="this.parentElement.parentElement.remove()">×</button></div>`;
+        //document.body.appendChild(el);
+        //setTimeout(() => el.classList.add('show'), 100);
+        //setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 300); }, 5000);
+        //navigator.vibrate?.([200, 100, 200]);
+    //},
+    //getHistory() { return JSON.parse(localStorage.getItem('notifications') || '[]'); },
+   // markAsRead(id) { const n = this.getHistory(); localStorage.setItem('notifications', JSON.stringify(n.map(x => x.id === id ? { ...x, read: true } : x))); },
+  //  deleteNotification(id) { localStorage.setItem('notifications', JSON.stringify(this.getHistory().filter(x => x.id !== id))); },
+   // clearAll() { localStorage.setItem('notifications', '[]'); },
+    //renderHistory(containerId) {
+     //   const c = document.getElementById(containerId);
+        //if (!c) return;
+       // const n = this.getHistory();
+      //  if (!n.length) { c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔔</div><div class="empty-state-title">Nenhuma notificação</div></div>'; return; }
+       // c.innerHTML = n.map(x => `
+         //   <div class="notification-item ${x.read ? '' : 'unread'}" onclick="NotificationSync.markAsRead('${x.id}')">
+        //        <div class="notification-item-icon">${x.read ? '⚪' : '🔵'}</div>
+           //     <div class="notification-item-content">
+          //          <div class="notification-item-title">${x.title}</div>
+            //        <div class="notification-item-message">${x.message}</div>
+            //        <div class="notification-item-time">${new Date(x.createdAt).toLocaleString('pt-BR')}</div>
+           //     </div>
+          //      <button class="notification-item-delete" onclick="event.stopPropagation();NotificationSync.deleteNotification('${x.id}');NotificationSync.renderHistory('${containerId}')">🗑️</button>
+         //   </div>
+     //   `).join('');
+  //  }
+//};
 
-window.openNotifications = async function() {
+//window.openNotifications = async function() {
     // Pede permissão push no primeiro clique no sino
-    if (typeof setupClientPushNotifications === 'function' && Notification.permission === 'default') {
-        await setupClientPushNotifications();
-    }
-    showPage('notifications');
-    NotificationSync.renderHistory('notificationsList');
-};
+ //   if (typeof setupClientPushNotifications === 'function' && Notification.permission === 'default') {
+ //       await setupClientPushNotifications();
+  //  }
+//    showPage('notifications');
+  //  NotificationSync.renderHistory('notificationsList');
+//};
 
 // ==================== POPUP MESSAGE HANDLER ====================
 window.addEventListener("message", (e) => {
