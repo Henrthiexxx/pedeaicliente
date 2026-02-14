@@ -444,41 +444,51 @@ function renderProducts() {
     }
 
     if (filtered.length === 0) {
-        grid.innerHTML = `
-            <div class="empty-state" style="grid-column:1/-1;">
-                <div class="empty-state-icon">🔍</div>
-                <div class="empty-state-title">Nenhum produto encontrado</div>
-            </div>
-        `;
+        grid.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🔍</div><div class="empty-state-title">Nenhum produto encontrado</div></div>`;
         return;
     }
 
-    grid.innerHTML = filtered.map(p => {
-        // Prioriza imageData (base64), depois imageUrl
-        const imgData = (p.imageData || '').trim();
-        const imgUrl = (p.imageUrl || '').trim();
-        const imgSrc = (imgData && (imgData.startsWith('data:image/') || /^https?:\/\//.test(imgData))) 
-            ? imgData 
-            : (imgUrl && /^https?:\/\//.test(imgUrl)) ? imgUrl : null;
-        
-        const hasImg = !!imgSrc;
-        const fallback = p.emoji || '🍽️';
+    // Agrupa por categoria
+    const groups = {};
+    filtered.forEach(p => {
+        const cat = p.category || 'Outros';
+        if (!groups[cat]) groups[cat] = [];
+        groups[cat].push(p);
+    });
 
-        // Usa background-image como nas lojas (funciona com URL e base64)
-        return `
-            <div class="product-card" onclick="openProductModal('${p.id}')">
-                <div class="product-img ${hasImg ? 'has-image' : ''}" 
-                     ${hasImg ? `style="background-image:url('${imgSrc}');background-size:cover;background-position:center;"` : ''}>
+    let html = '';
+    for (const [cat, items] of Object.entries(groups)) {
+        html += `<div class="category-section">
+            <h3 class="category-section-title">${cat}</h3>
+            <div class="category-products">`;
+
+        html += items.map(p => {
+            const imgData = (p.imageData || '').trim();
+            const imgUrl = (p.imageUrl || '').trim();
+            const imgSrc = (imgData && (imgData.startsWith('data:image/') || /^https?:\/\//.test(imgData)))
+                ? imgData : (imgUrl && /^https?:\/\//.test(imgUrl)) ? imgUrl : null;
+            const hasImg = !!imgSrc;
+            const fallback = p.emoji || '🍽️';
+
+            return `
+            <div class="product-item" onclick="openProductModal('${p.id}')">
+                <div class="product-item-img ${hasImg ? 'has-image' : ''}"
+                     ${hasImg ? `style="background-image:url('${imgSrc}')"` : ''}>
                     ${!hasImg ? fallback : ''}
                 </div>
-                <div class="product-info">
-                    <div class="product-name">${p.name || 'Produto'}</div>
-                    <div class="product-desc">${p.description || ''}</div>
-                    <div class="product-price">${formatCurrency(p.price || 0)}</div>
+                <div class="product-item-info">
+                    <div class="product-item-name">${p.name || 'Produto'}</div>
+                    <div class="product-item-desc">${p.description || ''}</div>
+                    <div class="product-item-price">${formatCurrency(p.price || 0)}</div>
                 </div>
-            </div>
-        `;
-    }).join('');
+                <button class="product-item-add" onclick="event.stopPropagation();openProductModal('${p.id}')">+</button>
+            </div>`;
+        }).join('');
+
+        html += `</div></div>`;
+    }
+
+    grid.innerHTML = html;
 }
 
 // ==================== CART ====================
