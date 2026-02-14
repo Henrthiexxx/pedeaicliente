@@ -2913,3 +2913,55 @@ body{
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
 }
+
+/* ==================== CATEGORY SECTIONS ==================== */
+
+.category-section {
+    margin-bottom: 24px;
+}
+
+.category-section-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    padding: 12px 0 8px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 5;
+}
+
+.category-products {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* ==================== NOTIFICATION POPUP TIMER ==================== */
+
+.notification-popup-timer {
+    height: 3px;
+    background: var(--border);
+    border-radius: 0 0 12px 12px;
+    overflow: hidden;
+}
+
+.notification-popup-timer-fill {
+    height: 100%;
+    background: var(--primary);
+    width: 100%;
+    animation: popupCountdown 30s linear forwards;
+}
+
+@keyframes popupCountdown {
+    from { width: 100%; }
+    to { width: 0%; }
+}
+
+.notification-popup-content {
+    cursor: pointer;
+}
