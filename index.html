@@ -361,15 +361,14 @@
         });
         
         // Inicialização de lojas após auth
+<script>
 window.addEventListener("load", async () => {
-  // Só tenta popup quando a página carregou
   const tryWelcome = () => {
     if (typeof WelcomePopup !== "undefined" && typeof WelcomePopup.check === "function") {
       WelcomePopup.check();
     }
   };
 
-  // Se não tem firebase, ainda dá pra rodar o popup
   if (typeof firebase === "undefined" || !firebase.auth) {
     tryWelcome();
     return;
@@ -384,9 +383,10 @@ window.addEventListener("load", async () => {
       StoresModule.render();
     }
 
-    // Depois de login + render
     tryWelcome();
   });
+});
+</script>
 
     </script>
     <script src="modules/search.js"></script>
