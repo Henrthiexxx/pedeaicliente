@@ -2965,3 +2965,138 @@ body{
 .notification-popup-content {
     cursor: pointer;
 }
+/* ==================== WELCOME POPUP ==================== */
+
+.wp-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(0,0,0,0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s;
+    pointer-events: none;
+}
+
+.wp-overlay.show {
+    background: rgba(0,0,0,0.75);
+    pointer-events: auto;
+}
+
+.wp-popup-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10vh 5vw;
+    position: relative;
+}
+
+.wp-popup-close {
+    position: absolute;
+    top: max(env(safe-area-inset-top, 12px), 12px);
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    font-size: 1.3rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: background 0.2s;
+}
+
+.wp-popup-close:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.wp-popup-card {
+    width: 100%;
+    max-width: 380px;
+    max-height: 80vh;
+    background: var(--bg-card, #0a0a0a);
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--border, #262626);
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.9) translateY(20px);
+    opacity: 0;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+
+.wp-overlay.show .wp-popup-card {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+}
+
+/* Image */
+.wp-popup-image {
+    width: 100%;
+    aspect-ratio: 16/9;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #111;
+}
+
+.wp-popup-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Body */
+.wp-popup-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+}
+
+.wp-popup-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--text, #fff);
+}
+
+.wp-popup-message {
+    font-size: 0.88rem;
+    color: var(--text-muted, #737373);
+    line-height: 1.5;
+}
+
+/* CTA Button */
+.wp-popup-cta {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    background: #fff;
+    color: #000;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: opacity 0.2s;
+    letter-spacing: 0.3px;
+}
+
+.wp-popup-cta:hover {
+    opacity: 0.9;
+}
+
+.wp-popup-cta:active {
+    transform: scale(0.98);
+}
