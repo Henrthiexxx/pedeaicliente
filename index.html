@@ -361,16 +361,33 @@
         });
         
         // Inicialização de lojas após auth
-      window.addEventListener("load", async function() {
-    if (typeof firebase === 'undefined') return;
-    firebase.auth().onAuthStateChanged(async function(user) {
-                if (!user) return;
-                if (typeof loadStores === "function") await loadStores();
-                if (typeof StoresModule !== 'undefined' && typeof StoresModule.render === 'function') {
-                    StoresModule.render();
-                }
-            });
-        });
+window.addEventListener("load", async () => {
+  // Só tenta popup quando a página carregou
+  const tryWelcome = () => {
+    if (typeof WelcomePopup !== "undefined" && typeof WelcomePopup.check === "function") {
+      WelcomePopup.check();
+    }
+  };
+
+  // Se não tem firebase, ainda dá pra rodar o popup
+  if (typeof firebase === "undefined" || !firebase.auth) {
+    tryWelcome();
+    return;
+  }
+
+  firebase.auth().onAuthStateChanged(async (user) => {
+    if (!user) return;
+
+    if (typeof loadStores === "function") await loadStores();
+
+    if (typeof StoresModule !== "undefined" && typeof StoresModule.render === "function") {
+      StoresModule.render();
+    }
+
+    // Depois de login + render
+    tryWelcome();
+  });
+});
     </script>
     <script src="modules/search.js"></script>
 </body>
