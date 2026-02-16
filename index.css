@@ -2965,7 +2965,8 @@ body{
 .notification-popup-content {
     cursor: pointer;
 }
-/* ==================== WELCOME POPUP ==================== */
+/* ==================== WELCOME POPUP v2 ==================== */
+/* Forced resolution: popup always renders at consistent 360x640 scale */
 
 .wp-overlay {
     position: fixed;
@@ -2980,24 +2981,27 @@ body{
 }
 
 .wp-overlay.show {
-    background: rgba(0,0,0,0.75);
+    background: rgba(0,0,0,0.8);
     pointer-events: auto;
 }
 
 .wp-popup-container {
-    width: 100%;
-    height: 100%;
+    /* Forced resolution: always 360x640 ratio, scaled to 80% viewport */
+    width: min(80vw, 360px);
+    height: min(80vh, 640px);
+    max-width: 360px;
+    max-height: 640px;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 10vh 5vw;
-    position: relative;
 }
 
+/* Close button */
 .wp-popup-close {
     position: absolute;
-    top: max(env(safe-area-inset-top, 12px), 12px);
-    right: 16px;
+    top: -12px;
+    right: -12px;
     width: 36px;
     height: 36px;
     border-radius: 50%;
@@ -3019,10 +3023,10 @@ body{
     background: rgba(255,255,255,0.3);
 }
 
+/* ==================== SHARED CARD ==================== */
 .wp-popup-card {
     width: 100%;
-    max-width: 380px;
-    max-height: 80vh;
+    height: 100%;
     background: var(--bg-card, #0a0a0a);
     border-radius: 20px;
     overflow: hidden;
@@ -3040,63 +3044,118 @@ body{
     opacity: 1;
 }
 
-/* Image */
-.wp-popup-image {
-    width: 100%;
-    aspect-ratio: 16/9;
-    overflow: hidden;
-    flex-shrink: 0;
-    background: #111;
-}
-
-.wp-popup-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-/* Body */
-.wp-popup-body {
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    overflow-y: auto;
-}
-
 .wp-popup-title {
     font-size: 1.15rem;
     font-weight: 700;
     line-height: 1.3;
-    color: var(--text, #fff);
+    color: #fff;
 }
 
 .wp-popup-message {
-    font-size: 0.88rem;
-    color: var(--text-muted, #737373);
+    font-size: 0.85rem;
+    color: #aaa;
     line-height: 1.5;
+    margin-top: 6px;
 }
 
-/* CTA Button */
 .wp-popup-cta {
     width: 100%;
     padding: 14px;
-    border-radius: 12px;
     border: none;
-    background: #fff;
-    color: #000;
     font-size: 0.95rem;
     font-weight: 700;
     cursor: pointer;
-    margin-top: 8px;
-    transition: opacity 0.2s;
+    margin-top: 12px;
+    transition: background 0.2s, transform 0.1s;
     letter-spacing: 0.3px;
-}
-
-.wp-popup-cta:hover {
-    opacity: 0.9;
+    text-align: center;
 }
 
 .wp-popup-cta:active {
-    transform: scale(0.98);
+    transform: scale(0.97);
+}
+
+/* ==================== FULL MODE ==================== */
+/* Image fills entire card, text overlaid at bottom with gradient */
+
+.wp-mode-full {
+    position: relative;
+}
+
+.wp-full-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+}
+
+.wp-full-gradient {
+    position: relative;
+    z-index: 1;
+    margin-top: auto;
+    padding: 60px 20px 20px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.85) 35%);
+    display: flex;
+    flex-direction: column;
+}
+
+.wp-mode-full .wp-popup-title {
+    text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+}
+
+.wp-mode-full .wp-popup-message {
+    color: #ccc;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+
+/* ==================== SEMI MODE ==================== */
+/* Image on top (16:9-ish), text and button below */
+
+.wp-mode-semi {
+    display: flex;
+    flex-direction: column;
+}
+
+.wp-semi-img {
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.wp-semi-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.wp-popup-body {
+    padding: 20px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* When semi has image, body gets less space. When no image, body fills all */
+.wp-mode-semi .wp-popup-body {
+    flex-shrink: 0;
+}
+
+/* ==================== RESPONSIVE SCALING ==================== */
+/* On very small screens, scale down the forced resolution */
+
+@media (max-width: 380px) {
+    .wp-popup-container {
+        width: 90vw;
+        height: 85vh;
+    }
+}
+
+@media (max-height: 660px) {
+    .wp-popup-container {
+        height: 88vh;
+    }
 }
