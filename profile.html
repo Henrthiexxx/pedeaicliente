@@ -140,6 +140,38 @@
       .profile-header{ padding: 14px; }
       .profile-name{ font-size: 1.05rem; }
     }
+
+    /* Inputs com profundidade (P&B + dourado raro) */
+.form-input{
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    0 10px 24px rgba(0,0,0,.35);
+}
+.form-input:focus{
+  border-color: rgba(255,255,255,.22);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 14px 34px rgba(0,0,0,.45);
+}
+
+/* Botão (sem roxo, só branco e dourado bem sutil no hover) */
+.btn-save{
+  background: #fff; color:#000;
+  box-shadow: 0 14px 34px rgba(0,0,0,.45);
+}
+@media (hover:hover){
+  .btn-save:hover{
+    box-shadow: 0 18px 40px rgba(0,0,0,.55);
+    outline: 1px solid rgba(201,166,97,.30); /* dourado raro */
+  }
+}
+
+/* Menu sem “REV/ADR/ORD...” */
+.menu-icon{ display:none !important; }
+.profile-menu-item{ gap: 10px; }
+.profile-menu-item::after{ background: rgba(201,166,97,.95); } /* dourado raro na barra */
   </style>
 </head>
 <body>
@@ -202,7 +234,7 @@
         <div class="section-title">Conta</div>
 
         <div class="profile-menu-item" onclick="location.href='pending-reviews.html'">
-          <div class="menu-icon">REV</div>
+          
           <div class="menu-text">
             <div class="menu-title">Avaliações pendentes</div>
             <div class="menu-subtitle">Avalie seus pedidos entregues</div>
@@ -214,7 +246,7 @@
         </div>
 
         <div class="profile-menu-item" onclick="location.href='address.html'">
-          <div class="menu-icon">ADR</div>
+          
           <div class="menu-text">
             <div class="menu-title">Meus endereços</div>
             <div class="menu-subtitle">Gerencie endereços de entrega</div>
@@ -223,7 +255,7 @@
         </div>
 
         <div class="profile-menu-item" onclick="location.href='orders.html'">
-          <div class="menu-icon">ORD</div>
+          
           <div class="menu-text">
             <div class="menu-title">Histórico de pedidos</div>
             <div class="menu-subtitle">Veja seus pedidos anteriores</div>
@@ -236,7 +268,7 @@
         <div class="section-title">App</div>
 
         <div class="profile-menu-item" onclick="location.href='notifications.html'">
-          <div class="menu-icon">NOT</div>
+          
           <div class="menu-text">
             <div class="menu-title">Notificações</div>
             <div class="menu-subtitle">Central e histórico de alertas</div>
@@ -245,7 +277,7 @@
         </div>
 
         <div class="profile-menu-item" onclick="location.href='suporte.html'">
-          <div class="menu-icon">HLP</div>
+         
           <div class="menu-text">
             <div class="menu-title">Ajuda e suporte</div>
             <div class="menu-subtitle">Fale com a equipe via WhatsApp</div>
@@ -258,7 +290,7 @@
         <div class="section-title">Sessão</div>
 
         <div class="profile-menu-item danger" onclick="handleLogout()">
-          <div class="menu-icon">OUT</div>
+          
           <div class="menu-text">
             <div class="menu-title">Sair da conta</div>
             <div class="menu-subtitle">Encerrar sessão neste dispositivo</div>
