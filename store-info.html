@@ -585,7 +585,7 @@ html, body { overflow-x: hidden; }
                 
                 const reviews = reviewsSnapshot.docs
                     .map(doc => ({ id: doc.id, ...doc.data() }))
-                    .filter(review => review.type === 'order'); // Filtra apenas reviews de pedidos
+                   const reviews = reviewsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
                 console.log('📊 Reviews após filtro (type=order):', reviews.length);
                 console.log('📋 Reviews:', reviews);
