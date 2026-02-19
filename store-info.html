@@ -570,59 +570,53 @@ html, body { overflow-x: hidden; }
             }
         }
         
-        async function loadReviews() {
-            try {
-                console.log('🔍 Buscando...', storeId);
-                
-                // Query simplificada (sem índice composto)
+async function loadReviews() {
+  try {
+    console.log('🔍 Buscando...', storeId);
 
-              const reviewsSnapshot = await db.collection('reviews')
-  .where('storeId', '==', storeId)
-  .where('type', '==', 'order')
-  .orderBy('createdAt', 'desc')
-  .limit(20)
-  .get();
-                
-                console.log('📊 Reviews após filtro (type=order):', reviews.length);
-                console.log('📋 Reviews:', reviews);
-                
-                const container = document.getElementById('reviewsList');
-                
-                if (reviews.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-reviews">
-                            <div class="empty-reviews-icon">⭐</div>
-                            <div>Ainda não há avaliações</div>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                container.innerHTML = reviews.map(review => `
-                    <div class="review-item">
-                        <div class="review-header">
-                            <div class="review-author">${review.userName || 'Cliente'}</div>
-                            <div class="review-date">${formatDate(review.createdAt)}</div>
-                        </div>
-                        <div class="review-stars">${renderStars(review.storeRating)}</div>
-                        ${review.comment ? `
-                            <div class="review-comment">${review.comment}</div>
-                        ` : ''}
-                    </div>
-                `).join('');
-                
-                console.log('✅ Reviews renderizados com sucesso');
-                
-            } catch (err) {
-                console.error('❌ Erro ao carregar avaliações:', err);
-                document.getElementById('reviewsList').innerHTML = `
-                    <div class="empty-reviews">
-                        <div class="empty-reviews-icon">❌</div>
-                        <div>Erro ao carregar avaliações</div>
-                    </div>
-                `;
-            }
-        }
+    const reviewsSnapshot = await db.collection('reviews')
+      .where('storeId', '==', storeId)
+      .where('type', '==', 'order')
+      .orderBy('createdAt', 'desc')
+      .limit(20)
+      .get();
+
+    const reviews = reviewsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    console.log('📊 Total de reviews encontrados:', reviewsSnapshot.size);
+    console.log('📊 Reviews após filtro (type=order):', reviews.length);
+
+    const container = document.getElementById('reviewsList');
+
+    if (reviews.length === 0) {
+      container.innerHTML = `
+        <div class="empty-reviews">
+          <div class="empty-reviews-icon">⭐</div>
+          <div>Ainda não há avaliações</div>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = reviews.map(review => `
+      <div class="review-item">
+        <div class="review-header">
+          <div class="review-author">${review.userName || 'Cliente'}</div>
+          <div class="review-date">${formatDate(review.createdAt)}</div>
+        </div>
+        <div class="review-stars">${renderStars(review.storeRating || 0)}</div>
+        ${review.comment ? `<div class="review-comment">${review.comment}</div>` : ''}
+      </div>
+    `).join('');
+
+  } catch (err) {
+    console.error('❌ Erro ao carregar avaliações:', err);
+    document.getElementById('reviewsList').innerHTML = `
+      <div class="empty-reviews">
+        <div class="empty-reviews-icon">❌</div>
+        <div>Erro ao carregar avaliações</div>
+      </div>`;
+  }
+}
         
         // Carrega tudo ao iniciar
         (async () => {
