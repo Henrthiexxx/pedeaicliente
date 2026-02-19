@@ -584,8 +584,8 @@ html, body { overflow-x: hidden; }
                 console.log('📊 Total de reviews encontrados:', reviewsSnapshot.size);
                 
                 const reviews = reviewsSnapshot.docs
-                    .map(doc => ({ id: doc.id, ...doc.data() }))
-                   const reviews = reviewsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    .map(doc => ({ id: doc.id, ...doc.data() }));
+                   
                 
                 console.log('📊 Reviews após filtro (type=order):', reviews.length);
                 console.log('📋 Reviews:', reviews);
