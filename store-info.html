@@ -14,7 +14,6 @@
             position: relative;
         }
         
-        /* Wallpaper de fundo com ícone da loja */
         .store-wallpaper {
             position: fixed;
             top: 0;
@@ -52,14 +51,17 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 60px;
+            height: 64px;
             background: var(--bg);
             display: flex;
             align-items: center;
             gap: 16px;
             padding: 0 20px;
+            padding-top: 6px;
             z-index: 100;
             border-bottom: 1px solid var(--border);
+            box-sizing: border-box;
+            overflow: visible;
         }
         
         .back-btn {
@@ -77,24 +79,25 @@
             justify-content: center;
         }
         
-        .back-btn:hover {
-            border-color: var(--primary);
-        }
+        .back-btn:hover { border-color: var(--primary); }
         
         .store-info-title {
             font-size: 1rem;
             font-weight: 300;
             letter-spacing: 3px;
             text-transform: uppercase;
+            line-height: 1.3;
+            padding-top: 2px;
         }
         
         .store-info-content {
-            padding-top: 70px;
             padding: 70px 16px 20px;
             max-width: 600px;
             margin: 0 auto;
             position: relative;
             z-index: 1;
+            width: 100%;
+            box-sizing: border-box;
         }
         
         .store-banner {
@@ -109,12 +112,11 @@
             align-items: center;
             position: relative;
             z-index: 1;
+            width: 100%;
+            box-sizing: border-box;
         }
         
-        /* Remove ícone circular - agora é wallpaper */
-        .store-logo {
-            display: none;
-        }
+        .store-logo { display: none; }
         
         .store-name-big {
             font-size: 1.5rem;
@@ -162,6 +164,8 @@
             margin-bottom: 16px;
             position: relative;
             z-index: 1;
+            width: 100%;
+            box-sizing: border-box;
         }
         
         .section-title {
@@ -175,15 +179,13 @@
         
         .info-row {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 12px;
             padding: 12px 0;
             border-bottom: 1px solid var(--border);
         }
         
-        .info-row:last-child {
-            border-bottom: none;
-        }
+        .info-row:last-child { border-bottom: none; }
         
         .info-icon {
             font-size: 1.5rem;
@@ -193,6 +195,7 @@
         
         .info-content {
             flex: 1;
+            min-width: 0;
         }
         
         .info-label {
@@ -203,6 +206,8 @@
         
         .info-value {
             font-weight: 500;
+            word-break: break-word;
+            overflow-wrap: anywhere;
         }
         
         .info-action {
@@ -216,6 +221,7 @@
             text-decoration: none;
             display: inline-block;
             font-size: 0.9rem;
+            flex-shrink: 0;
         }
         
         .review-item {
@@ -223,9 +229,7 @@
             border-bottom: 1px solid var(--border);
         }
         
-        .review-item:last-child {
-            border-bottom: none;
-        }
+        .review-item:last-child { border-bottom: none; }
         
         .review-header {
             display: flex;
@@ -243,15 +247,31 @@
             color: var(--text-muted);
         }
         
-        .review-stars {
-            color: var(--primary);
+        .review-ratings {
+            display: flex;
+            gap: 16px;
             margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .review-rating-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        
+        .review-rating-item .stars {
+            color: var(--primary);
         }
         
         .review-comment {
             color: var(--text-muted);
             font-size: 0.9rem;
             line-height: 1.5;
+            word-break: break-word;
+            overflow-wrap: anywhere;
         }
         
         .empty-reviews {
@@ -265,55 +285,17 @@
             margin-bottom: 12px;
             opacity: 0.3;
         }
-
-        /* Evita scroll lateral no mobile */
-html, body { overflow-x: hidden; }
-
-/* Garante que o conteúdo respeite a largura da tela */
-.store-info-content{
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* Cartões sempre dentro do espaço */
-.section-card, .store-banner{
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* Corrige overflow do flex (principal causa) */
-.info-row { align-items: flex-start; }
-.info-content { min-width: 0; } /* MUITO importante */
-.info-value, .review-comment, #storeDescription{
-  word-break: break-word;
-  overflow-wrap: anywhere;
-}
-
-/* Botão não “empurra” o texto pra fora */
-.info-action { flex-shrink: 0; }
-
-/* Ajuste extra pra telas pequenas */
-@media (max-width: 420px){
-  .info-row{ gap: 10px; }
-  .info-icon{ width: 32px; }
-  .info-action{ padding: 8px 12px; font-size: .85rem; }
-}
-.store-info-header{
-  height: 64px;           /* um pouco mais alto */
-  overflow: visible;      /* evita cortar */
-  padding-top: 6px;       /* sobe a “folga” do texto */
-  box-sizing: border-box;
-}
-
-.store-info-title{
-  line-height: 1.3;       /* evita comer letras */
-  padding-top: 2px;       /* folga extra */
-}
-
+        
+        html, body { overflow-x: hidden; }
+        
+        @media (max-width: 420px) {
+            .info-row { gap: 10px; }
+            .info-icon { width: 32px; }
+            .info-action { padding: 8px 12px; font-size: .85rem; }
+        }
     </style>
 </head>
 <body>
-    <!-- Wallpaper de fundo com ícone da loja -->
     <div class="store-wallpaper" id="storeWallpaper"></div>
     <div class="store-wallpaper-emoji" id="storeWallpaperEmoji"></div>
     
@@ -324,7 +306,6 @@ html, body { overflow-x: hidden; }
         </div>
         
         <div class="store-info-content">
-            <!-- Banner da Loja -->
             <div class="store-banner">
                 <div class="store-logo" id="storeLogo">🏪</div>
                 <div class="store-name-big" id="storeName">Carregando...</div>
@@ -338,13 +319,11 @@ html, body { overflow-x: hidden; }
                 </div>
             </div>
             
-            <!-- Sobre -->
             <div class="section-card" id="aboutSection">
                 <div class="section-title">📝 Sobre</div>
                 <p id="storeDescription" style="color: var(--text-muted); line-height: 1.6;">-</p>
             </div>
             
-            <!-- Contato -->
             <div class="section-card">
                 <div class="section-title">📞 Contato</div>
                 
@@ -390,7 +369,6 @@ html, body { overflow-x: hidden; }
                 </div>
             </div>
             
-            <!-- Avaliações -->
             <div class="section-card">
                 <div class="section-title">⭐ Avaliações</div>
                 <div id="reviewsList">
@@ -407,7 +385,6 @@ html, body { overflow-x: hidden; }
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     
     <script>
-        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",
             authDomain: "pedrad-814d0.firebaseapp.com",
@@ -417,13 +394,9 @@ html, body { overflow-x: hidden; }
             appId: "1:293587190550:web:80c9399f82847c80e20637"
         };
         
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         
-        // Pega storeId da URL
         const urlParams = new URLSearchParams(window.location.search);
         const storeId = urlParams.get('id');
         
@@ -436,19 +409,12 @@ html, body { overflow-x: hidden; }
         }
         
         function openWhatsApp() {
-            if (!storePhone) {
-                alert('Telefone não disponível');
-                return;
-            }
-            
-            // Copia número para clipboard
+            if (!storePhone) { alert('Telefone não disponível'); return; }
             const cleanPhone = storePhone.replace(/\D/g, '');
             const formattedPhone = `55${cleanPhone}`;
-            
             navigator.clipboard.writeText(formattedPhone).then(() => {
                 alert(`Número copiado: ${formattedPhone}\n\nAbra o WhatsApp e cole o número!`);
             }).catch(() => {
-                // Fallback se clipboard API não funcionar
                 const textarea = document.createElement('textarea');
                 textarea.value = formattedPhone;
                 textarea.style.position = 'fixed';
@@ -470,45 +436,29 @@ html, body { overflow-x: hidden; }
         }
         
         function formatCurrency(value) {
-            return new Intl.NumberFormat('pt-BR', { 
-                style: 'currency', 
-                currency: 'BRL' 
-            }).format(value || 0);
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
         }
         
         function formatDate(timestamp) {
             if (!timestamp) return '';
             const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-            return date.toLocaleDateString('pt-BR', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            });
+            return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
         }
         
         function renderStars(rating) {
             const full = Math.floor(rating);
             const half = rating % 1 >= 0.5 ? 1 : 0;
             const empty = 5 - full - half;
-            
-            return '★'.repeat(full) + 
-                   (half ? '⯨' : '') + 
-                   '☆'.repeat(empty);
+            return '★'.repeat(full) + (half ? '⯨' : '') + '☆'.repeat(empty);
         }
         
         async function loadStoreInfo() {
             try {
                 const storeDoc = await db.collection('stores').doc(storeId).get();
-                
-                if (!storeDoc.exists) {
-                    alert('Loja não encontrada');
-                    goBack();
-                    return;
-                }
+                if (!storeDoc.exists) { alert('Loja não encontrada'); goBack(); return; }
                 
                 const store = storeDoc.data();
                 
-                // Logo como wallpaper de fundo
                 if (store.imageUrl) {
                     document.getElementById('storeWallpaper').style.backgroundImage = `url(${store.imageUrl})`;
                     document.getElementById('storeWallpaperEmoji').style.display = 'none';
@@ -520,47 +470,37 @@ html, body { overflow-x: hidden; }
                     document.getElementById('storeWallpaper').style.display = 'none';
                 }
                 
-                // Nome e categoria
                 storeName = store.name || 'Loja';
                 document.getElementById('storeName').textContent = storeName;
                 document.getElementById('storeCategory').textContent = store.category || '';
                 
-                // Rating
                 const rating = store.rating || 0;
                 const reviewCount = store.reviewCount || 0;
                 document.getElementById('ratingValue').textContent = rating.toFixed(1);
                 document.getElementById('reviewCount').textContent = `(${reviewCount} ${reviewCount === 1 ? 'avaliação' : 'avaliações'})`;
                 
-                // Descrição
                 if (store.description) {
                     document.getElementById('storeDescription').textContent = store.description;
                 } else {
                     document.getElementById('aboutSection').style.display = 'none';
                 }
                 
-                // Telefone (abre app nativo)
                 if (store.phone) {
                     storePhone = store.phone;
                     document.getElementById('phoneRow').style.display = 'flex';
                     document.getElementById('storePhone').textContent = store.phone;
                 }
                 
-                // Endereço
                 if (store.address) {
                     document.getElementById('addressRow').style.display = 'flex';
                     document.getElementById('storeAddress').textContent = store.address;
                 }
                 
-                // Horário
                 if (store.settings?.weekdayOpen) {
-                    const hours = `Seg-Sex: ${store.settings.weekdayOpen} às ${store.settings.weekdayClose} | Sáb-Dom: ${store.settings.weekendOpen} às ${store.settings.weekendClose}`;
-                    document.getElementById('storeHours').textContent = hours;
+                    document.getElementById('storeHours').textContent = `Seg-Sex: ${store.settings.weekdayOpen} às ${store.settings.weekdayClose} | Sáb-Dom: ${store.settings.weekendOpen} às ${store.settings.weekendClose}`;
                 }
                 
-                // Tempo de entrega
                 document.getElementById('deliveryTime').textContent = store.deliveryTime || 'Consulte a loja';
-                
-                // Taxa de entrega
                 document.getElementById('deliveryFee').textContent = formatCurrency(store.deliveryFee || 0);
                 
             } catch (err) {
@@ -570,54 +510,65 @@ html, body { overflow-x: hidden; }
             }
         }
         
-async function loadReviews() {
-  try {
-    console.log('🔍 Buscando...', storeId);
-
-const reviewsSnapshot = await db.collection('reviews')
-  .where('storeId', '==', storeId)
-  .orderBy('createdAt', 'desc')
-  .limit(20)
-  .get();
-
-    const reviews = reviewsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-    console.log('📊 Total de reviews encontrados:', reviewsSnapshot.size);
-    console.log('📊 Reviews após filtro (type=order):', reviews.length);
-
-    const container = document.getElementById('reviewsList');
-
-    if (reviews.length === 0) {
-      container.innerHTML = `
-        <div class="empty-reviews">
-          <div class="empty-reviews-icon">⭐</div>
-          <div>Ainda não há avaliações</div>
-        </div>`;
-      return;
-    }
-
-    container.innerHTML = reviews.map(review => `
-      <div class="review-item">
-        <div class="review-header">
-          <div class="review-author">${review.userName || 'Cliente'}</div>
-          <div class="review-date">${formatDate(review.createdAt)}</div>
-        </div>
-        <div class="review-stars">${renderStars(review.storeRating || 0)}</div>
-        ${review.comment ? `<div class="review-comment">${review.comment}</div>` : ''}
-      </div>
-    `).join('');
-
-  } catch (err) {
-    console.error('❌ Erro ao carregar avaliações:', err);
-    document.getElementById('reviewsList').innerHTML = `
-      <div class="empty-reviews">
-        <div class="empty-reviews-icon">❌</div>
-        <div>Erro ao carregar avaliações</div>
-      </div>`;
-  }
-}
+        async function loadReviews() {
+            try {
+                const snapshot = await db.collection('reviews')
+                    .where('storeId', '==', storeId)
+                    .orderBy('createdAt', 'desc')
+                    .limit(20)
+                    .get();
+                
+                const reviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const container = document.getElementById('reviewsList');
+                
+                // Recalcula rating real a partir das reviews
+                if (reviews.length > 0) {
+                    const avg = reviews.reduce((sum, r) => sum + (r.storeRating || 0), 0) / reviews.length;
+                    document.getElementById('ratingValue').textContent = avg.toFixed(1);
+                    document.getElementById('reviewCount').textContent = `(${reviews.length} ${reviews.length === 1 ? 'avaliação' : 'avaliações'})`;
+                }
+                
+                if (reviews.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-reviews">
+                            <div class="empty-reviews-icon">⭐</div>
+                            <div>Ainda não há avaliações</div>
+                        </div>`;
+                    return;
+                }
+                
+                container.innerHTML = reviews.map(r => `
+                    <div class="review-item">
+                        <div class="review-header">
+                            <div class="review-author">${r.userName || 'Cliente'}</div>
+                            <div class="review-date">${formatDate(r.createdAt)}</div>
+                        </div>
+                        <div class="review-ratings">
+                            <div class="review-rating-item">
+                                <span>Loja:</span>
+                                <span class="stars">${renderStars(r.storeRating || 0)}</span>
+                                <span>${r.storeRating || 0}/5</span>
+                            </div>
+                            <div class="review-rating-item">
+                                <span>Entregador:</span>
+                                <span class="stars">${renderStars(r.driverRating || 0)}</span>
+                                <span>${r.driverRating || 0}/5</span>
+                            </div>
+                        </div>
+                        ${r.comment ? `<div class="review-comment">"${r.comment}"</div>` : ''}
+                    </div>
+                `).join('');
+                
+            } catch (err) {
+                console.error('Erro ao carregar avaliações:', err);
+                document.getElementById('reviewsList').innerHTML = `
+                    <div class="empty-reviews">
+                        <div class="empty-reviews-icon">❌</div>
+                        <div>Erro ao carregar avaliações</div>
+                    </div>`;
+            }
+        }
         
-        // Carrega tudo ao iniciar
         (async () => {
             await loadStoreInfo();
             await loadReviews();
