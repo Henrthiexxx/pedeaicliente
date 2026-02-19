@@ -574,12 +574,11 @@ async function loadReviews() {
   try {
     console.log('🔍 Buscando...', storeId);
 
-    const reviewsSnapshot = await db.collection('reviews')
-      .where('storeId', '==', storeId)
-      .where('type', '==', 'order')
-      .orderBy('createdAt', 'desc')
-      .limit(20)
-      .get();
+const reviewsSnapshot = await db.collection('reviews')
+  .where('storeId', '==', storeId)
+  .orderBy('createdAt', 'desc')
+  .limit(20)
+  .get();
 
     const reviews = reviewsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
