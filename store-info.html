@@ -575,14 +575,7 @@ html, body { overflow-x: hidden; }
                 console.log('🔍 Buscando...', storeId);
                 
                 // Query simplificada (sem índice composto)
-                const reviewsSnapshot = await db.collection('reviews')
-                    .where('storeId', '==', storeId)
-                    .orderBy('createdAt', 'desc')
-                    .limit(20)
-                    .get();
-                
-                console.log('📊 Total de reviews encontrados:', reviewsSnapshot.size);
-                
+
               const reviewsSnapshot = await db.collection('reviews')
   .where('storeId', '==', storeId)
   .where('type', '==', 'order')
