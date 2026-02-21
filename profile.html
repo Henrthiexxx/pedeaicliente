@@ -453,7 +453,28 @@
         btn.textContent = 'Salvar alterações';
       }
     }
+  async function ensurePhoneOrRedirect() {
+  const lsPhone = (localStorage.getItem("userPhone") || "").replace(/\D/g, "");
+  if (lsPhone.length >= 10) return lsPhone;
 
+  const u = firebase.auth().currentUser;
+  if (!u) { location.href = "index.html"; return null; }
+
+  const snap = await db.collection("users").doc(u.uid).get();
+  const fsPhone = (snap.data()?.phone || "").replace(/\D/g, "");
+  if (fsPhone.length >= 10) {
+    localStorage.setItem("userPhone", fsPhone);
+    return fsPhone;
+  }
+
+  localStorage.setItem("NEED_PHONE", "1");
+  location.href = "profile.html#phone";
+  return null;
+}
+
+// antes de db.collection("orders").add(...)
+const phone = await ensurePhoneOrRedirect();
+if (!phone) return; // BLOQUEIA
     // ===== MASKS =====
     function formatPhone(value) {
       const v = String(value || '').replace(/\D/g, '');
