@@ -400,9 +400,9 @@
       const cpf = (document.getElementById('inputCpf').value || '').replace(/\D/g, '');
 
       // Validação do telefone
-      if (phone.length > 0 && phone.length < 10) {
+      if (phone.length < 10) {
         document.getElementById('inputPhone').classList.add('error');
-        document.getElementById('phoneHint').textContent = 'Telefone inválido';
+        document.getElementById('phoneHint').textContent = 'Telefone Obrigatório';
         document.getElementById('phoneHint').classList.add('error');
         return;
       }
