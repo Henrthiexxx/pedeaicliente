@@ -8,170 +8,87 @@
   <link rel="stylesheet" href="index.css" />
   <style>
     body { padding:0; margin:0; min-height:100vh; }
-    .profile-container{
-      min-height:100vh; padding: 20px; padding-top: 92px; padding-bottom: 56px;
-      max-width: 920px; margin: 0 auto;
-    }
-    .profile-back-header{
-      position: fixed; top:0; left:0; right:0; height: 64px;
-      background: var(--bg); display:flex; align-items:center; gap: 12px;
-      padding: 0 20px; padding-top: env(safe-area-inset-top);
-      z-index: 100; border-bottom: 1px solid var(--border); backdrop-filter: blur(10px);
-    }
-    .profile-back-btn{
-      width:44px; height:44px; border-radius: 12px; background: var(--bg-input);
-      border: 1px solid var(--border); color: var(--text); font-size: 1.05rem;
-      cursor: pointer; transition: all .15s ease; display:flex; align-items:center; justify-content:center;
-    }
-    .profile-back-btn:hover{ border-color: var(--primary); }
-    .profile-back-title{ font-size: .95rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; }
+    .profile-container{ min-height:100vh; padding:20px; padding-top:92px; padding-bottom:56px; max-width:920px; margin:0 auto; }
+    .profile-back-header{ position:fixed; top:0; left:0; right:0; height:64px; background:var(--bg); display:flex; align-items:center; gap:12px; padding:0 20px; padding-top:env(safe-area-inset-top); z-index:100; border-bottom:1px solid var(--border); backdrop-filter:blur(10px); }
+    .profile-back-btn{ width:44px; height:44px; border-radius:12px; background:var(--bg-input); border:1px solid var(--border); color:var(--text); font-size:1.05rem; cursor:pointer; transition:all .15s ease; display:flex; align-items:center; justify-content:center; }
+    .profile-back-btn:hover{ border-color:var(--primary); }
+    .profile-back-title{ font-size:.95rem; font-weight:600; letter-spacing:2px; text-transform:uppercase; }
 
-    .profile-header{
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px;
-      padding: 18px; box-shadow: 0 10px 28px rgba(0,0,0,.16);
-      display:flex; gap: 14px; align-items:center; margin-bottom: 14px;
-    }
-    .profile-avatar{
-      width: 82px; height: 82px; border-radius: 18px; border: 1px solid var(--border);
-      background: var(--bg-input); display:flex; align-items:center; justify-content:center;
-      color: var(--text); font-weight: 800; font-size: 1.9rem; flex: 0 0 auto;
-    }
-    .profile-identity{ flex: 1; min-width: 0; }
-    .profile-name{ font-size: 1.15rem; font-weight: 800; margin-bottom: 4px; word-break: break-word; }
-    .profile-email{ font-size: .9rem; color: var(--text-muted); word-break: break-word; }
-    .profile-badges{ margin-top: 10px; display:flex; flex-wrap: wrap; gap: 8px; }
-    .chip{
-      border: 1px solid var(--border); background: var(--bg-input); color: var(--text);
-      border-radius: 999px; padding: 6px 10px; font-size: .82rem; display:inline-flex; align-items:center; gap: 8px;
-    }
-    .chip.muted{ color: var(--text-muted); }
-    .chip.warning{ border-color: rgba(255,152,0,.4); color: #ffb74d; background: rgba(255,152,0,.1); }
-    .chip.success{ border-color: rgba(34,197,94,.4); color: #4ade80; background: rgba(34,197,94,.1); }
-    .dot{ width: 10px; height: 10px; border-radius: 999px; background: var(--primary); }
+    .profile-header{ background:var(--bg-card); border:1px solid var(--border); border-radius:18px; padding:18px; box-shadow:0 10px 28px rgba(0,0,0,.16); display:flex; gap:14px; align-items:center; margin-bottom:14px; }
+    .profile-avatar{ width:82px; height:82px; border-radius:18px; border:1px solid var(--border); background:var(--bg-input); display:flex; align-items:center; justify-content:center; color:var(--text); font-weight:800; font-size:1.9rem; flex:0 0 auto; }
+    .profile-identity{ flex:1; min-width:0; }
+    .profile-name{ font-size:1.15rem; font-weight:800; margin-bottom:4px; word-break:break-word; }
+    .profile-email{ font-size:.9rem; color:var(--text-muted); word-break:break-word; }
+    .profile-badges{ margin-top:10px; display:flex; flex-wrap:wrap; gap:8px; }
+    .chip{ border:1px solid var(--border); background:var(--bg-input); color:var(--text); border-radius:999px; padding:6px 10px; font-size:.82rem; display:inline-flex; align-items:center; gap:8px; }
+    .chip.muted{ color:var(--text-muted); }
+    .chip.warning{ border-color:rgba(255,152,0,.4); color:#ffb74d; background:rgba(255,152,0,.1); }
+    .chip.success{ border-color:rgba(34,197,94,.4); color:#4ade80; background:rgba(34,197,94,.1); }
+    .dot{ width:10px; height:10px; border-radius:999px; background:var(--primary); }
 
-    /* Formulário de dados */
-    .profile-form{
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px;
-      padding: 18px; margin-bottom: 14px;
+    .profile-form{ background:var(--bg-card); border:1px solid var(--border); border-radius:18px; padding:18px; margin-bottom:14px; }
+    .form-title{ font-size:.85rem; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+    .form-title .icon{ font-size:1.1rem; }
+    .form-group{ margin-bottom:16px; }
+    .form-label{ display:block; margin-bottom:8px; font-size:.78rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; }
+    .form-label .required{ color:#ef4444; }
+    .form-label .optional{ color:var(--primary); font-size:.7rem; margin-left:4px; }
+    .form-input{ width:100%; padding:14px 16px; border-radius:12px; border:1px solid var(--border); background:var(--bg-input); color:var(--text); font-size:1rem; transition:all .2s; }
+    .form-input:focus{ outline:none; border-color:var(--primary); }
+    .form-input.error{ border-color:#ef4444; }
+    .form-hint{ font-size:.75rem; color:var(--text-muted); margin-top:6px; }
+    .form-hint.error{ color:#ef4444; }
+    .form-hint.success{ color:#4ade80; }
+    .btn-save{ width:100%; padding:14px; border-radius:12px; border:none; background:var(--primary); color:#000; font-size:.95rem; font-weight:700; cursor:pointer; transition:all .2s; text-transform:uppercase; letter-spacing:1px; }
+    .btn-save:hover{ opacity:.9; }
+    .btn-save:disabled{ opacity:.5; cursor:not-allowed; }
+
+    .alert-incomplete{ background:rgba(255,152,0,.1); border:1px solid rgba(255,152,0,.3); border-radius:12px; padding:14px; margin-bottom:14px; display:flex; align-items:flex-start; gap:12px; }
+    .alert-incomplete .icon{ font-size:1.3rem; }
+    .alert-incomplete .text{ flex:1; }
+    .alert-incomplete .title{ font-weight:700; color:#ffb74d; margin-bottom:4px; }
+    .alert-incomplete .desc{ font-size:.85rem; color:var(--text-muted); line-height:1.4; }
+
+    .profile-menu{ margin-top:12px; display:flex; flex-direction:column; gap:10px; }
+    .menu-section{ background:var(--bg-card); border:1px solid var(--border); border-radius:18px; overflow:hidden; box-shadow:0 10px 28px rgba(0,0,0,.14); }
+    .section-title{ padding:12px 14px; font-size:.78rem; letter-spacing:1.6px; text-transform:uppercase; color:var(--text-muted); border-bottom:1px solid rgba(255,255,255,.04); background:rgba(255,255,255,.02); }
+    .profile-menu-item{ display:flex; align-items:center; gap:12px; padding:14px; cursor:pointer; transition:all .12s ease; border-bottom:1px solid rgba(255,255,255,.04); }
+    .profile-menu-item:last-child{ border-bottom:none; }
+    .profile-menu-item:hover{ background:rgba(255,255,255,.03); }
+    .menu-icon{ width:42px; height:42px; border-radius:14px; border:1px solid var(--border); background:var(--bg-input); display:flex; align-items:center; justify-content:center; font-size:.78rem; letter-spacing:.8px; text-transform:uppercase; flex:0 0 auto; }
+    .menu-text{ flex:1; min-width:0; }
+    .menu-title{ font-weight:800; font-size:.95rem; margin-bottom:2px; }
+    .menu-subtitle{ font-size:.78rem; color:var(--text-muted); }
+    .menu-right{ display:flex; align-items:center; gap:10px; }
+    .badge{ min-width:26px; height:26px; border-radius:999px; padding:0 10px; background:var(--primary); color:#000; font-size:.78rem; font-weight:800; display:none; align-items:center; justify-content:center; }
+    .arrow{ width:28px; height:28px; border-radius:10px; border:1px solid rgba(255,255,255,.06); background:rgba(255,255,255,.02); display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:1.05rem; }
+    .danger .menu-icon{ border-color:rgba(239,68,68,.3); color:#ef4444; }
+
+    .toast{ position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(100px); background:var(--bg-card); padding:14px 24px; border-radius:12px; border:1px solid var(--border); z-index:300; opacity:0; transition:all .3s; }
+    .toast.show{ transform:translateX(-50%) translateY(0); opacity:1; }
+
+    @media (max-width:520px){
+      .profile-container{ padding-left:14px; padding-right:14px; }
+      .profile-header{ padding:14px; }
+      .profile-name{ font-size:1.05rem; }
     }
-    .form-title{ font-size: .85rem; font-weight: 700; margin-bottom: 16px; display:flex; align-items:center; gap: 8px; }
-    .form-title .icon{ font-size: 1.1rem; }
-    .form-group{ margin-bottom: 16px; }
-    .form-label{
-      display: block; margin-bottom: 8px; font-size: .78rem; color: var(--text-muted);
-      text-transform: uppercase; letter-spacing: 1px;
-    }
-    .form-label .required{ color: #ef4444; }
-    .form-label .optional{ color: var(--primary); font-size: .7rem; margin-left: 4px; }
+
     .form-input{
-      width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border);
-      background: var(--bg-input); color: var(--text); font-size: 1rem; transition: all .2s;
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 10px 24px rgba(0,0,0,.35);
     }
-    .form-input:focus{ outline: none; border-color: var(--primary); }
-    .form-input.error{ border-color: #ef4444; }
-    .form-hint{ font-size: .75rem; color: var(--text-muted); margin-top: 6px; }
-    .form-hint.error{ color: #ef4444; }
-    .form-hint.success{ color: #4ade80; }
-    .btn-save{
-      width: 100%; padding: 14px; border-radius: 12px; border: none;
-      background: var(--primary); color: #000; font-size: .95rem; font-weight: 700;
-      cursor: pointer; transition: all .2s; text-transform: uppercase; letter-spacing: 1px;
+    .form-input:focus{
+      border-color:rgba(255,255,255,.22);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 14px 34px rgba(0,0,0,.45);
     }
-    .btn-save:hover{ opacity: .9; }
-    .btn-save:disabled{ opacity: .5; cursor: not-allowed; }
-
-    /* Alert de dados incompletos */
-    .alert-incomplete{
-      background: rgba(255,152,0,.1); border: 1px solid rgba(255,152,0,.3);
-      border-radius: 12px; padding: 14px; margin-bottom: 14px;
-      display: flex; align-items: flex-start; gap: 12px;
+    .btn-save{ background:#fff; color:#000; box-shadow:0 14px 34px rgba(0,0,0,.45); }
+    @media (hover:hover){
+      .btn-save:hover{ box-shadow:0 18px 40px rgba(0,0,0,.55); outline:1px solid rgba(201,166,97,.30); }
     }
-    .alert-incomplete .icon{ font-size: 1.3rem; }
-    .alert-incomplete .text{ flex: 1; }
-    .alert-incomplete .title{ font-weight: 700; color: #ffb74d; margin-bottom: 4px; }
-    .alert-incomplete .desc{ font-size: .85rem; color: var(--text-muted); line-height: 1.4; }
-
-    /* Menu */
-    .profile-menu{ margin-top: 12px; display:flex; flex-direction: column; gap: 10px; }
-    .menu-section{
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px;
-      overflow: hidden; box-shadow: 0 10px 28px rgba(0,0,0,.14);
-    }
-    .section-title{
-      padding: 12px 14px; font-size: .78rem; letter-spacing: 1.6px; text-transform: uppercase;
-      color: var(--text-muted); border-bottom: 1px solid rgba(255,255,255,.04); background: rgba(255,255,255,.02);
-    }
-    .profile-menu-item{
-      display:flex; align-items:center; gap: 12px; padding: 14px; cursor:pointer;
-      transition: all .12s ease; border-bottom: 1px solid rgba(255,255,255,.04);
-    }
-    .profile-menu-item:last-child{ border-bottom: none; }
-    .profile-menu-item:hover{ background: rgba(255,255,255,.03); }
-    .menu-icon{
-      width: 42px; height: 42px; border-radius: 14px; border: 1px solid var(--border);
-      background: var(--bg-input); display:flex; align-items:center; justify-content:center;
-      font-size: .78rem; letter-spacing: .8px; text-transform: uppercase; flex: 0 0 auto;
-    }
-    .menu-text{ flex: 1; min-width: 0; }
-    .menu-title{ font-weight: 800; font-size: .95rem; margin-bottom: 2px; }
-    .menu-subtitle{ font-size: .78rem; color: var(--text-muted); }
-    .menu-right{ display:flex; align-items:center; gap: 10px; }
-    .badge{
-      min-width: 26px; height: 26px; border-radius: 999px; padding: 0 10px;
-      background: var(--primary); color: #000; font-size: .78rem; font-weight: 800;
-      display:none; align-items:center; justify-content:center;
-    }
-    .arrow{
-      width: 28px; height: 28px; border-radius: 10px; border: 1px solid rgba(255,255,255,.06);
-      background: rgba(255,255,255,.02); display:flex; align-items:center; justify-content:center;
-      color: var(--text-muted); font-size: 1.05rem;
-    }
-    .danger .menu-icon{ border-color: rgba(239,68,68,.3); color: #ef4444; }
-
-    .toast{
-      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px);
-      background: var(--bg-card); padding: 14px 24px; border-radius: 12px;
-      border: 1px solid var(--border); z-index: 300; opacity: 0; transition: all .3s;
-    }
-    .toast.show{ transform: translateX(-50%) translateY(0); opacity: 1; }
-
-    @media (max-width: 520px){
-      .profile-container{ padding-left: 14px; padding-right: 14px; }
-      .profile-header{ padding: 14px; }
-      .profile-name{ font-size: 1.05rem; }
-    }
-
-    /* Inputs com profundidade (P&B + dourado raro) */
-.form-input{
-  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.06),
-    0 10px 24px rgba(0,0,0,.35);
-}
-.form-input:focus{
-  border-color: rgba(255,255,255,.22);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.08),
-    0 14px 34px rgba(0,0,0,.45);
-}
-
-/* Botão (sem roxo, só branco e dourado bem sutil no hover) */
-.btn-save{
-  background: #fff; color:#000;
-  box-shadow: 0 14px 34px rgba(0,0,0,.45);
-}
-@media (hover:hover){
-  .btn-save:hover{
-    box-shadow: 0 18px 40px rgba(0,0,0,.55);
-    outline: 1px solid rgba(201,166,97,.30); /* dourado raro */
-  }
-}
-
-/* Menu sem “REV/ADR/ORD...” */
-.menu-icon{ display:none !important; }
-.profile-menu-item{ gap: 10px; }
-.profile-menu-item::after{ background: rgba(201,166,97,.95); } /* dourado raro na barra */
+    .menu-icon{ display:none !important; }
+    .profile-menu-item{ gap:10px; }
+    .profile-menu-item::after{ background:rgba(201,166,97,.95); }
   </style>
 </head>
 <body>
@@ -181,7 +98,6 @@
   </div>
 
   <div class="profile-container">
-    <!-- Alerta de dados incompletos -->
     <div class="alert-incomplete" id="alertIncomplete" style="display:none;">
       <div class="icon">⚠️</div>
       <div class="text">
@@ -190,7 +106,6 @@
       </div>
     </div>
 
-    <!-- Header do perfil -->
     <div class="profile-header">
       <div class="profile-avatar" id="profileAvatar">U</div>
       <div class="profile-identity">
@@ -204,10 +119,9 @@
       </div>
     </div>
 
-    <!-- Formulário de dados pessoais -->
     <div class="profile-form">
       <div class="form-title"><span class="icon">👤</span> Dados Pessoais</div>
-      
+
       <div class="form-group">
         <label class="form-label">Nome completo</label>
         <input type="text" class="form-input" id="inputName" placeholder="Seu nome completo">
@@ -228,13 +142,11 @@
       <button class="btn-save" id="btnSave" onclick="saveProfile()">Salvar alterações</button>
     </div>
 
-    <!-- Menu -->
     <div class="profile-menu">
       <div class="menu-section">
         <div class="section-title">Conta</div>
 
         <div class="profile-menu-item" onclick="location.href='pending-reviews.html'">
-          
           <div class="menu-text">
             <div class="menu-title">Avaliações pendentes</div>
             <div class="menu-subtitle">Avalie seus pedidos entregues</div>
@@ -246,7 +158,6 @@
         </div>
 
         <div class="profile-menu-item" onclick="location.href='address.html'">
-          
           <div class="menu-text">
             <div class="menu-title">Meus endereços</div>
             <div class="menu-subtitle">Gerencie endereços de entrega</div>
@@ -255,7 +166,6 @@
         </div>
 
         <div class="profile-menu-item" onclick="location.href='orders.html'">
-          
           <div class="menu-text">
             <div class="menu-title">Histórico de pedidos</div>
             <div class="menu-subtitle">Veja seus pedidos anteriores</div>
@@ -268,7 +178,6 @@
         <div class="section-title">App</div>
 
         <div class="profile-menu-item" onclick="location.href='notifications.html'">
-          
           <div class="menu-text">
             <div class="menu-title">Notificações</div>
             <div class="menu-subtitle">Central e histórico de alertas</div>
@@ -277,7 +186,6 @@
         </div>
 
         <div class="profile-menu-item" onclick="location.href='suporte.html'">
-         
           <div class="menu-text">
             <div class="menu-title">Ajuda e suporte</div>
             <div class="menu-subtitle">Fale com a equipe via WhatsApp</div>
@@ -290,7 +198,6 @@
         <div class="section-title">Sessão</div>
 
         <div class="profile-menu-item danger" onclick="handleLogout()">
-          
           <div class="menu-text">
             <div class="menu-title">Sair da conta</div>
             <div class="menu-subtitle">Encerrar sessão neste dispositivo</div>
@@ -303,7 +210,6 @@
 
   <div class="toast" id="toast"></div>
 
-  <!-- Popup de logout -->
   <div id="logoutPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;padding:20px;">
     <div style="background:#0a0a0a;border:1px solid #262626;border-radius:16px;max-width:340px;width:100%;overflow:hidden;">
       <div style="padding:24px;text-align:center;">
@@ -338,7 +244,6 @@
     let currentUser = null;
     let userData = null;
 
-    // ===== AUTH =====
     auth.onAuthStateChanged(async (user) => {
       if (user) {
         currentUser = user;
@@ -349,11 +254,9 @@
       }
     });
 
-    // ===== LOAD PROFILE =====
     async function loadProfile() {
       if (!currentUser) return;
 
-      // Dados do Auth
       const name = currentUser.displayName || '';
       const email = currentUser.email || '';
       const initial = (name || email || 'U')[0].toUpperCase();
@@ -362,18 +265,27 @@
       document.getElementById('profileName').textContent = name || 'Usuário';
       document.getElementById('profileEmail').textContent = email;
 
-      // Busca dados extras do Firestore
       try {
         const doc = await db.collection('users').doc(currentUser.uid).get();
         userData = doc.exists ? doc.data() : {};
 
-        // Preenche formulário
         document.getElementById('inputName').value = userData.name || name || '';
         document.getElementById('inputPhone').value = formatPhone(userData.phone || '');
         document.getElementById('inputCpf').value = formatCpf(userData.cpf || '');
 
-        // Atualiza indicadores
+        const phoneDigits = String(userData.phone || '').replace(/\D/g,'');
+        if (phoneDigits.length >= 10) localStorage.setItem('userPhone', phoneDigits);
+        const userName = (userData.name || name || '').trim();
+        if (userName) localStorage.setItem('userName', userName);
+
         updateProfileStatus();
+
+        if (location.hash === "#phone" || localStorage.getItem("NEED_PHONE") === "1") {
+          localStorage.removeItem("NEED_PHONE");
+          const el = document.getElementById("inputPhone");
+          el.focus();
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
 
       } catch (err) {
         console.error('Erro ao carregar perfil:', err);
@@ -381,7 +293,6 @@
       }
     }
 
-    // ===== UPDATE STATUS =====
     function updateProfileStatus() {
       const phone = (document.getElementById('inputPhone').value || '').replace(/\D/g, '');
       const hasPhone = phone.length >= 10;
@@ -391,94 +302,69 @@
       document.getElementById('chipComplete').style.display = hasPhone ? 'inline-flex' : 'none';
     }
 
-    // ===== SAVE PROFILE =====
-async function saveProfile() {
-  if (!currentUser) return;
+    async function saveProfile() {
+      if (!currentUser) return;
 
-  const name = (document.getElementById('inputName').value || '').trim();
-  const phone = (document.getElementById('inputPhone').value || '').replace(/\D/g, '');
-  const cpf = (document.getElementById('inputCpf').value || '').replace(/\D/g, '');
+      const name = (document.getElementById('inputName').value || '').trim();
+      const phone = (document.getElementById('inputPhone').value || '').replace(/\D/g, '');
+      const cpf = (document.getElementById('inputCpf').value || '').replace(/\D/g, '');
 
-  // Telefone OBRIGATÓRIO
-  if (phone.length < 10) {
-    document.getElementById('inputPhone').classList.add('error');
-    document.getElementById('phoneHint').textContent = 'Telefone obrigatório';
-    document.getElementById('phoneHint').classList.add('error');
-    return;
-  }
+      if (phone.length < 10) {
+        document.getElementById('inputPhone').classList.add('error');
+        document.getElementById('phoneHint').textContent = 'Telefone obrigatório';
+        document.getElementById('phoneHint').classList.add('error');
+        return;
+      }
 
-  // CPF opcional, mas se preenchido tem que ter 11
-  if (cpf.length > 0 && cpf.length !== 11) {
-    showToast('CPF deve ter 11 dígitos');
-    return;
-  }
+      if (cpf.length > 0 && cpf.length !== 11) {
+        showToast('CPF deve ter 11 dígitos');
+        return;
+      }
 
-  const btn = document.getElementById('btnSave');
-  btn.disabled = true;
-  btn.textContent = 'Salvando...';
+      const btn = document.getElementById('btnSave');
+      btn.disabled = true;
+      btn.textContent = 'Salvando...';
 
-  try {
-    if (name && name !== currentUser.displayName) {
-      await currentUser.updateProfile({ displayName: name });
+      try {
+        if (name && name !== currentUser.displayName) {
+          await currentUser.updateProfile({ displayName: name });
+        }
+
+        await db.collection('users').doc(currentUser.uid).set({
+          name,
+          phone,
+          cpf,
+          email: currentUser.email,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        localStorage.setItem('userPhone', phone);
+        localStorage.setItem('userName', name);
+        if (cpf) localStorage.setItem('userCpf', cpf);
+
+        document.getElementById('profileName').textContent = name || 'Usuário';
+        document.getElementById('inputPhone').classList.remove('error');
+        document.getElementById('phoneHint').textContent = 'Obrigatório para receber atualizações do pedido';
+        document.getElementById('phoneHint').classList.remove('error');
+
+        updateProfileStatus();
+        showToast('✓ Perfil salvo!');
+
+        const ret = localStorage.getItem("RETURN_URL");
+        if (ret) {
+          localStorage.removeItem("RETURN_URL");
+          setTimeout(() => location.href = ret, 600);
+        }
+
+      } catch (err) {
+        console.error('Erro ao salvar:', err);
+        showToast('Erro ao salvar');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Salvar alterações';
+      }
     }
 
-    await db.collection('users').doc(currentUser.uid).set({
-      name,
-      phone,
-      cpf,
-      email: currentUser.email,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
-
-    localStorage.setItem('userPhone', phone);
-    localStorage.setItem('userName', name);
-    if (cpf) localStorage.setItem('userCpf', cpf);
-
-    document.getElementById('profileName').textContent = name || 'Usuário';
-    document.getElementById('inputPhone').classList.remove('error');
-    document.getElementById('phoneHint').textContent = 'Obrigatório para receber atualizações do pedido';
-    document.getElementById('phoneHint').classList.remove('error');
-
-    updateProfileStatus();
-    showToast('✓ Perfil salvo!');
-
-    const ret = localStorage.getItem("RETURN_URL");
-    if (ret) {
-      localStorage.removeItem("RETURN_URL");
-      setTimeout(() => location.href = ret, 600);
-    }
-
-  } catch (err) {
-    console.error('Erro ao salvar:', err);
-    showToast('Erro ao salvar');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Salvar alterações';
-  }
-}
-  async function ensurePhoneOrRedirect() {
-  const lsPhone = (localStorage.getItem("userPhone") || "").replace(/\D/g, "");
-  if (lsPhone.length >= 10) return lsPhone;
-
-  const u = firebase.auth().currentUser;
-  if (!u) { location.href = "index.html"; return null; }
-
-  const snap = await db.collection("users").doc(u.uid).get();
-  const fsPhone = (snap.data()?.phone || "").replace(/\D/g, "");
-  if (fsPhone.length >= 10) {
-    localStorage.setItem("userPhone", fsPhone);
-    return fsPhone;
-  }
-
-  localStorage.setItem("NEED_PHONE", "1");
-  location.href = "profile.html#phone";
-  return null;
-}
-
-// antes de db.collection("orders").add(...)
-const phone = await ensurePhoneOrRedirect();
-if (!phone) return; // BLOQUEIA
-    // ===== MASKS =====
     function formatPhone(value) {
       const v = String(value || '').replace(/\D/g, '');
       if (v.length <= 2) return v;
@@ -495,9 +381,14 @@ if (!phone) return; // BLOQUEIA
       return `${v.slice(0,3)}.${v.slice(3,6)}.${v.slice(6,9)}-${v.slice(9,11)}`;
     }
 
-    // Aplica máscaras nos inputs
     document.getElementById('inputPhone').addEventListener('input', function(e) {
       e.target.value = formatPhone(e.target.value);
+      const digits = e.target.value.replace(/\D/g,'');
+      if (digits.length >= 10) {
+        document.getElementById('inputPhone').classList.remove('error');
+        document.getElementById('phoneHint').textContent = 'Obrigatório para receber atualizações do pedido';
+        document.getElementById('phoneHint').classList.remove('error');
+      }
       updateProfileStatus();
     });
 
@@ -505,7 +396,6 @@ if (!phone) return; // BLOQUEIA
       e.target.value = formatCpf(e.target.value);
     });
 
-    // ===== PENDING REVIEWS =====
     async function updatePendingReviewsBadge() {
       if (!currentUser) return;
       try {
@@ -525,7 +415,6 @@ if (!phone) return; // BLOQUEIA
       }
     }
 
-    // ===== LOGOUT =====
     function handleLogout() {
       document.getElementById('logoutPopup').style.display = 'flex';
     }
@@ -546,13 +435,9 @@ if (!phone) return; // BLOQUEIA
       }
     }
 
-    // ===== UTILS =====
     function goBack() {
-      if (document.referrer.includes(location.host)) {
-        history.back();
-      } else {
-        location.href = 'index.html';
-      }
+      if (document.referrer.includes(location.host)) history.back();
+      else location.href = 'index.html';
     }
 
     function showToast(msg) {
