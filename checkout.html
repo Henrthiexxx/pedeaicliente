@@ -867,7 +867,7 @@ if (selectedPayment === 'cash'){
           storeName: store?.name || cart?.[0]?.storeName || '',
           userId: user.uid,
           userName: user.displayName || user.email || '',
-          userPhone: user.phoneNumber || '',
+          userPhone: localStorage.getItem('userPhone') || user.phoneNumber || '',
           items: cart,
           deliveryMode,
           address: deliveryMode === 'delivery' ? (addr || null) : null,
