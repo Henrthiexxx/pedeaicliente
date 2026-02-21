@@ -392,67 +392,70 @@
     }
 
     // ===== SAVE PROFILE =====
-    async function saveProfile() {
-      if (!currentUser) return;
+async function saveProfile() {
+  if (!currentUser) return;
 
-      const name = (document.getElementById('inputName').value || '').trim();
-      const phone = (document.getElementById('inputPhone').value || '').replace(/\D/g, '');
-      const cpf = (document.getElementById('inputCpf').value || '').replace(/\D/g, '');
+  const name = (document.getElementById('inputName').value || '').trim();
+  const phone = (document.getElementById('inputPhone').value || '').replace(/\D/g, '');
+  const cpf = (document.getElementById('inputCpf').value || '').replace(/\D/g, '');
 
-      // Validação do telefone
-      if (phone.length < 10) {
-        document.getElementById('inputPhone').classList.add('error');
-        document.getElementById('phoneHint').textContent = 'Telefone Obrigatório';
-        document.getElementById('phoneHint').classList.add('error');
-        return;
-      }
+  // Telefone OBRIGATÓRIO
+  if (phone.length < 10) {
+    document.getElementById('inputPhone').classList.add('error');
+    document.getElementById('phoneHint').textContent = 'Telefone obrigatório';
+    document.getElementById('phoneHint').classList.add('error');
+    return;
+  }
 
-      // Validação do CPF (se preenchido)
-      if (cpf.length > 0 && cpf.length !== 11) {
-        showToast('CPF deve ter 11 dígitos');
-        return;
-      }
+  // CPF opcional, mas se preenchido tem que ter 11
+  if (cpf.length > 0 && cpf.length !== 11) {
+    showToast('CPF deve ter 11 dígitos');
+    return;
+  }
 
-      const btn = document.getElementById('btnSave');
-      btn.disabled = true;
-      btn.textContent = 'Salvando...';
+  const btn = document.getElementById('btnSave');
+  btn.disabled = true;
+  btn.textContent = 'Salvando...';
 
-      try {
-        // Atualiza displayName no Auth
-        if (name && name !== currentUser.displayName) {
-          await currentUser.updateProfile({ displayName: name });
-        }
-
-        // Salva no Firestore
-        await db.collection('users').doc(currentUser.uid).set({
-          name: name,
-          phone: phone,
-          cpf: cpf,
-          email: currentUser.email,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-
-        // Atualiza localStorage para usar nos pedidos
-        localStorage.setItem('userPhone', phone);
-        localStorage.setItem('userName', name);
-        if (cpf) localStorage.setItem('userCpf', cpf);
-
-        document.getElementById('profileName').textContent = name || 'Usuário';
-        document.getElementById('inputPhone').classList.remove('error');
-        document.getElementById('phoneHint').textContent = 'Obrigatório para receber atualizações do pedido';
-        document.getElementById('phoneHint').classList.remove('error');
-
-        updateProfileStatus();
-        showToast('✓ Perfil salvo!');
-
-      } catch (err) {
-        console.error('Erro ao salvar:', err);
-        showToast('Erro ao salvar');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Salvar alterações';
-      }
+  try {
+    if (name && name !== currentUser.displayName) {
+      await currentUser.updateProfile({ displayName: name });
     }
+
+    await db.collection('users').doc(currentUser.uid).set({
+      name,
+      phone,
+      cpf,
+      email: currentUser.email,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    localStorage.setItem('userPhone', phone);
+    localStorage.setItem('userName', name);
+    if (cpf) localStorage.setItem('userCpf', cpf);
+
+    document.getElementById('profileName').textContent = name || 'Usuário';
+    document.getElementById('inputPhone').classList.remove('error');
+    document.getElementById('phoneHint').textContent = 'Obrigatório para receber atualizações do pedido';
+    document.getElementById('phoneHint').classList.remove('error');
+
+    updateProfileStatus();
+    showToast('✓ Perfil salvo!');
+
+    const ret = localStorage.getItem("RETURN_URL");
+    if (ret) {
+      localStorage.removeItem("RETURN_URL");
+      setTimeout(() => location.href = ret, 600);
+    }
+
+  } catch (err) {
+    console.error('Erro ao salvar:', err);
+    showToast('Erro ao salvar');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Salvar alterações';
+  }
+}
   async function ensurePhoneOrRedirect() {
   const lsPhone = (localStorage.getItem("userPhone") || "").replace(/\D/g, "");
   if (lsPhone.length >= 10) return lsPhone;
