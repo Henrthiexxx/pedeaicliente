@@ -375,23 +375,33 @@ function hasImageUrl(src) {
 
 // ==================== STORES ====================
 async function selectStore(storeId) {
+    // BLOQUEIA trocar de loja com carrinho cheio (de outra loja)
+    if (cart.length > 0 && cart[0].storeId !== storeId) {
+        const ok = await uiConfirm(`Você já possui itens de "${cart[0].storeName}". Deseja limpar o carrinho e entrar em outra loja?`);
+if (!ok) { showPage('cart'); return; }
+        cart = [];
+        saveCart();
+        renderCart();
+        updateCartBadge();
+    }
+
     localStorage.setItem("currentStoreId", storeId);
     selectedStore = stores.find(s => s.id === storeId);
     if (!selectedStore) return;
-    
+
     if (selectedStore.open === false) {
         showToast('Esta loja está fechada');
         return;
     }
-    
+
     document.getElementById('selectedStoreName').textContent = selectedStore.name;
     document.getElementById('selectedStoreStatus').textContent = '🟢 Aberto';
-    
+
     await loadProducts(storeId);
-    
+
     document.getElementById('storeSelection').style.display = 'none';
     document.getElementById('storeMenu').style.display = 'block';
-    
+
     renderCategories();
     renderProducts();
 }
@@ -1115,3 +1125,19 @@ window.openNotifications = async function() {
         NotificationSync.markAllAsDelivered();
     }
 };
+
+function uiConfirm(message, title="Atenção"){
+  return new Promise(resolve=>{
+    const m=document.getElementById('confirmModal');
+    document.getElementById('confirmTitle').textContent=title;
+    document.getElementById('confirmText').textContent=message;
+    const ok=document.getElementById('confirmOk');
+    const cancel=document.getElementById('confirmCancel');
+
+    const cleanup=(v)=>{ m.classList.remove('active'); ok.onclick=null; cancel.onclick=null; resolve(v); };
+    ok.onclick=()=>cleanup(true);
+    cancel.onclick=()=>cleanup(false);
+
+    m.classList.add('active');
+  });
+}

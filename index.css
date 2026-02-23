@@ -3159,3 +3159,8 @@ body{
         height: 88vh;
     }
 }
+
+#confirmModal{position:fixed;inset:0;display:none;z-index:9999;background:rgba(0,0,0,.6);padding:16px;}
+#confirmModal.active{display:flex;align-items:center;justify-content:center;}
+#confirmModal .modal-card{width:min(420px,100%);background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:16px;}
+#confirmModal .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:14px;}
