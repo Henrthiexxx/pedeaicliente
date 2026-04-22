@@ -176,8 +176,8 @@ const ProfileModule = {
                         : `<span>${name.charAt(0).toUpperCase()}</span>`
                     }
                 </div>
-                <div class="profile-name">${name}</div>
-                <div class="profile-email">${email}</div>
+                <div class="profile-name">${esc(name)}</div>
+                <div class="profile-email">${esc(email)}</div>
                 
                 <!-- Reputação -->
                 <div class="reputation-card">
@@ -233,6 +233,17 @@ const ProfileModule = {
             </div>
             
             <!-- Menu -->
+            <div class="theme-toggle-row">
+                <div class="theme-toggle-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                    Tema claro
+                </div>
+                <label class="theme-switch">
+                    <input type="checkbox" id="themeToggle" onchange="toggleTheme()" ${(localStorage.getItem('theme')==='light')?'checked':''}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
             <div class="profile-menu">
                 <div class="profile-menu-item" onclick="showPage('addresses')">
                     <div class="profile-menu-icon">📍</div>

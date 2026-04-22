@@ -157,7 +157,7 @@
                         
                         <!-- IMAGEM 80x80px CORRIGIDA -->
                         <div style="width:80px;height:80px;min-width:80px;border-radius:8px;flex-shrink:0;overflow:hidden;${item.imageUrl ? '' : 'background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-size:2.5rem;'}">
-                            ${item.imageUrl ? `<img src="${item.imageUrl}" style="width:100%;height:100%;object-fit:cover;">` : item.emoji}
+                            ${item.imageUrl ? `<img src="${encodeURI(item.imageUrl)}" style="width:100%;height:100%;object-fit:cover;">` : item.emoji}
                         </div>
                         
                         <!-- Info -->

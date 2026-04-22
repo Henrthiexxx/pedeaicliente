@@ -88,8 +88,8 @@ const NotificationSync = {
             <div class="notification-popup-content">
                 <div class="notification-popup-icon">${this._getIcon(n.type)}</div>
                 <div class="notification-popup-text">
-                    <div class="notification-popup-title">${n.title || ''}</div>
-                    <div class="notification-popup-message">${n.message || ''}</div>
+                    <div class="notification-popup-title">${esc(n.title || '')}</div>
+                    <div class="notification-popup-message">${esc(n.message || '')}</div>
                 </div>
                 <button class="notification-popup-close" onclick="NotificationSync.dismissPopup(true)">×</button>
             </div>
@@ -141,10 +141,10 @@ const NotificationSync = {
 
     _getIcon(type) {
         const icons = {
-            marketing: '📢', order_status: '📦', new_order: '🛵',
-            rating: '⭐', promo: '🎉', general: '🔔'
+            marketing: '📣', order_status: '📋', new_order: '🔖',
+            rating: '★', promo: '🏷', general: '●'
         };
-        return icons[type] || '🔔';
+        return icons[type] || '●';
     },
 
     // ==================== STATUS MANAGEMENT ====================
@@ -241,8 +241,8 @@ const NotificationSync = {
             <div class="notification-item ${isUnread ? 'unread' : ''}" onclick="NotificationSync.markAsDelivered('${n.id}')">
                 <div class="notification-icon">${this._getIcon(n.type)}</div>
                 <div class="notification-content">
-                    <div class="notification-title">${n.title || ''}</div>
-                    <div class="notification-message">${n.message || ''}</div>
+                    <div class="notification-title">${esc(n.title || '')}</div>
+                    <div class="notification-message">${esc(n.message || '')}</div>
                     <div class="notification-time">${time}</div>
                 </div>
                 <button class="notification-delete" onclick="event.stopPropagation();NotificationSync.deleteNotification('${n.id}');NotificationSync.renderHistory('${containerId}')">×</button>

@@ -35,7 +35,7 @@ const ImageHelper = {
             alt="${alt}" 
             loading="lazy"
             class="${className}"
-            onerror="this.remove();this.parentElement.classList.remove('has-image');this.parentElement.innerHTML='${fb}';"
+            onerror="this.remove();this.parentElement.classList.remove('has-image');this.parentElement.textContent='${fb}';"
         >`;
     },
 

@@ -14,7 +14,20 @@ const StoresModule = {
     async loadRatings() {
         try {
             if (typeof db === 'undefined') return;
-            const snapshot = await db.collection('reviews').get();
+            // Cache ratings for 10min to avoid excessive reads
+            const cacheKey = 'store_ratings_cache';
+            const cacheTs = parseInt(localStorage.getItem(cacheKey + '_ts') || '0');
+            if (Date.now() - cacheTs < 600000) {
+                try {
+                    this.storeRatings = JSON.parse(localStorage.getItem(cacheKey) || '{}');
+                    this.render();
+                    return;
+                } catch(e) {}
+            }
+            const snapshot = await db.collection('reviews')
+                .orderBy('createdAt', 'desc')
+                .limit(500)
+                .get();
             const byStore = {};
             
             snapshot.docs.forEach(doc => {
@@ -29,6 +42,8 @@ const StoresModule = {
                 this.storeRatings[storeId] = ratings.reduce((a, b) => a + b, 0) / ratings.length;
             }
             
+            localStorage.setItem(cacheKey, JSON.stringify(this.storeRatings));
+            localStorage.setItem(cacheKey + '_ts', Date.now().toString());
             this.render();
         } catch (e) {
             console.error('loadRatings error:', e);
@@ -57,7 +72,7 @@ const StoresModule = {
                 ${this.filters.map(f => `
                     <div class="filter-chip ${this.activeFilter === f ? 'active' : ''}" 
                          onclick="StoresModule.setFilter('${f}')">
-                        ${f === 'all' ? '🏪 Todos' : f}
+                        ${f === 'all' ? 'Todos' : esc(f)}
                     </div>
                 `).join('')}
             </div>
@@ -116,13 +131,13 @@ window._allProducts = products;
         return `
             <div class="store-item ${isClosed ? 'closed' : ''}" onclick="selectStore('${store.id}')">
                 <div class="store-item-img ${hasImage ? 'has-image' : ''}" 
-                     ${hasImage ? `style="background-image:url('${imgSrc}')"` : ''}>
+                     ${hasImage ? `style="background-image:url('${encodeURI(imgSrc)}')"` : ''}>
                     ${!hasImage ? fallback : ''}
                     ${isClosed ? '<div class="store-closed-badge">FECHADO</div>' : ''}
                 </div>
                 <div class="store-item-info">
-                    <div class="store-item-name">${store.name || 'Loja'}</div>
-                    <div class="store-item-category">${store.category || ''}</div>
+                    <div class="store-item-name">${esc(store.name || 'Loja')}</div>
+                    <div class="store-item-category">${esc(store.category || '')}</div>
                     <div class="store-item-meta">
                         ${rating ? `<span class="store-item-rating">⭐ ${rating.toFixed(1)}</span>` : ''}
                         ${store.deliveryTime ? `<span class="store-item-time">🕐 ${store.deliveryTime}</span>` : ''}

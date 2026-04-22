@@ -90,7 +90,7 @@ const NotificationsModule = {
         document.getElementById('reviewModalContent').innerHTML = `
             <div style="text-align: center; margin-bottom: 20px;">
                 <div style="font-size: 3rem; margin-bottom: 8px;">⭐</div>
-                <h3 style="margin-bottom: 4px;">${order.storeName}</h3>
+                <h3 style="margin-bottom: 4px;">${esc(order.storeName)}</h3>
                 <p style="color: var(--text-muted); font-size: 0.85rem;">Pedido #${orderId.slice(-6).toUpperCase()}</p>
             </div>
             

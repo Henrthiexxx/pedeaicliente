@@ -257,7 +257,7 @@ const TrackingModule = {
         // Botão de ligar
         const phone = driver.phone || order.driverPhone;
         if (phone && actionsEl) {
-            actionsEl.innerHTML = `<a class="driver-action-btn" href="tel:${phone}">📞</a>`;
+            actionsEl.innerHTML = `<a class="driver-action-btn" href="tel:${encodeURIComponent(phone)}">📞</a>`;
             actionsEl.style.display = 'flex';
         }
     },
