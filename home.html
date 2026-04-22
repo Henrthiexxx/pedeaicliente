@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>Pedrad</title>
+<meta name="theme-color" content="#09090b">
+<script>(function(){var t=localStorage.getItem('pedrad-theme')||'dark';document.documentElement.setAttribute('data-theme',t)})()</script>
+<link rel="stylesheet" href="client.css">
+<style>
+.home-header{padding:20px 16px 10px;display:flex;align-items:center;justify-content:space-between}
+.home-title{font-size:1.2rem;font-weight:700;letter-spacing:-.03em}
+.home-search{padding:0 16px 14px}
+.home-search input{width:100%;padding:10px 14px;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text-0);font-family:inherit;font-size:.86rem}
+.home-search input:focus{outline:none;border-color:var(--border-h)}
+.cat-filter{display:flex;gap:6px;padding:0 16px 14px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.cat-btn{padding:6px 14px;font-size:.76rem;border-radius:20px;border:1px solid var(--border);color:var(--text-2);background:var(--bg-1);cursor:pointer;white-space:nowrap;font-family:inherit;transition:all .15s}
+.cat-btn:hover{border-color:var(--border-h);color:var(--text-0)}.cat-btn.active{background:var(--accent);color:var(--accent-t);border-color:var(--accent)}
+.stores-grid{padding-bottom:80px;display:grid;grid-template-columns:1fr;gap:10px;padding:0 16px 40px}
+@media(min-width:600px){.stores-grid{grid-template-columns:repeat(2,1fr)}}
+.store-card{background:var(--bg-1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:all .2s;box-shadow:var(--sh-sm)}
+.store-card:hover{border-color:var(--border-h);box-shadow:var(--sh-md);transform:translateY(-2px)}
+.sc-img{height:120px;background:var(--bg-2);overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--text-3);position:relative}
+.sc-img img{width:100%;height:100%;object-fit:cover}
+.sc-closed{position:absolute;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;color:var(--red);font-size:.78rem;font-weight:600}
+.sc-body{padding:14px}
+.sc-name{font-size:.92rem;font-weight:700}.sc-desc{font-size:.76rem;color:var(--text-2);margin-top:3px;line-height:1.3}
+.sc-meta{display:flex;gap:10px;margin-top:8px;font-size:.72rem;color:var(--text-2)}
+.sc-tag{padding:2px 8px;border-radius:10px;background:var(--bg-2);border:1px solid var(--border);font-size:.66rem;color:var(--text-2)}
+.empty{padding:60px 20px;text-align:center;color:var(--text-3);font-size:.88rem}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<div class="home-header">
+    <div class="home-title">Pedrad</div>
+    <button class="hdr-btn" onclick="toggleTheme()" title="Tema">◐</button>
+</div>
+
+<div class="home-search">
+    <input id="searchInput" placeholder="Buscar restaurantes..." oninput="render()">
+</div>
+
+<div class="cat-filter" id="catFilter"></div>
+<div class="stores-grid" id="storesGrid">
+    <div class="loading-state">Carregando lojas...</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script>
+const FC={apiKey:"AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",authDomain:"pedrad-814d0.firebaseapp.com",projectId:"pedrad-814d0",storageBucket:"pedrad-814d0.appspot.com",messagingSenderId:"293587190550",appId:"1:293587190550:web:80c9399f82847c80e20637"};
+if(!firebase.apps.length)firebase.initializeApp(FC);
+const db=firebase.firestore();
+
+let stores=[],catFilter='all';
+function esc(s){const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML}
+function money(v){return(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2500)}
+function getTheme(){return localStorage.getItem('pedrad-theme')||'dark'}
+function toggleTheme(){const n=getTheme()==='dark'?'light':'dark';localStorage.setItem('pedrad-theme',n);document.documentElement.setAttribute('data-theme',n)}
+
+async function loadStores(){
+    const snap=await db.collection('stores').get();
+    stores=snap.docs.map(d=>({id:d.id,...d.data()})).filter(s=>!s.suspended);
+    stores.sort((a,b)=>{
+        if(a.open&&!b.open)return-1;if(!a.open&&b.open)return 1;
+        return(a.name||'').localeCompare(b.name||'','pt-BR');
+    });
+    renderCats();render();
+}
+
+function renderCats(){
+    const cats=[...new Set(stores.map(s=>s.category).filter(Boolean))].sort();
+    document.getElementById('catFilter').innerHTML=
+        `<button class="cat-btn ${catFilter==='all'?'active':''}" onclick="setCat('all')">Todos</button>`
+        +cats.map(c=>`<button class="cat-btn ${catFilter===c?'active':''}" onclick="setCat('${esc(c)}')">${esc(c)}</button>`).join('');
+}
+
+function setCat(c){catFilter=c;renderCats();render()}
+
+function render(){
+    const q=(document.getElementById('searchInput').value||'').toLowerCase().trim();
+    let list=[...stores];
+    if(catFilter!=='all')list=list.filter(s=>(s.category||'')===catFilter);
+    if(q)list=list.filter(s=>(s.name||'').toLowerCase().includes(q)||(s.description||'').toLowerCase().includes(q));
+    const grid=document.getElementById('storesGrid');
+    if(!list.length){grid.innerHTML='<div class="empty">Nenhuma loja encontrada</div>';return}
+    grid.innerHTML=list.map(s=>{
+        const img=s.imageUrl||'';
+        return`<div class="store-card" onclick="location.href='store.html?id=${s.id}'">
+            <div class="sc-img">${img?`<img src="${esc(img)}" alt="">`:'—'}${!s.open?'<div class="sc-closed">Fechado</div>':''}</div>
+            <div class="sc-body">
+                <div class="sc-name">${esc(s.name)}</div>
+                ${s.description?`<div class="sc-desc">${esc(s.description.length>80?s.description.slice(0,78)+'…':s.description)}</div>`:''}
+                <div class="sc-meta">
+                    ${s.rating?`<span>★ ${s.rating.toFixed(1)}</span>`:''}
+                    ${s.deliveryTime?`<span>${esc(s.deliveryTime)}</span>`:''}
+                    ${s.deliveryFee?`<span>${money(s.deliveryFee)}</span>`:'<span>Grátis</span>'}
+                    ${s.category?`<span class="sc-tag">${esc(s.category)}</span>`:''}
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+loadStores();
+</script>
+
+<nav class="client-nav"><a class="cnav-item active" href="home.html"><span class="cnav-icon">⌂</span>Início</a><a class="cnav-item" href="orders.html"><span class="cnav-icon">≡</span>Pedidos</a><a class="cnav-item" href="profile.html"><span class="cnav-icon">○</span>Perfil</a></nav>
+</body>
+</html>

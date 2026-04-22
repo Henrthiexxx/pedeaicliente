@@ -1,578 +1,444 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Informações da Loja</title>
-    <link rel="stylesheet" href="index.css">
-    
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: var(--bg);
-            position: relative;
-        }
-        
-        .store-wallpaper {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 0;
-            opacity: 0.05;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            pointer-events: none;
-        }
-        
-        .store-wallpaper-emoji {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 20rem;
-            z-index: 0;
-            opacity: 0.03;
-            pointer-events: none;
-        }
-        
-        .store-info-page {
-            min-height: 100vh;
-            padding-bottom: 80px;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .store-info-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 64px;
-            background: var(--bg);
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 0 20px;
-            padding-top: 6px;
-            z-index: 100;
-            border-bottom: 1px solid var(--border);
-            box-sizing: border-box;
-            overflow: visible;
-        }
-        
-        .back-btn {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            color: var(--text);
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .back-btn:hover { border-color: var(--primary); }
-        
-        .store-info-title {
-            font-size: 1rem;
-            font-weight: 300;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            line-height: 1.3;
-            padding-top: 2px;
-        }
-        
-        .store-info-content {
-            padding: 70px 16px 20px;
-            max-width: 600px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 1;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        
-        .store-banner {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 32px 24px;
-            margin-bottom: 20px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-            z-index: 1;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        
-        .store-logo { display: none; }
-        
-        .store-name-big {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 6px;
-            display: block !important;
-            width: 100%;
-            text-align: center;
-        }
-        
-        .store-category {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            margin-bottom: 16px;
-            display: block !important;
-            width: 100%;
-            text-align: center;
-        }
-        
-        .store-rating-big {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-        }
-        
-        .rating-stars-value {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 1.3rem;
-            font-weight: 600;
-        }
-        
-        .rating-count {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-        
-        .section-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 16px;
-            position: relative;
-            z-index: 1;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        
-        .section-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .info-row {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .info-row:last-child { border-bottom: none; }
-        
-        .info-icon {
-            font-size: 1.5rem;
-            width: 40px;
-            text-align: center;
-        }
-        
-        .info-content {
-            flex: 1;
-            min-width: 0;
-        }
-        
-        .info-label {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-bottom: 4px;
-        }
-        
-        .info-value {
-            font-weight: 500;
-            word-break: break-word;
-            overflow-wrap: anywhere;
-        }
-        
-        .info-action {
-            background: var(--primary);
-            color: #000;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 0.9rem;
-            flex-shrink: 0;
-        }
-        
-        .review-item {
-            padding: 16px 0;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .review-item:last-child { border-bottom: none; }
-        
-        .review-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-        
-        .review-author {
-            font-weight: 600;
-            font-size: 0.95rem;
-        }
-        
-        .review-date {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-        
-        .review-ratings {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 8px;
-            flex-wrap: wrap;
-        }
-        
-        .review-rating-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-        
-        .review-rating-item .stars {
-            color: var(--primary);
-        }
-        
-        .review-comment {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            line-height: 1.5;
-            word-break: break-word;
-            overflow-wrap: anywhere;
-        }
-        
-        .empty-reviews {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-muted);
-        }
-        
-        .empty-reviews-icon {
-            font-size: 3rem;
-            margin-bottom: 12px;
-            opacity: 0.3;
-        }
-        
-        html, body { overflow-x: hidden; }
-        
-        @media (max-width: 420px) {
-            .info-row { gap: 10px; }
-            .info-icon { width: 32px; }
-            .info-action { padding: 8px 12px; font-size: .85rem; }
-        }
-    </style>
+  <script>(function(){var t=localStorage.getItem("theme")||"dark";document.documentElement.setAttribute("data-theme",t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==="dark"?"#09090b":"#f4f4f5";})()</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Informações da Loja</title>
+  <meta name="theme-color" content="#09090b">
+  <link rel="stylesheet" href="index.css">
+  <style>
+    :root,[data-theme="dark"] {
+      --wall-opacity: .15;
+      --wall-blend: luminosity;
+      --glass-bg: rgba(9,9,11,.78);
+      --glass-border: rgba(255,255,255,.08);
+      --glass-blur: 20px;
+      --card-glow: 0 8px 28px rgba(0,0,0,.22);
+      --divider: rgba(255,255,255,.05);
+      --hover-bg: rgba(255,255,255,.03);
+    }
+    [data-theme="light"] {
+      --wall-opacity: .1;
+      --wall-blend: multiply;
+      --glass-bg: rgba(244,244,245,.78);
+      --glass-border: rgba(0,0,0,.06);
+      --glass-blur: 20px;
+      --card-glow: 0 8px 28px rgba(0,0,0,.06);
+      --divider: rgba(0,0,0,.05);
+      --hover-bg: rgba(0,0,0,.025);
+    }
+
+    html, body { margin:0; padding:0; min-height:100vh; overflow-x:hidden; }
+    body { background:var(--bg); }
+
+    /* ── Wallpaper fullscreen ── */
+    .wall {
+      position:fixed; inset:0; z-index:0;
+      pointer-events:none;
+    }
+    .wall-img {
+      position:absolute; inset:0;
+      width:100%; height:100%;
+      object-fit:cover;
+      opacity: var(--wall-opacity);
+      mix-blend-mode: var(--wall-blend);
+      display:none;
+    }
+    .wall-img.show { display:block; }
+    .wall-emoji {
+      position:absolute;
+      top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      font-size:min(50vw, 22rem);
+      opacity:.04;
+      display:none;
+      user-select:none;
+    }
+    .wall-emoji.show { display:block; }
+    /* Vinheta suave nas bordas — não cobre o centro */
+    .wall-vignette {
+      position:absolute; inset:0;
+      background:radial-gradient(ellipse at center, transparent 40%, var(--bg) 100%);
+      pointer-events:none;
+    }
+
+    /* ── Header glass (wallpaper visível por trás) ── */
+    .si-header {
+      position:fixed; top:0; left:0; right:0;
+      height:calc(56px + env(safe-area-inset-top));
+      padding:env(safe-area-inset-top) 16px 0;
+      background:var(--glass-bg);
+      backdrop-filter:blur(var(--glass-blur));
+      -webkit-backdrop-filter:blur(var(--glass-blur));
+      border-bottom:1px solid var(--glass-border);
+      display:flex; align-items:center; gap:12px;
+      z-index:100;
+    }
+    .si-back {
+      width:40px; height:40px; border-radius:10px;
+      background:var(--bg-input); border:1px solid var(--border);
+      color:var(--text); cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      transition:all .18s;
+    }
+    .si-back:hover { border-color:var(--border-hover,var(--border)); box-shadow:0 1px 3px rgba(0,0,0,.3); transform:translateY(-1px); }
+    .si-back:active { transform:scale(.95); }
+    .si-back svg { width:18px; height:18px; }
+    .si-title { font-size:.9rem; font-weight:500; letter-spacing:2px; text-transform:uppercase; }
+
+    /* ── Content ── */
+    .si-content {
+      position:relative; z-index:1;
+      max-width:540px; margin:0 auto;
+      padding:calc(72px + env(safe-area-inset-top)) 16px 40px;
+    }
+
+    /* ── Banner card ── */
+    .si-banner {
+      background:var(--glass-bg);
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+      border:1px solid var(--glass-border);
+      border-radius:16px; padding:28px 20px;
+      margin-bottom:16px; text-align:center;
+      box-shadow:var(--card-glow);
+    }
+    .si-store-name { font-size:1.35rem; font-weight:700; margin-bottom:4px; }
+    .si-store-cat { color:var(--text-muted); font-size:.85rem; margin-bottom:16px; }
+    .si-rating { display:flex; flex-direction:column; align-items:center; gap:3px; }
+    .si-rating-val { display:flex; align-items:center; gap:6px; font-size:1.2rem; font-weight:700; }
+    .si-rating-val svg { width:20px; height:20px; color:var(--warning,#fbbf24); }
+    .si-rating-count { font-size:.8rem; color:var(--text-muted); }
+
+    /* ── Section cards ── */
+    .si-card {
+      background:var(--bg-card); border:1px solid var(--border);
+      border-radius:16px; padding:18px; margin-bottom:14px;
+      box-shadow:var(--card-glow);
+      transition:background .22s, border-color .22s;
+    }
+    .si-card-title {
+      font-size:.95rem; font-weight:600; margin-bottom:14px;
+      display:flex; align-items:center; gap:8px;
+    }
+    .si-card-title svg { width:18px; height:18px; color:var(--text-muted); flex-shrink:0; }
+
+    /* ── Info rows ── */
+    .info-row {
+      display:flex; align-items:center; gap:12px;
+      padding:12px 0;
+      border-bottom:1px solid var(--divider);
+    }
+    .info-row:last-child { border-bottom:none; }
+    .info-icon {
+      width:38px; height:38px; border-radius:10px;
+      background:var(--bg-input); border:1px solid var(--border);
+      display:flex; align-items:center; justify-content:center;
+      flex-shrink:0;
+    }
+    .info-icon svg { width:18px; height:18px; color:var(--text-muted); }
+    .info-body { flex:1; min-width:0; }
+    .info-label { font-size:.7rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.6px; margin-bottom:2px; }
+    .info-value { font-weight:500; font-size:.9rem; word-break:break-word; }
+    .info-action {
+      padding:8px 14px; border-radius:8px; border:none;
+      background:var(--primary); color:var(--bg);
+      font-size:.8rem; font-weight:600; cursor:pointer;
+      flex-shrink:0; transition:all .18s;
+      text-decoration:none; display:inline-flex; align-items:center; gap:4px;
+    }
+    .info-action:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.15); }
+
+    /* ── Reviews ── */
+    .review-item {
+      padding:14px 0;
+      border-bottom:1px solid var(--divider);
+    }
+    .review-item:last-child { border-bottom:none; }
+    .review-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+    .review-author { font-weight:600; font-size:.9rem; }
+    .review-date { font-size:.72rem; color:var(--text-muted); }
+    .review-stars { display:flex; gap:12px; margin-bottom:6px; flex-wrap:wrap; }
+    .review-stars-item { display:flex; align-items:center; gap:4px; font-size:.8rem; color:var(--text-muted); }
+    .review-stars-item .stars { color:var(--warning,#fbbf24); letter-spacing:1px; }
+    .review-comment { color:var(--text-muted); font-size:.85rem; line-height:1.5; word-break:break-word; font-style:italic; }
+    .empty-reviews { text-align:center; padding:36px 16px; color:var(--text-muted); }
+    .empty-reviews svg { width:40px; height:40px; color:var(--text-muted); opacity:.3; margin-bottom:10px; }
+
+    /* ── Toast glass ── */
+    .toast {
+      position:fixed; bottom:24px; left:50%;
+      transform:translateX(-50%) translateY(80px);
+      background:var(--glass-bg);
+      backdrop-filter:blur(var(--glass-blur));
+      -webkit-backdrop-filter:blur(var(--glass-blur));
+      padding:12px 22px; border-radius:10px;
+      border:1px solid var(--glass-border);
+      box-shadow:0 8px 32px rgba(0,0,0,.3);
+      z-index:300; opacity:0;
+      font-size:.82rem; transition:all .3s;
+    }
+    .toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+
+    @media(max-width:420px) {
+      .si-content { padding-left:12px; padding-right:12px; }
+      .info-icon { width:34px; height:34px; }
+    }
+  </style>
+  <script>function esc(s){if(typeof s!="string")return"";var d=document.createElement("div");d.textContent=s;return d.innerHTML;}</script>
 </head>
 <body>
-    <div class="store-wallpaper" id="storeWallpaper"></div>
-    <div class="store-wallpaper-emoji" id="storeWallpaperEmoji"></div>
-    
-    <div class="store-info-page">
-        <div class="store-info-header">
-            <button class="back-btn" onclick="goBack()">←</button>
-            <div class="store-info-title">Informações</div>
+
+  <!-- Wallpaper fullscreen -->
+  <div class="wall">
+    <img class="wall-img" id="wallImg" alt="">
+    <div class="wall-emoji" id="wallEmoji"></div>
+    <div class="wall-vignette"></div>
+  </div>
+
+  <!-- Header -->
+  <div class="si-header">
+    <button class="si-back" onclick="goBack()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <div class="si-title">Informações</div>
+  </div>
+
+  <div class="si-content">
+
+    <!-- Banner -->
+    <div class="si-banner">
+      <div class="si-store-name" id="storeName">Carregando...</div>
+      <div class="si-store-cat" id="storeCat"></div>
+      <div class="si-rating">
+        <div class="si-rating-val">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <span id="ratingVal">-</span>
         </div>
-        
-        <div class="store-info-content">
-            <div class="store-banner">
-                <div class="store-logo" id="storeLogo">🏪</div>
-                <div class="store-name-big" id="storeName">Carregando...</div>
-                <div class="store-category" id="storeCategory">-</div>
-                <div class="store-rating-big">
-                    <div class="rating-stars-value">
-                        <span>⭐</span>
-                        <span id="ratingValue">-</span>
-                    </div>
-                    <div class="rating-count" id="reviewCount">(0 avaliações)</div>
-                </div>
-            </div>
-            
-            <div class="section-card" id="aboutSection">
-                <div class="section-title">📝 Sobre</div>
-                <p id="storeDescription" style="color: var(--text-muted); line-height: 1.6;">-</p>
-            </div>
-            
-            <div class="section-card">
-                <div class="section-title">📞 Contato</div>
-                
-                <div class="info-row" id="phoneRow" style="display:none;">
-                    <div class="info-icon">📱</div>
-                    <div class="info-content">
-                        <div class="info-label">Telefone</div>
-                        <div class="info-value" id="storePhone">-</div>
-                    </div>
-                    <button class="info-action" id="whatsappBtn" onclick="openWhatsApp()">Copiar</button>
-                </div>
-                
-                <div class="info-row" id="addressRow" style="display:none;">
-                    <div class="info-icon">📍</div>
-                    <div class="info-content">
-                        <div class="info-label">Endereço</div>
-                        <div class="info-value" id="storeAddress">-</div>
-                    </div>
-                </div>
-                
-                <div class="info-row">
-                    <div class="info-icon">🕐</div>
-                    <div class="info-content">
-                        <div class="info-label">Horário de Funcionamento</div>
-                        <div class="info-value" id="storeHours">Consulte a loja</div>
-                    </div>
-                </div>
-                
-                <div class="info-row">
-                    <div class="info-icon">🛵</div>
-                    <div class="info-content">
-                        <div class="info-label">Tempo de entrega</div>
-                        <div class="info-value" id="deliveryTime">-</div>
-                    </div>
-                </div>
-                
-                <div class="info-row">
-                    <div class="info-icon">💰</div>
-                    <div class="info-content">
-                        <div class="info-label">Taxa de entrega</div>
-                        <div class="info-value" id="deliveryFee">-</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="section-card">
-                <div class="section-title">⭐ Avaliações</div>
-                <div id="reviewsList">
-                    <div class="empty-reviews">
-                        <div class="empty-reviews-icon">⏳</div>
-                        <div>Carregando avaliações...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <div class="si-rating-count" id="reviewCount">0 avaliações</div>
+      </div>
     </div>
-    
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",
-            authDomain: "pedrad-814d0.firebaseapp.com",
-            projectId: "pedrad-814d0",
-            storageBucket: "pedrad-814d0.firebasestorage.app",
-            messagingSenderId: "293587190550",
-            appId: "1:293587190550:web:80c9399f82847c80e20637"
-        };
-        
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        
-        const urlParams = new URLSearchParams(window.location.search);
-        const storeId = urlParams.get('id');
-        
-        let storePhone = '';
-        let storeName = '';
-        
-        if (!storeId) {
-            alert('Loja não encontrada');
-            goBack();
+
+    <!-- Sobre -->
+    <div class="si-card" id="aboutSection">
+      <div class="si-card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Sobre
+      </div>
+      <p id="storeDesc" style="color:var(--text-muted);line-height:1.6;font-size:.9rem;margin:0;">-</p>
+    </div>
+
+    <!-- Contato -->
+    <div class="si-card">
+      <div class="si-card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+        Contato
+      </div>
+
+      <div class="info-row" id="phoneRow" style="display:none">
+        <div class="info-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        </div>
+        <div class="info-body">
+          <div class="info-label">Telefone</div>
+          <div class="info-value" id="storePhone">-</div>
+        </div>
+        <button class="info-action" onclick="copyPhone()">Copiar</button>
+      </div>
+
+      <div class="info-row" id="addrRow" style="display:none">
+        <div class="info-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div class="info-body">
+          <div class="info-label">Endereço</div>
+          <div class="info-value" id="storeAddr">-</div>
+        </div>
+      </div>
+
+      <div class="info-row">
+        <div class="info-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="info-body">
+          <div class="info-label">Horário</div>
+          <div class="info-value" id="storeHours">Consulte a loja</div>
+        </div>
+      </div>
+
+      <div class="info-row">
+        <div class="info-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8 12 12 16 16 12"/><line x1="12" y1="8" x2="12" y2="16"/></svg>
+        </div>
+        <div class="info-body">
+          <div class="info-label">Tempo de entrega</div>
+          <div class="info-value" id="delivTime">-</div>
+        </div>
+      </div>
+
+      <div class="info-row">
+        <div class="info-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        </div>
+        <div class="info-body">
+          <div class="info-label">Taxa de entrega</div>
+          <div class="info-value" id="delivFee">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Avaliações -->
+    <div class="si-card">
+      <div class="si-card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        Avaliações
+      </div>
+      <div id="reviewsList">
+        <div class="empty-reviews">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <div>Carregando avaliações...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey:"AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",
+      authDomain:"pedrad-814d0.firebaseapp.com",
+      projectId:"pedrad-814d0",
+      storageBucket:"pedrad-814d0.firebasestorage.app",
+      messagingSenderId:"293587190550",
+      appId:"1:293587190550:web:80c9399f82847c80e20637"
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const storeId = new URLSearchParams(location.search).get('id');
+    let storePhone = '';
+
+    if (!storeId) { showToast('Loja não encontrada'); setTimeout(goBack, 1200); }
+
+    function goBack() {
+      if (document.referrer && document.referrer.includes(location.host)) history.back();
+      else location.href = 'index.html';
+    }
+    function fmt(v) { return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0); }
+    function fmtDate(ts) {
+      if (!ts) return '';
+      const d = ts.toDate ? ts.toDate() : new Date(ts);
+      return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'});
+    }
+    function stars(n) { const f=Math.floor(n); return '★'.repeat(f)+'☆'.repeat(5-f); }
+    function showToast(msg) {
+      const t=document.getElementById('toast');
+      t.textContent=msg; t.classList.add('show');
+      setTimeout(()=>t.classList.remove('show'),3000);
+    }
+
+    function copyPhone() {
+      if (!storePhone) return showToast('Telefone não disponível');
+      const num = '55' + storePhone.replace(/\D/g,'');
+      navigator.clipboard.writeText(num).then(
+        ()=>showToast('Número copiado: '+num),
+        ()=>showToast('Número: '+num)
+      );
+    }
+
+    async function loadStoreInfo() {
+      try {
+        const doc = await db.collection('stores').doc(storeId).get();
+        if (!doc.exists) { showToast('Loja não encontrada'); return setTimeout(goBack,1200); }
+        const s = doc.data();
+
+        // Wallpaper
+        const wallImg = document.getElementById('wallImg');
+        const wallEmoji = document.getElementById('wallEmoji');
+        if (s.imageData || s.imageUrl) {
+          wallImg.src = s.imageData || s.imageUrl;
+          wallImg.classList.add('show');
+        } else {
+          wallEmoji.textContent = s.emoji || '●';
+          wallEmoji.classList.add('show');
         }
-        
-        function openWhatsApp() {
-            if (!storePhone) { alert('Telefone não disponível'); return; }
-            const cleanPhone = storePhone.replace(/\D/g, '');
-            const formattedPhone = `55${cleanPhone}`;
-            navigator.clipboard.writeText(formattedPhone).then(() => {
-                alert(`Número copiado: ${formattedPhone}\n\nAbra o WhatsApp e cole o número!`);
-            }).catch(() => {
-                const textarea = document.createElement('textarea');
-                textarea.value = formattedPhone;
-                textarea.style.position = 'fixed';
-                textarea.style.opacity = '0';
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                alert(`Número copiado: ${formattedPhone}\n\nAbra o WhatsApp e cole o número!`);
-            });
+
+        // Banner
+        document.getElementById('storeName').textContent = s.name || 'Loja';
+        document.getElementById('storeCat').textContent = s.category || '';
+        document.getElementById('ratingVal').textContent = (s.rating || 0).toFixed(1);
+        const rc = s.reviewCount || 0;
+        document.getElementById('reviewCount').textContent = rc + (rc === 1 ? ' avaliação' : ' avaliações');
+
+        // Sobre
+        if (s.description) document.getElementById('storeDesc').textContent = s.description;
+        else document.getElementById('aboutSection').style.display = 'none';
+
+        // Contato
+        if (s.phone) {
+          storePhone = s.phone;
+          document.getElementById('phoneRow').style.display = 'flex';
+          document.getElementById('storePhone').textContent = s.phone;
         }
-        
-        function goBack() {
-            if (document.referrer && document.referrer.includes(window.location.host)) {
-                window.history.back();
-            } else {
-                window.location.href = 'index.html';
-            }
+        if (s.address) {
+          document.getElementById('addrRow').style.display = 'flex';
+          document.getElementById('storeAddr').textContent = s.address;
         }
-        
-        function formatCurrency(value) {
-            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
+        if (s.settings?.weekdayOpen) {
+          document.getElementById('storeHours').textContent =
+            'Seg-Sex: '+s.settings.weekdayOpen+' às '+s.settings.weekdayClose+
+            ' | Sáb-Dom: '+s.settings.weekendOpen+' às '+s.settings.weekendClose;
         }
-        
-        function formatDate(timestamp) {
-            if (!timestamp) return '';
-            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-            return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        document.getElementById('delivTime').textContent = s.deliveryTime || 'Consulte a loja';
+        document.getElementById('delivFee').textContent = fmt(s.deliveryFee || 0);
+      } catch(e) { console.error(e); showToast('Erro ao carregar'); }
+    }
+
+    async function loadReviews() {
+      try {
+        const snap = await db.collection('reviews')
+          .where('storeId','==',storeId)
+          .orderBy('createdAt','desc')
+          .limit(20).get();
+        const reviews = snap.docs.map(d=>({id:d.id,...d.data()}));
+        const el = document.getElementById('reviewsList');
+
+        if (reviews.length > 0) {
+          const avg = reviews.reduce((s,r)=>s+(r.storeRating||0),0)/reviews.length;
+          document.getElementById('ratingVal').textContent = avg.toFixed(1);
+          document.getElementById('reviewCount').textContent = reviews.length+(reviews.length===1?' avaliação':' avaliações');
         }
-        
-        function renderStars(rating) {
-            const full = Math.floor(rating);
-            const half = rating % 1 >= 0.5 ? 1 : 0;
-            const empty = 5 - full - half;
-            return '★'.repeat(full) + (half ? '⯨' : '') + '☆'.repeat(empty);
+
+        if (!reviews.length) {
+          el.innerHTML = '<div class="empty-reviews"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:40px;height:40px;opacity:.3;margin-bottom:10px"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><div>Ainda não há avaliações</div></div>';
+          return;
         }
-        
-        async function loadStoreInfo() {
-            try {
-                const storeDoc = await db.collection('stores').doc(storeId).get();
-                if (!storeDoc.exists) { alert('Loja não encontrada'); goBack(); return; }
-                
-                const store = storeDoc.data();
-                
-                if (store.imageUrl) {
-                    document.getElementById('storeWallpaper').style.backgroundImage = `url(${store.imageUrl})`;
-                    document.getElementById('storeWallpaperEmoji').style.display = 'none';
-                } else if (store.emoji) {
-                    document.getElementById('storeWallpaperEmoji').textContent = store.emoji;
-                    document.getElementById('storeWallpaper').style.display = 'none';
-                } else {
-                    document.getElementById('storeWallpaperEmoji').textContent = '🏪';
-                    document.getElementById('storeWallpaper').style.display = 'none';
-                }
-                
-                storeName = store.name || 'Loja';
-                document.getElementById('storeName').textContent = storeName;
-                document.getElementById('storeCategory').textContent = store.category || '';
-                
-                const rating = store.rating || 0;
-                const reviewCount = store.reviewCount || 0;
-                document.getElementById('ratingValue').textContent = rating.toFixed(1);
-                document.getElementById('reviewCount').textContent = `(${reviewCount} ${reviewCount === 1 ? 'avaliação' : 'avaliações'})`;
-                
-                if (store.description) {
-                    document.getElementById('storeDescription').textContent = store.description;
-                } else {
-                    document.getElementById('aboutSection').style.display = 'none';
-                }
-                
-                if (store.phone) {
-                    storePhone = store.phone;
-                    document.getElementById('phoneRow').style.display = 'flex';
-                    document.getElementById('storePhone').textContent = store.phone;
-                }
-                
-                if (store.address) {
-                    document.getElementById('addressRow').style.display = 'flex';
-                    document.getElementById('storeAddress').textContent = store.address;
-                }
-                
-                if (store.settings?.weekdayOpen) {
-                    document.getElementById('storeHours').textContent = `Seg-Sex: ${store.settings.weekdayOpen} às ${store.settings.weekdayClose} | Sáb-Dom: ${store.settings.weekendOpen} às ${store.settings.weekendClose}`;
-                }
-                
-                document.getElementById('deliveryTime').textContent = store.deliveryTime || 'Consulte a loja';
-                document.getElementById('deliveryFee').textContent = formatCurrency(store.deliveryFee || 0);
-                
-            } catch (err) {
-                console.error('Erro ao carregar loja:', err);
-                alert('Erro ao carregar informações');
-                goBack();
-            }
-        }
-        
-        async function loadReviews() {
-            try {
-                const snapshot = await db.collection('reviews')
-                    .where('storeId', '==', storeId)
-                    .orderBy('createdAt', 'desc')
-                    .limit(20)
-                    .get();
-                
-                const reviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                const container = document.getElementById('reviewsList');
-                
-                // Recalcula rating real a partir das reviews
-                if (reviews.length > 0) {
-                    const avg = reviews.reduce((sum, r) => sum + (r.storeRating || 0), 0) / reviews.length;
-                    document.getElementById('ratingValue').textContent = avg.toFixed(1);
-                    document.getElementById('reviewCount').textContent = `(${reviews.length} ${reviews.length === 1 ? 'avaliação' : 'avaliações'})`;
-                }
-                
-                if (reviews.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-reviews">
-                            <div class="empty-reviews-icon">⭐</div>
-                            <div>Ainda não há avaliações</div>
-                        </div>`;
-                    return;
-                }
-                
-                container.innerHTML = reviews.map(r => `
-                    <div class="review-item">
-                        <div class="review-header">
-                            <div class="review-author">${r.userName || 'Cliente'}</div>
-                            <div class="review-date">${formatDate(r.createdAt)}</div>
-                        </div>
-                        <div class="review-ratings">
-                            <div class="review-rating-item">
-                                <span>Loja:</span>
-                                <span class="stars">${renderStars(r.storeRating || 0)}</span>
-                                <span>${r.storeRating || 0}/5</span>
-                            </div>
-                            <div class="review-rating-item">
-                                <span>Entregador:</span>
-                                <span class="stars">${renderStars(r.driverRating || 0)}</span>
-                                <span>${r.driverRating || 0}/5</span>
-                            </div>
-                        </div>
-                        ${r.comment ? `<div class="review-comment">"${r.comment}"</div>` : ''}
-                    </div>
-                `).join('');
-                
-            } catch (err) {
-                console.error('Erro ao carregar avaliações:', err);
-                document.getElementById('reviewsList').innerHTML = `
-                    <div class="empty-reviews">
-                        <div class="empty-reviews-icon">❌</div>
-                        <div>Erro ao carregar avaliações</div>
-                    </div>`;
-            }
-        }
-        
-        (async () => {
-            await loadStoreInfo();
-            await loadReviews();
-        })();
-    </script>
+
+        el.innerHTML = reviews.map(r => `
+          <div class="review-item">
+            <div class="review-head">
+              <div class="review-author">${esc(r.userName||'Cliente')}</div>
+              <div class="review-date">${fmtDate(r.createdAt)}</div>
+            </div>
+            <div class="review-stars">
+              <div class="review-stars-item"><span>Loja:</span> <span class="stars">${stars(r.storeRating||0)}</span> <span>${r.storeRating||0}/5</span></div>
+              ${r.driverRating ? `<div class="review-stars-item"><span>Entrega:</span> <span class="stars">${stars(r.driverRating)}</span> <span>${r.driverRating}/5</span></div>` : ''}
+            </div>
+            ${r.comment ? `<div class="review-comment">"${esc(r.comment)}"</div>` : ''}
+          </div>
+        `).join('');
+      } catch(e) {
+        console.error(e);
+        document.getElementById('reviewsList').innerHTML = '<div class="empty-reviews"><div>Erro ao carregar avaliações</div></div>';
+      }
+    }
+
+    (async()=>{ await loadStoreInfo(); await loadReviews(); })();
+  </script>
 </body>
 </html>
