@@ -115,7 +115,7 @@ const ClientReview = {
                     <div id="productsRatingContainer">
                         ${order.items.slice(0, 5).map(item => `
                             <div class="emoji-rating" style="margin-bottom:8px;">
-                                <div style="flex:1;min-width:100px;font-size:0.85rem;">${item.name}</div>
+                                <div style="flex:1;min-width:100px;font-size:0.85rem;">${esc(item.name)}</div>
                                 ${[1, 2, 3, 4, 5].map(rating => `
                                     <div class="emoji-option ${this.ratings.products[item.productId] === rating ? 'selected' : ''}" 
                                          onclick="ClientReview.setProductRating('${item.productId}', ${rating})"

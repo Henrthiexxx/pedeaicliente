@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
+    <script>(function(){var t=localStorage.getItem("theme")||"dark";document.documentElement.setAttribute("data-theme",t);})()</script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Notificações - Pedrad</title>
@@ -33,7 +34,7 @@
       position: fixed;
       top:0; left:0; right:0;
       height: 64px;
-      background: var(--bg);
+      background: var(--glass-bg, rgba(24,24,27,.72)); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
       display:flex;
       align-items:center;
       justify-content: space-between;
@@ -283,6 +284,7 @@
       .header-left, .header-right{ min-width: 90px; }
     }
   </style>
+    <script>function esc(s){if(typeof s!="string")return"";var d=document.createElement("div");d.textContent=s;return d.innerHTML;}</script>
 </head>
 
 <body>

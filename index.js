@@ -35,6 +35,33 @@ let selectedAddon = null;
 let deliveryMode = 'delivery';
 let selectedPayment = 'pix';
 
+// ==================== XSS SANITIZER ====================
+function esc(str) {
+    if (typeof str !== 'string') return '';
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+}
+
+// ==================== THEME SYSTEM ====================
+function initTheme() {
+    const saved = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', saved);
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = saved === 'dark' ? '#09090b' : '#f4f4f5';
+}
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = next === 'dark' ? '#09090b' : '#f4f4f5';
+    const toggle = document.getElementById('themeToggle');
+    if (toggle) toggle.checked = next === 'light';
+}
+initTheme();
+
 // ==================== INIT - EVITA FLASH DE LOGIN ====================
 (function initApp() {
     // Decide UI inicial baseado em sessão local
@@ -333,8 +360,8 @@ function setupRealtimeListeners() {
             });
         });
     
-    // Stores (atualiza cache)
-    db.collection('stores').onSnapshot(snapshot => {
+    // Stores — escuta apenas lojas ativas (evita leituras excessivas de toda a coleção)
+    db.collection('stores').where('active', '==', true).onSnapshot(snapshot => {
         snapshot.docChanges().forEach(change => {
             if (change.type === 'modified') {
                 const store = { id: change.doc.id, ...change.doc.data() };
@@ -347,7 +374,7 @@ function setupRealtimeListeners() {
                     if (selectedStore?.id === store.id) {
                         selectedStore = store;
                         const statusEl = document.getElementById('selectedStoreStatus');
-                        if (statusEl) statusEl.textContent = store.open !== false ? '🟢 Aberto' : '🔴 Fechado';
+                        if (statusEl) statusEl.textContent = store.open !== false ? 'Aberto' : 'Fechado';
                     }
                 }
             }
@@ -423,7 +450,7 @@ function renderCategories() {
     container.innerHTML = categories.map(cat => `
         <div class="category-chip ${activeCategory === cat ? 'active' : ''}" 
              onclick="filterByCategory('${cat}')">
-            ${cat === 'all' ? '🍽️ Todos' : cat}
+            ${cat === 'all' ? 'Todos' : esc(cat)}
         </div>
     `).join('');
 }
@@ -471,7 +498,7 @@ function renderProducts() {
     let html = '';
     for (const [cat, items] of Object.entries(groups)) {
         html += `<div class="category-section">
-            <h3 class="category-section-title">${cat}</h3>
+            <h3 class="category-section-title">${esc(cat)}</h3>
             <div class="category-products">`;
 
         html += items.map(p => {
@@ -485,12 +512,12 @@ function renderProducts() {
             return `
             <div class="product-item" onclick="openProductModal('${p.id}')">
                 <div class="product-item-img ${hasImg ? 'has-image' : ''}"
-                     ${hasImg ? `style="background-image:url('${imgSrc}')"` : ''}>
-                    ${!hasImg ? fallback : ''}
+                     ${hasImg ? `style="background-image:url('${encodeURI(imgSrc)}')"` : ''}>
+                    ${!hasImg ? esc(fallback) : ''}
                 </div>
                 <div class="product-item-info">
-                    <div class="product-item-name">${p.name || 'Produto'}</div>
-                    <div class="product-item-desc">${p.description || ''}</div>
+                    <div class="product-item-name">${esc(p.name || 'Produto')}</div>
+                    <div class="product-item-desc">${esc(p.description || '')}</div>
                     <div class="product-item-price">${formatCurrency(p.price || 0)}</div>
                 </div>
                 <button class="product-item-add" onclick="event.stopPropagation();openProductModal('${p.id}')">+</button>
@@ -603,8 +630,8 @@ function renderCart() {
                 ${!hasImg ? fallback : ''}
             </div>
             <div class="cart-item-info">
-                <div class="cart-item-name">${item.name}</div>
-                ${item.addons?.length ? `<div class="cart-item-addons">${item.addons.map(a => `+ ${a.name} (${formatCurrency(a.price)})`).join(', ')}</div>` : ''}
+                <div class="cart-item-name">${esc(item.name)}</div>
+                ${item.addons?.length ? `<div class="cart-item-addons">${item.addons.map(a => `+ ${esc(a.name)} (${formatCurrency(a.price)})`).join(', ')}</div>` : ''}
                 <div class="cart-item-price">${formatCurrency(itemTotal)}</div>
             </div>
             <div class="cart-item-controls">
@@ -754,8 +781,8 @@ function renderCheckoutAddresses() {
             <div class="address-card ${selectedAddress === addr.id ? 'selected' : ''}" onclick="selectAddress('${addr.id}')">
                 <div class="address-icon">📍</div>
                 <div class="address-info">
-                    <div class="address-label">${addr.label}</div>
-                    <div class="address-text">${addr.street}, ${addr.number} - ${addr.neighborhood}</div>
+                    <div class="address-label">${esc(addr.label)}</div>
+                    <div class="address-text">${esc(addr.street)}, ${esc(addr.number)} - ${esc(addr.neighborhood)}</div>
                     <div class="address-fee">Taxa: ${formatCurrency(fee)}</div>
                 </div>
             </div>
@@ -873,7 +900,7 @@ function populateNeighborhoodSelect() {
     const select = document.getElementById('addressNeighborhood');
     if (!select) return;
     select.innerHTML = '<option value="">Selecione o bairro</option>' +
-        deliveryFees.map(f => `<option value="${f.name}">${f.name} - ${formatCurrency(f.fee)}</option>`).join('');
+        deliveryFees.map(f => `<option value="${esc(f.name)}">${esc(f.name)} - ${formatCurrency(f.fee)}</option>`).join('');
 }
 
 function showAddAddressModal() {
@@ -980,7 +1007,7 @@ function openOrderDetail(orderId) {
     
     content.innerHTML = `
         <div style="margin-bottom:20px;">
-            <div class="order-store" style="font-size:1.2rem;">${order.storeName || 'Loja'}</div>
+            <div class="order-store" style="font-size:1.2rem;">${esc(order.storeName || 'Loja')}</div>
             <h3>Pedido #${order.id.slice(-6).toUpperCase()}</h3>
             <p style="color:var(--text-muted);">${formatDate(order.createdAt)}</p>
             <p style="color:var(--text-muted);font-size:0.85rem;">
@@ -1084,9 +1111,12 @@ function showToast(msg) {
 
 
 
-// ==================== POPUP MESSAGE HANDLER ====================
+// ==================== POPUP MESSAGE HANDLER (single, with origin check) ====================
+// NOTE: listener duplicado removido — este é o único handler
 window.addEventListener("message", (e) => {
     if (!e.data) return;
+    // Aceita apenas mensagens do próprio domínio ou iframes internos
+    if (e.origin !== location.origin && e.origin !== 'null') return;
     if (e.data.type === "closePopup") closeProductPopup();
     if (e.data.type === "cartUpdated") { loadCart(); renderCart(); updateCartBadge(); }
     if (e.data.type === "ADD_TO_CART") {
