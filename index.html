@@ -1,404 +1,144 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Pedrad - Delivery</title>
-    <meta name="theme-color" content="#000000">
-    <link rel="stylesheet" href="index.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="client-review-modal.css">
-    <style>
-        /* Esconde tudo até decidir qual tela mostrar */
-        #authPage, #mainApp { display: none; }
-        
-        /* Loading inicial */
-        .app-loading {
-            position: fixed;
-            inset: 0;
-            background: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            transition: opacity 0.3s;
-        }
-        .app-loading.hide { opacity: 0; pointer-events: none; }
-        .app-loading-spinner {
-            width: 40px; height: 40px;
-            border: 3px solid #262626;
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
-        .product-img img { width:100%; height:100%; object-fit:cover; display:block; }
-        .main { padding-top: 70px; padding-bottom: 80px; }
-        .page { overflow-y: auto !important; overflow-x: hidden !important; max-height: calc(100vh - 120px) !important; -webkit-overflow-scrolling: touch; }
-        .profile-menu { display: flex !important; flex-direction: column !important; }
-        .profile-menu-item { display: flex !important; opacity: 1 !important; visibility: visible !important; }
-    </style>
-    <script>
-        // Decide UI inicial ANTES de carregar Firebase
-        (function() {
-            var hasSession = localStorage.getItem('auth_uid');
-            var lastCheck = parseInt(localStorage.getItem('auth_last_check') || '0');
-            var isRecent = Date.now() - lastCheck < 24 * 60 * 60 * 1000;
-            
-            // Define qual mostrar após DOMContentLoaded
-            window._showAuth = !(hasSession && isRecent);
-        })();
-    </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>Pedrad</title>
+<meta name="theme-color" content="#09090b">
+<script>(function(){var t=localStorage.getItem('pedrad-theme')||'dark';document.documentElement.setAttribute('data-theme',t)})()</script>
+<link rel="stylesheet" href="client.css">
+<style>
+.splash{min-height:100dvh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+.splash-title{font-size:1.6rem;font-weight:700;letter-spacing:-.03em}
+.splash-sub{font-size:.82rem;color:var(--text-2)}
+.splash-spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;margin-top:12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.auth-box{display:none;width:100%;max-width:380px;padding:0 20px}
+.auth-card{background:var(--bg-1);border:1px solid var(--border);border-radius:var(--r);padding:28px;box-shadow:var(--sh-lg)}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:.72rem;color:var(--text-2);margin-bottom:5px;font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.form-input{width:100%;padding:11px 14px;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text-0);font-family:inherit;font-size:.88rem}
+.form-input:focus{outline:none;border-color:var(--border-h);box-shadow:0 0 0 3px rgba(96,165,250,.08)}
+.form-input::placeholder{color:var(--text-3)}
+.tabs{display:flex;gap:0;margin-bottom:20px;border:1px solid var(--border);border-radius:var(--rs);overflow:hidden}
+.tab{flex:1;padding:10px;text-align:center;font-size:.82rem;font-weight:500;cursor:pointer;background:var(--bg-2);color:var(--text-2);transition:all .15s;font-family:inherit;border:none}
+.tab.active{background:var(--accent);color:var(--accent-t)}
+.auth-hint{text-align:center;color:var(--text-3);font-size:.76rem;margin-top:16px}
+</style>
 </head>
 <body>
-    <!-- Loading inicial -->
-    <div class="app-loading" id="appLoading">
-        <div class="app-loading-spinner"></div>
-    </div>
 
-    <div class="offline-banner" id="offlineBanner">Você está offline</div>
-    <div class="toast" id="toast"></div>
-    
-    <!-- Auth Page -->
-    <div id="authPage" class="auth-container">
-        <div class="auth-logo">
-            <h1>Pedra Delivery</h1>
-            <p>Delivery</p>
-        </div>
-        <div class="auth-tabs">
-            <button class="auth-tab active" onclick="switchAuthTab('login')">Entrar</button>
-            <button class="auth-tab" onclick="switchAuthTab('register')">Criar conta</button>
-        </div>
-        <form id="loginForm" class="auth-form active" onsubmit="handleLogin(event)">
-            <div class="input-group">
-                <label>E-mail</label>
-                <input type="email" class="input" id="loginEmail" placeholder="seu@email.com" required>
-            </div>
-            <div class="input-group">
-                <label>Senha</label>
-                <input type="password" class="input" id="loginPassword" placeholder="••••••••" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Entrar</button>
-        </form>
-        <form id="registerForm" class="auth-form" onsubmit="handleRegister(event)">
-            <div class="input-group">
-                <label>Nome completo</label>
-                <input type="text" class="input" id="registerName" placeholder="Seu nome" required>
-            </div>
-            <div class="input-group">
-                <label>E-mail</label>
-                <input type="email" class="input" id="registerEmail" placeholder="seu@email.com" required>
-            </div>
-            <div class="input-group">
-                <label>Telefone</label>
-                <input type="tel" class="input" id="registerPhone" placeholder="(00) 00000-0000" required>
-            </div>
-            <div class="input-group">
-                <label>Senha</label>
-                <input type="password" class="input" id="registerPassword" placeholder="Mínimo 6 caracteres" required minlength="6">
-            </div>
-            <button type="submit" class="btn btn-primary">Criar conta</button>
-        </form>
-    </div>
-    
-    <!-- Main App -->
-    <div id="mainApp">
-        <header class="header">
-            <div class="header-title">PEDRA DELIVERY</div>
-            <div class="header-actions">
-                <button class="header-btn" onclick="showPage('cart')">
-                    ◎
-                    <span class="cart-badge" id="cartBadge"></span>
-                </button>
-                <button class="header-btn notification-badge-btn" id="notificationBadge" onclick="openNotifications()">
-                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M18 16V11a6 6 0 1 0-12 0v5l-2 2h16l-2-2Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                        <path d="M12 22a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2Z" fill="currentColor"/>
-                    </svg>
-                    <span class="notification-badge-count" id="notificationBadgeCount"></span>
-                </button>
-            </div>
-        </header>
-        
-        <!-- Notifications Page -->
-        <div id="notificationsPage" class="page">
-            <h2 style="margin-bottom:24px;font-weight:400;letter-spacing:1px;">Notificações</h2>
-            <div id="notificationsList"></div>
-            <button class="btn btn-secondary" onclick="NotificationSync.clearAll();NotificationSync.renderHistory('notificationsList')">Limpar tudo</button>
-        </div>
+<!-- Splash (shown while checking auth) -->
+<div class="splash" id="splash">
+    <div class="splash-title">Pedrad</div>
+    <div class="splash-sub">Delivery</div>
+    <div class="splash-spinner"></div>
+</div>
 
-        <!-- Home Page -->
-        <div id="homePage" class="page active">            
-            <div id="storeSelection">
-                <h2 style="margin-bottom:8px;font-weight:400;letter-spacing:1px;">Escolha uma loja</h2>
-                <p style="color:var(--text-muted);margin-bottom:24px;font-size:0.85rem;">Selecione onde você quer pedir</p>
-                <div id="storeFilters"></div>
-                <div id="storesGrid" class="stores-grid"></div>
+<!-- Auth (shown only if not logged in) -->
+<div class="splash" id="authPage" style="display:none">
+    <div style="text-align:center;margin-bottom:32px">
+        <div class="splash-title">Pedrad</div>
+        <div class="splash-sub">Entre ou crie sua conta</div>
+    </div>
+    <div class="auth-box" style="display:block">
+        <div class="auth-card">
+            <div class="tabs">
+                <button class="tab active" id="tabLogin" onclick="showTab('login')">Entrar</button>
+                <button class="tab" id="tabRegister" onclick="showTab('register')">Criar conta</button>
             </div>
-            
-            <div id="storeMenu" style="display:none;">
-                <div class="store-header-bar" onclick="backToStores()">
-                    <span class="back-btn">←</span>
-                    <div class="store-header-info">
-                        <span class="store-header-name" id="selectedStoreName">Loja</span>
-                        <span class="store-header-status" id="selectedStoreStatus">Aberto</span>
-                    </div>
-                </div>
-                <div class="search-bar">
-                    <input type="text" class="search-input" placeholder="Buscar produtos..." id="searchInput" oninput="filterProducts()">
-                </div>
-                <div class="categories" id="categoriesContainer"></div>
-                <div class="products-grid" id="productsGrid"></div>
-            </div>
-        </div>
-        
-        <!-- Cart Page -->
-        <div id="cartPage" class="page">
-            <h2 style="margin-bottom:24px;font-weight:400;letter-spacing:1px;">Carrinho</h2>
-            <div id="cartItems"></div>
-            <div id="cartSummary" style="display:none;">
-                <div class="card" style="margin-top:16px;">
-                    <div class="summary-row"><span>Subtotal</span><span id="cartSubtotal">R$ 0,00</span></div>
-                    <div class="summary-row" id="cartDiscountRow" style="display:none;color:var(--primary);"><span>Desconto</span><span id="cartDiscount">- R$ 0,00</span></div>
-                    <div class="summary-row"><span>Taxa de entrega</span><span id="cartDelivery">R$ 0,00</span></div>
-                    <div class="summary-row total"><span>Total</span><span id="cartTotal">R$ 0,00</span></div>
-                </div>
-                <button class="btn btn-primary" onclick="window.location.href='checkout.html'" style="margin-top:16px;">Finalizar pedido</button>
-            </div>
-        </div>
-        
-        <!-- Orders Page -->
-        <div id="ordersPage" class="page">
-            <h2 style="margin-bottom:24px;font-weight:400;letter-spacing:1px;">Meus Pedidos</h2>
-            <div id="ordersList"></div>
-        </div>
-        
-        <!-- Tracking Page -->
-        <div id="trackingPage" class="page"></div>
 
-        <!-- Navigation -->
-        <nav class="nav">
-            <div class="nav-item active" onclick="showPage('home')"><span>⌂</span>Início</div>
-            <div class="nav-item" onclick="window.location.href='orders.html'"><span>≡</span>Pedidos</div>
-            <div class="nav-item" onclick="window.location.href='profile.html'"><span>○</span>Perfil</div>
-        </nav>
-    </div>
-    
-    <!-- Product Modal -->
-    <div class="modal" id="productModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title" id="modalProductName">Produto</div>
-                <button class="modal-close" onclick="closeModal('productModal')">×</button>
-            </div>
-            <div class="modal-body">
-                <div class="product-modal-img" id="modalProductImg">🍽️</div>
-                <p class="product-modal-desc" id="modalProductDesc"></p>
-                <div id="modalAddons"></div>
-                <div class="product-modal-footer">
-                    <div class="qty-control">
-                        <button class="qty-btn" onclick="changeModalQty(-1)">−</button>
-                        <span class="qty-value" id="modalQty">1</span>
-                        <button class="qty-btn" onclick="changeModalQty(1)">+</button>
-                    </div>
-                    <div class="product-modal-price" id="modalProductPrice">R$ 0,00</div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" style="width:100%" onclick="addToCartFromModal()">Adicionar ao carrinho</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Checkout Modal -->
-    <div class="modal" id="checkoutModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">Finalizar Pedido</div>
-                <button class="modal-close" onclick="closeModal('checkoutModal')">×</button>
-            </div>
-            <div class="modal-body">
-                <h3 style="margin-bottom:12px;font-weight:400;font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;">Tipo de pedido</h3>
-                <div class="delivery-mode-selector" style="display:flex;gap:8px;margin-bottom:24px;">
-                    <div class="mode-option selected" id="modeDelivery" onclick="setDeliveryMode('delivery')"><span>🛵</span> Entrega</div>
-                    <div class="mode-option" id="modePickup" onclick="setDeliveryMode('pickup')"><span>🏪</span> Retirar</div>
-                </div>
-                <div id="addressSection">
-                    <h3 style="margin-bottom:12px;font-weight:400;font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;">Endereço</h3>
-                    <div id="checkoutAddresses"></div>
-                    <button class="btn btn-secondary btn-sm" onclick="showAddAddressModal()" style="margin-bottom:24px;">+ Novo endereço</button>
-                </div>
-                <h3 style="margin-bottom:12px;font-weight:400;font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;">Cupom</h3>
-                <div class="coupon-box">
-                    <input type="text" class="input" id="couponInput" placeholder="Código">
-                    <button class="btn btn-secondary btn-sm" onclick="applyCoupon()">Aplicar</button>
-                </div>
-                <div id="couponStatus" class="coupon-status"></div>
-                <h3 style="margin-bottom:12px;font-weight:400;font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;">Pagamento</h3>
-                <div class="payment-options" id="paymentOptions">
-                    <label class="payment-option selected"><input type="radio" name="payment" value="pix" checked onchange="selectPayment(this)"><span class="payment-icon">◉</span><span class="payment-info"><span class="payment-name">PIX</span></span></label>
-                    <label class="payment-option"><input type="radio" name="payment" value="credit" onchange="selectPayment(this)"><span class="payment-icon">💳</span><span class="payment-info"><span class="payment-name">Crédito</span></span></label>
-                    <label class="payment-option"><input type="radio" name="payment" value="debit" onchange="selectPayment(this)"><span class="payment-icon">💳</span><span class="payment-info"><span class="payment-name">Débito</span></span></label>
-                    <label class="payment-option"><input type="radio" name="payment" value="cash" onchange="selectPayment(this)"><span class="payment-icon">💵</span><span class="payment-info"><span class="payment-name">Dinheiro</span></span></label>
-                </div>
-                <div class="card">
-                    <div class="summary-row"><span>Subtotal</span><span id="checkoutSubtotal">R$ 0,00</span></div>
-                    <div class="summary-row" id="checkoutDiscountRow" style="display:none;color:var(--primary);"><span>Desconto</span><span id="checkoutDiscount">- R$ 0,00</span></div>
-                    <div class="summary-row" id="checkoutDeliveryRow"><span>Entrega (<span id="checkoutNeighborhood">-</span>)</span><span id="checkoutDelivery">R$ 0,00</span></div>
-                    <div class="summary-row total"><span>Total</span><span id="checkoutTotal">R$ 0,00</span></div>
-                </div>
-                <button class="btn btn-primary" onclick="submitOrder()" style="margin-top:16px;">Confirmar pedido</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Address Modal -->
-    <div class="modal" id="addressModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">Novo Endereço</div>
-                <button class="modal-close" onclick="closeModal('addressModal')">×</button>
-            </div>
-            <div class="modal-body">
-                <form onsubmit="saveAddress(event)">
-                    <div class="input-group"><label>Apelido</label><input type="text" class="input" id="addressLabel" placeholder="Casa" required></div>
-                    <div class="input-group"><label>Rua</label><input type="text" class="input" id="addressStreet" required></div>
-                    <div class="input-group"><label>Número</label><input type="text" class="input" id="addressNumber" required></div>
-                    <div class="input-group"><label>Complemento</label><input type="text" class="input" id="addressComplement"></div>
-                    <div class="input-group"><label>Bairro</label><select class="input" id="addressNeighborhood" required><option value="">Selecione</option></select></div>
-                    <div class="input-group"><label>Referência</label><input type="text" class="input" id="addressReference"></div>
-                    <div class="location-box" id="addressLocationBox">
-                        <div class="location-status" id="addressLocationStatus"><span>📍</span><span>Localização não capturada</span></div>
-                        <div style="display:flex;gap:8px;margin-top:12px;">
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="captureAddressLocation()" style="flex:1;">GPS</button>
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="openMapPicker()" style="flex:1;">Mapa</button>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Salvar</button>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Order Detail Modal -->
-    <div class="modal" id="orderModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">Detalhes do Pedido</div>
-                <button class="modal-close" onclick="closeModal('orderModal')">×</button>
-            </div>
-            <div class="modal-body" id="orderDetailContent"></div>
-        </div>
-    </div>
-    
-    <!-- Product Popup -->
-    <div id="htmlPopup" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.6)">
-        <div style="width:min(520px,92vw);height:min(820px,92vh);margin:4vh auto;background:#0a0a0a;border:1px solid #262626;border-radius:14px;overflow:hidden">
-            <iframe id="popupFrame" style="width:100%;height:100%;border:0" onerror="window.location.href='404.html?auto=1'"></iframe>
-        </div>
-    </div>
+            <!-- Login form -->
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group"><label class="form-label">E-mail</label><input type="email" class="form-input" id="loginEmail" placeholder="seu@email.com" required></div>
+                <div class="form-group"><label class="form-label">Senha</label><input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required></div>
+                <button type="submit" class="btn btn-accent btn-block" id="loginBtn">Entrar</button>
+            </form>
 
-    <!-- Scripts -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
-    <!-- Módulos otimizados -->
-    <script src="modules/image-helper.js"></script>
-    <script src="modules/data-cache.js"></script>
-    <script src="modules/auth-manager.js"></script>
-    <script src="modules/user-metrics.js"></script>
-    
-    <!-- App principal -->
-    <script src="index.js"></script>
-    <script src="modules/stores.js"></script>
-    <script src="modules/notifications.js"></script>
-    <script src="modules/notSync.js"></script>
-<script src="modules/checker.js"></script>
-    <script src="modules/fcm.js"></script>
-    <script src="modules/tracking.js"></script>
-    <script src="modules/store-cache.js"></script>
-    <script src="modules/polish.js"></script>
-   <script src="modules/welcome-popup.js"></script>
-    
-    <script>
-        // Mostra UI correta imediatamente
-        document.addEventListener('DOMContentLoaded', function() {
-            var authPage = document.getElementById('authPage');
-            var mainApp = document.getElementById('mainApp');
-            var loading = document.getElementById('appLoading');
-            
-            if (window._showAuth) {
-                authPage.style.display = 'flex';
-                mainApp.style.display = 'none';
-            } else {
-                authPage.style.display = 'none';
-                mainApp.style.display = 'block';
-            }
-            
-            // Remove loading após breve delay
-            setTimeout(function() {
-                loading.classList.add('hide');
-                setTimeout(function() { loading.remove(); }, 300);
-            }, 200);
-        });
-        
-        // Popup message handler
-        window.addEventListener("message", function(ev) {
-            if (!ev.data) return;
-            if (ev.data.type === "closePopup") {
-                document.getElementById("htmlPopup").style.display = "none";
-                document.getElementById("popupFrame").src = "about:blank";
-            }
-            if (ev.data.type === "cartUpdated") {
-                if (typeof loadCart === 'function') loadCart();
-                if (typeof renderCart === 'function') renderCart();
-                if (typeof updateCartBadge === 'function') updateCartBadge();
-            }
-        });
-        
-        // Inicialização de lojas após auth
+            <!-- Register form -->
+            <form id="registerForm" style="display:none" onsubmit="handleRegister(event)">
+                <div class="form-group"><label class="form-label">Nome</label><input type="text" class="form-input" id="regName" placeholder="Seu nome" required></div>
+                <div class="form-group"><label class="form-label">E-mail</label><input type="email" class="form-input" id="regEmail" placeholder="seu@email.com" required></div>
+                <div class="form-group"><label class="form-label">Telefone</label><input type="tel" class="form-input" id="regPhone" placeholder="(00) 00000-0000" required></div>
+                <div class="form-group"><label class="form-label">Senha</label><input type="password" class="form-input" id="regPassword" placeholder="Mínimo 6 caracteres" required minlength="6"></div>
+                <button type="submit" class="btn btn-accent btn-block" id="regBtn">Criar conta</button>
+            </form>
 
-window.addEventListener("load", async () => {
-  const tryWelcome = () => {
-    if (typeof WelcomePopup !== "undefined" && typeof WelcomePopup.check === "function") {
-      WelcomePopup.check();
+            <div class="auth-hint">Ao continuar, você aceita os termos de uso</div>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script>
+const FC={apiKey:"AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",authDomain:"pedrad-814d0.firebaseapp.com",projectId:"pedrad-814d0",storageBucket:"pedrad-814d0.appspot.com",messagingSenderId:"293587190550",appId:"1:293587190550:web:80c9399f82847c80e20637"};
+if(!firebase.apps.length)firebase.initializeApp(FC);
+const db=firebase.firestore(),auth=firebase.auth();
+
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2500)}
+
+function showTab(tab){
+    document.getElementById('tabLogin').classList.toggle('active',tab==='login');
+    document.getElementById('tabRegister').classList.toggle('active',tab==='register');
+    document.getElementById('loginForm').style.display=tab==='login'?'block':'none';
+    document.getElementById('registerForm').style.display=tab==='register'?'block':'none';
+}
+
+async function handleLogin(e){
+    e.preventDefault();
+    const email=document.getElementById('loginEmail').value.trim();
+    const pw=document.getElementById('loginPassword').value;
+    const btn=document.getElementById('loginBtn');
+    btn.disabled=true;btn.textContent='Entrando...';
+    try{
+        await auth.signInWithEmailAndPassword(email,pw);
+        // onAuthStateChanged will redirect
+    }catch(err){
+        const msgs={'auth/wrong-password':'Senha incorreta','auth/user-not-found':'Conta não encontrada','auth/invalid-credential':'E-mail ou senha incorretos','auth/too-many-requests':'Muitas tentativas. Aguarde.'};
+        toast(msgs[err.code]||err.message);
+        btn.disabled=false;btn.textContent='Entrar';
     }
-  };
+}
 
-  if (typeof firebase === "undefined" || !firebase.auth) {
-    tryWelcome();
-    return;
-  }
-
-  firebase.auth().onAuthStateChanged(async (user) => {
-    if (!user) return;
-
-    if (typeof loadStores === "function") await loadStores();
-
-    if (typeof StoresModule !== "undefined" && typeof StoresModule.render === "function") {
-      StoresModule.render();
+async function handleRegister(e){
+    e.preventDefault();
+    const name=document.getElementById('regName').value.trim();
+    const email=document.getElementById('regEmail').value.trim();
+    const phone=document.getElementById('regPhone').value.trim();
+    const pw=document.getElementById('regPassword').value;
+    if(!name||!phone){toast('Preencha todos os campos');return}
+    const btn=document.getElementById('regBtn');
+    btn.disabled=true;btn.textContent='Criando...';
+    try{
+        const cred=await auth.createUserWithEmailAndPassword(email,pw);
+        await db.collection('users').doc(cred.user.uid).set({
+            name,email:email.toLowerCase(),phone,
+            createdAt:firebase.firestore.FieldValue.serverTimestamp()
+        });
+        // onAuthStateChanged will redirect
+    }catch(err){
+        const msgs={'auth/email-already-in-use':'E-mail já cadastrado','auth/weak-password':'Senha muito fraca'};
+        toast(msgs[err.code]||err.message);
+        btn.disabled=false;btn.textContent='Criar conta';
     }
+}
 
-    tryWelcome();
-  });
+// ══════════ AUTH GATE ══════════
+// Waits for Firebase Auth to resolve, then redirects or shows login
+auth.onAuthStateChanged(user=>{
+    if(user){
+        // Logged in → go to home (no flash)
+        location.replace('home.html');
+    }else{
+        // Not logged in → show auth page
+        document.getElementById('splash').style.display='none';
+        document.getElementById('authPage').style.display='flex';
+    }
 });
 </script>
-
-    
-    <script src="modules/search.js"></script>
-    <div class="modal" id="confirmModal">
-  <div class="modal-card">
-    <h3 id="confirmTitle">Atenção</h3>
-    <p id="confirmText"></p>
-    <div class="modal-actions">
-      <button class="btn" id="confirmCancel">Cancelar</button>
-      <button class="btn btn-primary" id="confirmOk">OK</button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
