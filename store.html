@@ -7,26 +7,31 @@
 <meta name="theme-color" content="#09090b">
 <script>(function(){var t=localStorage.getItem('pedrad-theme')||'dark';document.documentElement.setAttribute('data-theme',t)})()</script>
 <link rel="stylesheet" href="client.css">
+<style>
+.hdr-btn.icon-svg{display:inline-flex;align-items:center;justify-content:center;padding:0}
+.hdr-btn.icon-svg svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.store-header{gap:6px}
+</style>
 </head>
 <body>
 <div class="toast" id="toast"></div>
 
-<!-- Sticky header -->
 <header class="store-header" id="storeHeader">
     <button class="hdr-btn" onclick="history.back()">←</button>
     <span class="hdr-title" id="hdrTitle">Carregando...</span>
+    <button class="hdr-btn icon-svg" onclick="goInfo()" title="Informações da loja">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    </button>
     <button class="hdr-btn" onclick="openCart()">
         <span id="cartBadge" class="cart-badge" style="display:none">0</span>
         ◉
     </button>
 </header>
 
-<!-- Dynamic content rendered by JS -->
 <main id="storeContent" class="store-content">
     <div class="loading-state">Carregando...</div>
 </main>
 
-<!-- Product detail modal -->
 <div class="modal" id="productModal">
     <div class="modal-sheet">
         <div class="modal-handle" onclick="closeProductModal()"></div>
@@ -34,7 +39,6 @@
     </div>
 </div>
 
-<!-- Cart drawer -->
 <div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
 <div class="cart-drawer" id="cartDrawer">
     <div class="cart-header">
@@ -66,6 +70,40 @@ let store=null, products=[], categories=[], cart=[], selectedCat='all';
 function esc(s){const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML}
 function money(v){return(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2500)}
+function goInfo(){if(storeId)location.href='store-info.html?id='+storeId}
+
+// ══════════ HOURS / OPEN STATUS ══════════
+const DAY_KEYS=['sun','mon','tue','wed','thu','fri','sat'];
+
+function parseHM(s){const[h,m]=String(s||'00:00').split(':').map(Number);return(h||0)*60+(m||0)}
+
+function legacyHoursToNew(s){
+    if(!s) return null;
+    const wO=s.weekdayOpen, wC=s.weekdayClose, eO=s.weekendOpen, eC=s.weekendClose;
+    if(!wO && !eO) return null;
+    const wOpen=wO||'11:00', wClose=wC||'22:00';
+    const eOpen=eO||'11:00', eClose=eC||'23:00';
+    return {
+        mon:{enabled:true,open:wOpen,close:wClose}, tue:{enabled:true,open:wOpen,close:wClose},
+        wed:{enabled:true,open:wOpen,close:wClose}, thu:{enabled:true,open:wOpen,close:wClose},
+        fri:{enabled:true,open:wOpen,close:wClose},
+        sat:{enabled:true,open:eOpen,close:eClose}, sun:{enabled:true,open:eOpen,close:eClose},
+        holidays:{enabled:false,open:'11:00',close:'22:00'}
+    };
+}
+
+function isStoreOpen(s){
+    if(s?.manuallyClosed===true) return false;
+    const hours = s?.settings?.hours || legacyHoursToNew(s?.settings);
+    if(!hours) return s?.open !== false;
+    const now = new Date();
+    const day = hours[DAY_KEYS[now.getDay()]];
+    if(!day || day.enabled===false) return false;
+    const cur = now.getHours()*60 + now.getMinutes();
+    const open = parseHM(day.open), close = parseHM(day.close);
+    if(open===close) return false;
+    return close>open ? (cur>=open&&cur<close) : (cur>=open||cur<close);
+}
 
 // ══════════ LOAD STORE ══════════
 async function loadStore(){
@@ -73,7 +111,6 @@ async function loadStore(){
     if(!doc.exists){document.getElementById('storeContent').innerHTML='<div class="loading-state">Loja não encontrada</div>';return false}
     store={id:doc.id,...doc.data()};
     document.getElementById('hdrTitle').textContent=store.name||'Loja';
-    // Apply store accent color
     const cfg=store.layoutConfig||{};
     if(cfg.accentColor)document.documentElement.style.setProperty('--store-accent',cfg.accentColor);
     return true;
@@ -86,23 +123,19 @@ async function loadProducts(){
     categories=[...new Set(products.map(p=>p.category).filter(Boolean))].sort();
 }
 
-// ══════════ RENDER STORE (dynamic layout) ══════════
+// ══════════ RENDER STORE ══════════
 function renderStore(){
     const cfg=store.layoutConfig||{};
     let elements=cfg.elements||['icon','info','categories','products'];
-    // Produtos nunca pode ser removido
     if(!elements.includes('products')&&!elements.includes('grid')&&!elements.includes('list')){
         elements.push('products');
     }
     const container=document.getElementById('storeContent');
 
     let html='';
-    elements.forEach(elId=>{
-        html+=renderElement(elId);
-    });
+    elements.forEach(elId=>{ html+=renderElement(elId); });
     container.innerHTML=html;
 
-    // Bind search
     const search=document.getElementById('storeSearch');
     if(search)search.addEventListener('input',()=>renderProductSection());
 }
@@ -127,14 +160,14 @@ function renderBanner(){
     const img=store.imageUrl||store.bannerUrl||'';
     const cfg=store.layoutConfig||{};
     const pos=cfg.iconPos||'center';
-    const iconHtml=img?`<img src="${esc(img)}" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:14px;border:2px solid var(--border)">`
-        :`<div style="width:64px;height:64px;border-radius:14px;background:var(--bg-2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--text-3)">${esc((store.name||'L')[0])}</div>`;
+    const iconHtml=img?`<img src="${esc(img)}" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:50%;border:2px solid var(--border)">`
+        :`<div style="width:64px;height:64px;border-radius:50%;background:var(--bg-2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--text-3)">${esc((store.name||'L')[0])}</div>`;
     const align=pos==='left'?'flex-start':pos==='right'?'flex-end':'center';
     return`<div style="padding:16px;display:flex;justify-content:${align}">${iconHtml}</div>`;
 }
 
 function renderInfo(){
-    const cfg=store.layoutConfig||{};
+    const open=isStoreOpen(store);
     return`<div class="el-info">
         <div class="el-info-name">${esc(store.name)}</div>
         ${store.description?`<div class="el-info-desc">${esc(store.description)}</div>`:''}
@@ -143,7 +176,7 @@ function renderInfo(){
             ${store.deliveryTime?`<span>${esc(store.deliveryTime)}</span>`:''}
             ${store.deliveryFee?`<span>${money(store.deliveryFee)}</span>`:'<span>Entrega grátis</span>'}
         </div>
-        ${!store.open?`<div class="el-info-closed">Fechado no momento</div>`:''}
+        ${!open?`<div class="el-info-closed">Fechado no momento</div>`:''}
     </div>`;
 }
 
@@ -169,7 +202,6 @@ function renderCategories(){
 
 function filterCat(c){
     selectedCat=c;
-    // Re-render just categories bar + product section
     const bar=document.getElementById('catsBar');
     if(bar)bar.outerHTML=renderCategories();
     renderProductSection();
@@ -209,7 +241,6 @@ function renderProductSection(){
     }else if(mode==='grid'){
         section.innerHTML=`<div class="el-grid">${list.map(p=>renderGridCard(p)).join('')}</div>`;
     }else{
-        // Group by category
         const groups={};
         list.forEach(p=>{const c=p.category||'Outros';if(!groups[c])groups[c]=[];groups[c].push(p)});
         let html='';
@@ -320,7 +351,6 @@ let pmQtyVal=1;
 function pmQty(d){
     pmQtyVal=Math.max(1,(parseInt(document.getElementById('pmQtyVal').textContent)||1)+d);
     document.getElementById('pmQtyVal').textContent=pmQtyVal;
-    // Recalc total
     const checks=document.querySelectorAll('#productDetail input[type=checkbox]:checked');
     let extra=0;checks.forEach(c=>extra+=parseFloat(c.dataset.price)||0);
     const base=parseFloat(document.querySelector('.pm-price')?.textContent.replace(/[^\d,]/g,'').replace(',','.'))||0;
@@ -350,7 +380,6 @@ function addFromModal(productId){
     const addons=[];
     checks.forEach(c=>addons.push({name:c.dataset.name,price:parseFloat(c.dataset.price)||0}));
 
-    // Add to cart
     cart.push({id:p.id,name:p.name,price:p.price,qty,addons,observation:obs,
         productId:p.id,category:p.category||'',storeId:store.id,storeName:store.name||''});
     closeProductModal();
@@ -420,13 +449,14 @@ function goCheckout(){
     await loadProducts();
     renderStore();
     renderProductSection();
-    // Restore cart from sessionStorage if same store
     try{
         const saved=JSON.parse(sessionStorage.getItem('pedrad_cart')||localStorage.getItem('pedrad_cart')||'[]');
         const savedStore=JSON.parse(sessionStorage.getItem('pedrad_store')||'{}');
         if(savedStore.id===storeId&&saved.length)cart=saved;
     }catch(e){}
     updateCartBadge();
+
+    setInterval(()=>{ if(store) renderStore(); }, 60000);
 })();
 </script>
 </body>

@@ -1,8 +1,13 @@
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark">
+<html lang="pt-BR">
 <head>
-  <script>(function(){var t=localStorage.getItem("theme")||"dark";document.documentElement.setAttribute("data-theme",t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==="dark"?"#09090b":"#f4f4f5";})()</script>
-  <meta charset="UTF-8">
+  <script>
+    (function () {
+      var t = localStorage.getItem("pedrad-theme") || "dark";
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script><meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Informações da Loja</title>
   <meta name="theme-color" content="#09090b">
@@ -32,38 +37,16 @@
     html, body { margin:0; padding:0; min-height:100vh; overflow-x:hidden; }
     body { background:var(--bg); }
 
-    /* ── Wallpaper fullscreen ── */
-    .wall {
-      position:fixed; inset:0; z-index:0;
-      pointer-events:none;
-    }
-    .wall-img {
-      position:absolute; inset:0;
-      width:100%; height:100%;
-      object-fit:cover;
-      opacity: var(--wall-opacity);
-      mix-blend-mode: var(--wall-blend);
-      display:none;
-    }
+    .wall { position:fixed; inset:0; z-index:0; pointer-events:none; }
+    .wall-img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+      opacity: var(--wall-opacity); mix-blend-mode: var(--wall-blend); display:none; }
     .wall-img.show { display:block; }
-    .wall-emoji {
-      position:absolute;
-      top:50%; left:50%;
-      transform:translate(-50%,-50%);
-      font-size:min(50vw, 22rem);
-      opacity:.04;
-      display:none;
-      user-select:none;
-    }
+    .wall-emoji { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      font-size:min(50vw, 22rem); opacity:.04; display:none; user-select:none; }
     .wall-emoji.show { display:block; }
-    /* Vinheta suave nas bordas — não cobre o centro */
-    .wall-vignette {
-      position:absolute; inset:0;
-      background:radial-gradient(ellipse at center, transparent 40%, var(--bg) 100%);
-      pointer-events:none;
-    }
+    .wall-vignette { position:absolute; inset:0;
+      background:radial-gradient(ellipse at center, transparent 40%, var(--bg) 100%); pointer-events:none; }
 
-    /* ── Header glass (wallpaper visível por trás) ── */
     .si-header {
       position:fixed; top:0; left:0; right:0;
       height:calc(56px + env(safe-area-inset-top));
@@ -87,14 +70,12 @@
     .si-back svg { width:18px; height:18px; }
     .si-title { font-size:.9rem; font-weight:500; letter-spacing:2px; text-transform:uppercase; }
 
-    /* ── Content ── */
     .si-content {
       position:relative; z-index:1;
       max-width:540px; margin:0 auto;
       padding:calc(72px + env(safe-area-inset-top)) 16px 40px;
     }
 
-    /* ── Banner card ── */
     .si-banner {
       background:var(--glass-bg);
       backdrop-filter:blur(12px);
@@ -105,13 +86,21 @@
       box-shadow:var(--card-glow);
     }
     .si-store-name { font-size:1.35rem; font-weight:700; margin-bottom:4px; }
-    .si-store-cat { color:var(--text-muted); font-size:.85rem; margin-bottom:16px; }
+    .si-store-cat { color:var(--text-muted); font-size:.85rem; margin-bottom:14px; }
+    .si-status-badge {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:5px 12px; border-radius:20px;
+      font-size:.74rem; font-weight:600;
+      margin-bottom:14px;
+    }
+    .si-status-badge.open { background:rgba(34,197,94,.15); color:#22c55e; border:1px solid rgba(34,197,94,.3); }
+    .si-status-badge.closed { background:rgba(239,68,68,.12); color:#ef4444; border:1px solid rgba(239,68,68,.25); }
+    .si-status-badge .dot { width:7px; height:7px; border-radius:50%; background:currentColor; }
     .si-rating { display:flex; flex-direction:column; align-items:center; gap:3px; }
     .si-rating-val { display:flex; align-items:center; gap:6px; font-size:1.2rem; font-weight:700; }
     .si-rating-val svg { width:20px; height:20px; color:var(--warning,#fbbf24); }
     .si-rating-count { font-size:.8rem; color:var(--text-muted); }
 
-    /* ── Section cards ── */
     .si-card {
       background:var(--bg-card); border:1px solid var(--border);
       border-radius:16px; padding:18px; margin-bottom:14px;
@@ -124,7 +113,6 @@
     }
     .si-card-title svg { width:18px; height:18px; color:var(--text-muted); flex-shrink:0; }
 
-    /* ── Info rows ── */
     .info-row {
       display:flex; align-items:center; gap:12px;
       padding:12px 0;
@@ -150,11 +138,23 @@
     }
     .info-action:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.15); }
 
-    /* ── Reviews ── */
-    .review-item {
-      padding:14px 0;
-      border-bottom:1px solid var(--divider);
+    /* ── Hours list ── */
+    .hours-list { margin-top:4px; }
+    .hours-row {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:10px 0; border-bottom:1px solid var(--divider);
+      font-size:.86rem;
     }
+    .hours-row:last-child { border-bottom:none; }
+    .hours-row.today { font-weight:600; }
+    .hours-row.today .hours-day::before {
+      content:'•'; color:var(--primary); margin-right:6px;
+    }
+    .hours-day { color:var(--text); }
+    .hours-time { color:var(--text-muted); font-variant-numeric:tabular-nums; }
+    .hours-row.closed-day .hours-time { color:#ef4444; opacity:.85; }
+
+    .review-item { padding:14px 0; border-bottom:1px solid var(--divider); }
     .review-item:last-child { border-bottom:none; }
     .review-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
     .review-author { font-weight:600; font-size:.9rem; }
@@ -166,7 +166,6 @@
     .empty-reviews { text-align:center; padding:36px 16px; color:var(--text-muted); }
     .empty-reviews svg { width:40px; height:40px; color:var(--text-muted); opacity:.3; margin-bottom:10px; }
 
-    /* ── Toast glass ── */
     .toast {
       position:fixed; bottom:24px; left:50%;
       transform:translateX(-50%) translateY(80px);
@@ -190,14 +189,12 @@
 </head>
 <body>
 
-  <!-- Wallpaper fullscreen -->
   <div class="wall">
     <img class="wall-img" id="wallImg" alt="">
     <div class="wall-emoji" id="wallEmoji"></div>
     <div class="wall-vignette"></div>
   </div>
 
-  <!-- Header -->
   <div class="si-header">
     <button class="si-back" onclick="goBack()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
@@ -207,10 +204,10 @@
 
   <div class="si-content">
 
-    <!-- Banner -->
     <div class="si-banner">
       <div class="si-store-name" id="storeName">Carregando...</div>
       <div class="si-store-cat" id="storeCat"></div>
+      <div id="statusBadgeWrap"></div>
       <div class="si-rating">
         <div class="si-rating-val">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
@@ -220,7 +217,6 @@
       </div>
     </div>
 
-    <!-- Sobre -->
     <div class="si-card" id="aboutSection">
       <div class="si-card-title">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
@@ -229,7 +225,6 @@
       <p id="storeDesc" style="color:var(--text-muted);line-height:1.6;font-size:.9rem;margin:0;">-</p>
     </div>
 
-    <!-- Contato -->
     <div class="si-card">
       <div class="si-card-title">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
@@ -259,16 +254,6 @@
 
       <div class="info-row">
         <div class="info-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        </div>
-        <div class="info-body">
-          <div class="info-label">Horário</div>
-          <div class="info-value" id="storeHours">Consulte a loja</div>
-        </div>
-      </div>
-
-      <div class="info-row">
-        <div class="info-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8 12 12 16 16 12"/><line x1="12" y1="8" x2="12" y2="16"/></svg>
         </div>
         <div class="info-body">
@@ -288,7 +273,15 @@
       </div>
     </div>
 
-    <!-- Avaliações -->
+    <!-- Horários (lista completa) -->
+    <div class="si-card" id="hoursCard">
+      <div class="si-card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Horários
+      </div>
+      <div class="hours-list" id="hoursList"></div>
+    </div>
+
     <div class="si-card">
       <div class="si-card-title">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
@@ -325,6 +318,81 @@
 
     if (!storeId) { showToast('Loja não encontrada'); setTimeout(goBack, 1200); }
 
+    // ===== HOURS HELPERS =====
+    const DAY_KEYS  = ['sun','mon','tue','wed','thu','fri','sat'];
+    const DAY_LIST  = [
+      { key:'mon', label:'Segunda-feira' },
+      { key:'tue', label:'Terça-feira' },
+      { key:'wed', label:'Quarta-feira' },
+      { key:'thu', label:'Quinta-feira' },
+      { key:'fri', label:'Sexta-feira' },
+      { key:'sat', label:'Sábado' },
+      { key:'sun', label:'Domingo' },
+      { key:'holidays', label:'Feriados' }
+    ];
+
+    function parseHM(s){const[h,m]=String(s||'00:00').split(':').map(Number);return(h||0)*60+(m||0)}
+
+    // Converte legacy weekdayOpen/Close → novo formato
+    function legacyHoursToNew(s){
+      if(!s) return null;
+      const wO=s.weekdayOpen, wC=s.weekdayClose, eO=s.weekendOpen, eC=s.weekendClose;
+      if(!wO && !eO) return null;
+      const wOpen = wO||'11:00', wClose = wC||'22:00';
+      const eOpen = eO||'11:00', eClose = eC||'23:00';
+      return {
+        mon:{enabled:true,open:wOpen,close:wClose}, tue:{enabled:true,open:wOpen,close:wClose},
+        wed:{enabled:true,open:wOpen,close:wClose}, thu:{enabled:true,open:wOpen,close:wClose},
+        fri:{enabled:true,open:wOpen,close:wClose},
+        sat:{enabled:true,open:eOpen,close:eClose}, sun:{enabled:true,open:eOpen,close:eClose},
+        holidays:{enabled:false,open:'11:00',close:'22:00'}
+      };
+    }
+
+    function getHours(store){
+      return store?.settings?.hours || legacyHoursToNew(store?.settings) || null;
+    }
+
+    function isStoreOpen(store){
+      if(store?.manuallyClosed === true) return false;
+      const hours = getHours(store);
+      if(!hours) return store?.open !== false;
+      const now = new Date();
+      const day = hours[DAY_KEYS[now.getDay()]];
+      if(!day || day.enabled === false) return false;
+      const cur = now.getHours()*60 + now.getMinutes();
+      const open = parseHM(day.open), close = parseHM(day.close);
+      if(open === close) return false;
+      return close > open ? (cur>=open && cur<close) : (cur>=open || cur<close);
+    }
+
+    function renderHours(store){
+      const hoursCard = document.getElementById('hoursCard');
+      const hours = getHours(store);
+      if(!hours){ hoursCard.style.display = 'none'; return; }
+
+      const todayKey = DAY_KEYS[new Date().getDay()];
+      const list = document.getElementById('hoursList');
+      list.innerHTML = DAY_LIST.map(d => {
+        const data = hours[d.key];
+        const isToday = d.key === todayKey;
+        const isClosed = !data || data.enabled === false;
+        const time = isClosed ? 'Fechado' : `${data.open} – ${data.close}`;
+        return `<div class="hours-row${isToday?' today':''}${isClosed?' closed-day':''}">
+          <span class="hours-day">${d.label}</span>
+          <span class="hours-time">${time}</span>
+        </div>`;
+      }).join('');
+    }
+
+    function renderStatusBadge(store){
+      const wrap = document.getElementById('statusBadgeWrap');
+      const open = isStoreOpen(store);
+      wrap.innerHTML = `<div class="si-status-badge ${open?'open':'closed'}">
+        <span class="dot"></span>${open?'Aberto agora':'Fechado agora'}
+      </div>`;
+    }
+
     function goBack() {
       if (document.referrer && document.referrer.includes(location.host)) history.back();
       else location.href = 'index.html';
@@ -357,7 +425,6 @@
         if (!doc.exists) { showToast('Loja não encontrada'); return setTimeout(goBack,1200); }
         const s = doc.data();
 
-        // Wallpaper
         const wallImg = document.getElementById('wallImg');
         const wallEmoji = document.getElementById('wallEmoji');
         if (s.imageData || s.imageUrl) {
@@ -368,18 +435,15 @@
           wallEmoji.classList.add('show');
         }
 
-        // Banner
         document.getElementById('storeName').textContent = s.name || 'Loja';
         document.getElementById('storeCat').textContent = s.category || '';
         document.getElementById('ratingVal').textContent = (s.rating || 0).toFixed(1);
         const rc = s.reviewCount || 0;
         document.getElementById('reviewCount').textContent = rc + (rc === 1 ? ' avaliação' : ' avaliações');
 
-        // Sobre
         if (s.description) document.getElementById('storeDesc').textContent = s.description;
         else document.getElementById('aboutSection').style.display = 'none';
 
-        // Contato
         if (s.phone) {
           storePhone = s.phone;
           document.getElementById('phoneRow').style.display = 'flex';
@@ -389,13 +453,15 @@
           document.getElementById('addrRow').style.display = 'flex';
           document.getElementById('storeAddr').textContent = s.address;
         }
-        if (s.settings?.weekdayOpen) {
-          document.getElementById('storeHours').textContent =
-            'Seg-Sex: '+s.settings.weekdayOpen+' às '+s.settings.weekdayClose+
-            ' | Sáb-Dom: '+s.settings.weekendOpen+' às '+s.settings.weekendClose;
-        }
         document.getElementById('delivTime').textContent = s.deliveryTime || 'Consulte a loja';
         document.getElementById('delivFee').textContent = fmt(s.deliveryFee || 0);
+
+        // Status + horários
+        renderStatusBadge(s);
+        renderHours(s);
+
+        // Reavalia status a cada minuto
+        setInterval(() => renderStatusBadge(s), 60000);
       } catch(e) { console.error(e); showToast('Erro ao carregar'); }
     }
 
