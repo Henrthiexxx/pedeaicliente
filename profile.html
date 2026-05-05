@@ -3,10 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<title>Meu Perfil — Pedrad</title>
+<title>Meu Perfil — Pedra Delivery</title>
 <meta name="theme-color" content="#09090b">
+<link rel="manifest" href="manifest.json">
 <script>(function(){var t=localStorage.getItem('pedrad-theme')||'dark';document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='dark'?'#0a0a0c':'#f5f5f7'})()</script>
 <link rel="stylesheet" href="client.css">
+<script src="pwa-register.js" defer></script>
 <style>
 body{padding:0;margin:0;min-height:100dvh}
 .pf-back{position:fixed;top:0;left:0;right:0;height:calc(52px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);padding-left:14px;padding-right:14px;background:var(--bg-1);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;z-index:100;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
@@ -120,7 +122,6 @@ body{padding:0;margin:0;min-height:100dvh}
         <div class="pf-form-title">○ Dados Pessoais</div>
         <div class="fg"><label class="fl">Nome completo</label><input type="text" class="fi" id="inName" placeholder="Seu nome completo" autocomplete="name"></div>
         <div class="fg"><label class="fl">Telefone / WhatsApp <span class="req">*</span></label><input type="tel" class="fi" id="inPhone" placeholder="(00) 00000-0000" maxlength="15" autocomplete="tel"><div class="fh" id="phoneHint">Obrigatório para receber atualizações</div></div>
-        <div class="fg"><label class="fl">CPF <span class="opt">(opcional)</span></label><input type="text" class="fi" id="inCpf" placeholder="000.000.000-00" maxlength="14" inputmode="numeric"><div class="fh">Cadastre o CPF e ganhe bônus futuros</div></div>
         <button class="btn-save" id="btnSave" onclick="saveProfile()">Salvar alterações</button>
     </div>
 
@@ -135,6 +136,12 @@ body{padding:0;margin:0;min-height:100dvh}
         <div class="pf-sec">
             <div class="pf-sec-title">Conta</div>
             <div class="pf-item" onclick="location.href='orders.html'"><div class="pf-item-text"><div class="pf-item-title">Histórico de pedidos</div><div class="pf-item-sub">Veja seus pedidos anteriores</div></div><span class="pf-item-arrow">›</span></div>
+        </div>
+        <div class="pf-sec">
+            <div class="pf-sec-title">Privacidade e termos</div>
+            <div class="pf-item" onclick="location.href='privacy.html'"><div class="pf-item-text"><div class="pf-item-title">Política de privacidade</div><div class="pf-item-sub">Como seus dados são usados no app</div></div><span class="pf-item-arrow">›</span></div>
+            <div class="pf-item" onclick="location.href='terms.html'"><div class="pf-item-text"><div class="pf-item-title">Termos de uso</div><div class="pf-item-sub">Regras para pedidos, lojas e entregas</div></div><span class="pf-item-arrow">›</span></div>
+            <div class="pf-item danger" onclick="location.href='delete-account.html'"><div class="pf-item-text"><div class="pf-item-title">Excluir minha conta</div><div class="pf-item-sub">Solicitar exclusão da conta e dados</div></div><span class="pf-item-arrow">›</span></div>
         </div>
         <div class="pf-sec">
             <div class="pf-sec-title">Sessão</div>
@@ -170,10 +177,7 @@ document.addEventListener('DOMContentLoaded',()=>{document.getElementById('theme
 
 // ── Formatters ──
 function fmtPhone(v){v=String(v||'').replace(/\D/g,'');if(v.length<=2)return v;if(v.length<=7)return`(${v.slice(0,2)}) ${v.slice(2)}`;return`(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7,11)}`}
-function fmtCpf(v){v=String(v||'').replace(/\D/g,'');if(v.length<=3)return v;if(v.length<=6)return`${v.slice(0,3)}.${v.slice(3)}`;if(v.length<=9)return`${v.slice(0,3)}.${v.slice(3,6)}.${v.slice(6)}`;return`${v.slice(0,3)}.${v.slice(3,6)}.${v.slice(6,9)}-${v.slice(9,11)}`}
-
 document.getElementById('inPhone').addEventListener('input',function(e){e.target.value=fmtPhone(e.target.value);if(e.target.value.replace(/\D/g,'').length>=10){e.target.classList.remove('error');document.getElementById('phoneHint').textContent='Obrigatório para receber atualizações';document.getElementById('phoneHint').classList.remove('error')}updateStatus()});
-document.getElementById('inCpf').addEventListener('input',function(e){e.target.value=fmtCpf(e.target.value)});
 
 // ── Status ──
 function updateStatus(){
@@ -196,7 +200,6 @@ auth.onAuthStateChanged(async user=>{
         userData=doc.exists?doc.data():{};
         document.getElementById('inName').value=userData.name||user.displayName||'';
         document.getElementById('inPhone').value=fmtPhone(userData.phone||'');
-        document.getElementById('inCpf').value=fmtCpf(userData.cpf||'');
         document.getElementById('pfName').textContent=userData.name||user.displayName||'Usuário';
         updateStatus();
         // Auto-focus phone if needed
@@ -212,20 +215,24 @@ async function saveProfile(){
     if(!currentUser)return;
     const name=(document.getElementById('inName').value||'').trim();
     const phone=(document.getElementById('inPhone').value||'').replace(/\D/g,'');
-    const cpf=(document.getElementById('inCpf').value||'').replace(/\D/g,'');
     if(phone.length<10){
         document.getElementById('inPhone').classList.add('error');
         document.getElementById('phoneHint').textContent='Telefone obrigatório (mínimo 10 dígitos)';
         document.getElementById('phoneHint').classList.add('error');
         document.getElementById('inPhone').focus();return;
     }
-    if(cpf.length>0&&cpf.length!==11){toast('CPF deve ter 11 dígitos');return}
     const btn=document.getElementById('btnSave');btn.disabled=true;btn.textContent='Salvando...';
     try{
         if(name&&name!==currentUser.displayName)await currentUser.updateProfile({displayName:name});
-        await db.collection('users').doc(currentUser.uid).set({name,phone,cpf,email:currentUser.email,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+        await db.collection('users').doc(currentUser.uid).set({
+            name,
+            phone,
+            cpf: firebase.firestore.FieldValue.delete(),
+            email: currentUser.email,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        },{merge:true});
         // Sync localStorage for checkout
-        localStorage.setItem('pedrad_user_data',JSON.stringify({name,phone,cpf,
+        localStorage.setItem('pedrad_user_data',JSON.stringify({name,phone,
             street:JSON.parse(localStorage.getItem('pedrad_user_data')||'{}').street||'',
             number:JSON.parse(localStorage.getItem('pedrad_user_data')||'{}').number||'',
             complement:JSON.parse(localStorage.getItem('pedrad_user_data')||'{}').complement||'',

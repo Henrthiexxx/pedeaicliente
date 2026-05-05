@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>Politica de Privacidade - Pedra Delivery</title>
+<meta name="theme-color" content="#09090b">
+<script>(function(){var t=localStorage.getItem('pedrad-theme')||localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t)})()</script>
+<link rel="stylesheet" href="client.css">
+<style>
+body{margin:0;min-height:100dvh;background:var(--bg-0,var(--bg));color:var(--text-0,var(--text));font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+.doc-header{position:sticky;top:0;z-index:10;height:56px;background:var(--bg-1,var(--bg-card));border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;padding:0 14px}
+.back{width:38px;height:38px;border-radius:8px;border:1px solid var(--border);background:var(--bg-2,var(--bg-input));color:var(--text-0,var(--text));cursor:pointer}
+.title{font-size:.9rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase}
+.page{max-width:760px;margin:0 auto;padding:18px 16px 40px}
+.notice{border:1px solid rgba(251,191,36,.35);background:rgba(251,191,36,.08);color:var(--text-0,var(--text));border-radius:10px;padding:12px;margin-bottom:14px;font-size:.84rem;line-height:1.45}
+.card{background:var(--bg-1,var(--bg-card));border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
+h1{font-size:1.25rem;margin:0 0 6px}h2{font-size:.95rem;margin:0 0 8px}p,li{font-size:.86rem;line-height:1.55;color:var(--text-2,var(--text-muted))}ul{padding-left:18px;margin:8px 0 0}.muted{font-size:.8rem;color:var(--text-3,var(--text-muted))}.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg-2,var(--bg-input));color:var(--text-0,var(--text));text-decoration:none;font-size:.84rem;font-weight:600}
+</style>
+</head>
+<body>
+<header class="doc-header">
+  <button class="back" type="button" onclick="goBack()" aria-label="Voltar">‹</button>
+  <div class="title">Privacidade</div>
+</header>
+<main class="page">
+  <div class="notice">
+    Lembrete para publicacao: esta pagina precisa ficar disponivel em uma URL publica, ativa, sem login e sem bloqueio geografico. Se o app for publicado no Vercel, use a URL publica desta pagina no campo de Politica de Privacidade da Play Console.
+  </div>
+
+  <section class="card">
+    <h1>Politica de Privacidade</h1>
+    <p class="muted">Ultima atualizacao: 04/05/2026</p>
+    <p>Esta Politica de Privacidade explica como o Pedra Delivery coleta, usa, armazena e protege dados relacionados ao uso do aplicativo de delivery.</p>
+    <p><strong>Responsavel pelo app:</strong> [NOME DO DESENVOLVEDOR OU EMPRESA]</p>
+    <p><strong>Contato de privacidade:</strong> suporte@seudominio.com.br (troque antes de publicar)</p>
+  </section>
+
+  <section class="card">
+    <h2>Dados que podemos coletar</h2>
+    <ul>
+      <li>Dados de conta, como nome, e-mail, telefone e identificador de usuario.</li>
+      <li>Dados de entrega, como endereco, bairro, complemento, referencia e localizacao GPS quando o usuario optar por capturar a localizacao.</li>
+      <li>Dados de pedidos, incluindo loja, produtos, valores, forma de pagamento selecionada, status e historico do pedido.</li>
+      <li>Dados de notificacoes, como tokens de push usados para avisar sobre status do pedido e comunicacoes do app.</li>
+      <li>Conteudo enviado pelo usuario, como observacoes do pedido, avaliacoes e comentarios.</li>
+      <li>Dados tecnicos locais, como caches de carrinho, notificacoes e preferencias de tema.</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>Como usamos os dados</h2>
+    <ul>
+      <li>Para criar e autenticar contas de usuario.</li>
+      <li>Para processar pedidos, calcular taxas, direcionar entregas e exibir o historico.</li>
+      <li>Para permitir que lojas e entregadores executem o pedido.</li>
+      <li>Para enviar notificacoes sobre pedidos, entregas, suporte e comunicacoes operacionais.</li>
+      <li>Para melhorar seguranca, prevenir abuso e dar suporte ao usuario.</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>Compartilhamento</h2>
+    <p>Podemos compartilhar dados necessarios com lojas, entregadores e servicos tecnicos usados para operar o app, como Firebase/Google Cloud. O compartilhamento e limitado ao necessario para funcionamento, suporte, seguranca e cumprimento de obrigacoes legais.</p>
+  </section>
+
+  <section class="card">
+    <h2>Localizacao</h2>
+    <p>A localizacao pode ser usada para facilitar o cadastro do endereco e a entrega do pedido. A captura depende da permissao do usuario no dispositivo. O usuario tambem pode preencher o endereco manualmente.</p>
+  </section>
+
+  <section class="card">
+    <h2>Retencao e exclusao</h2>
+    <p>Os dados sao mantidos pelo tempo necessario para operar pedidos, suporte, seguranca, contabilidade e obrigacoes legais. O usuario pode solicitar a exclusao da conta e dos dados associados pela pagina de exclusao de conta.</p>
+    <div class="actions"><a class="btn" href="delete-account.html">Solicitar exclusao de conta</a></div>
+  </section>
+
+  <section class="card">
+    <h2>Seguranca</h2>
+    <p>Usamos servicos com conexao criptografada e controles de acesso para reduzir risco de acesso indevido. Nenhum sistema e totalmente imune a falhas, por isso tambem recomendamos que o usuario proteja sua senha e dispositivo.</p>
+  </section>
+
+  <section class="card">
+    <h2>Alteracoes nesta politica</h2>
+    <p>Esta politica pode ser atualizada para refletir mudancas no app, na operacao ou em requisitos legais. A data de atualizacao sera ajustada quando houver alteracoes relevantes.</p>
+  </section>
+</main>
+<script>
+function goBack(){if(document.referrer&&document.referrer.includes(location.host))history.back();else location.href='profile.html'}
+</script>
+</body>
+</html>

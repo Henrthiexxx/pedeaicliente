@@ -11,7 +11,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Informações da Loja</title>
   <meta name="theme-color" content="#09090b">
+  <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="index.css">
+  <script src="pwa-register.js" defer></script>
   <style>
     :root,[data-theme="dark"] {
       --wall-opacity: .15;
@@ -163,6 +165,8 @@
     .review-stars-item { display:flex; align-items:center; gap:4px; font-size:.8rem; color:var(--text-muted); }
     .review-stars-item .stars { color:var(--warning,#fbbf24); letter-spacing:1px; }
     .review-comment { color:var(--text-muted); font-size:.85rem; line-height:1.5; word-break:break-word; font-style:italic; }
+    .review-report-btn { margin-top:10px; padding:6px 10px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--text-muted); font-size:.72rem; cursor:pointer; }
+    .review-report-btn:hover { color:var(--danger,#f87171); border-color:var(--danger,#f87171); }
     .empty-reviews { text-align:center; padding:36px 16px; color:var(--text-muted); }
     .empty-reviews svg { width:40px; height:40px; color:var(--text-muted); opacity:.3; margin-bottom:10px; }
 
@@ -193,6 +197,18 @@
     <img class="wall-img" id="wallImg" alt="">
     <div class="wall-emoji" id="wallEmoji"></div>
     <div class="wall-vignette"></div>
+  </div>
+
+  <div class="modal" id="reportReviewModal">
+    <div class="modal-sheet" style="max-width:420px">
+      <div class="modal-handle" onclick="closeReportReviewModal()"></div>
+      <div style="padding:18px">
+        <h3 style="margin:0 0 8px;font-size:1rem">Denunciar avaliação</h3>
+        <p style="margin:0 0 12px;color:var(--text-muted);font-size:.84rem;line-height:1.45">Explique rapidamente o motivo da denúncia. A equipe administrativa vai revisar.</p>
+        <textarea id="reportReviewReason" class="input" rows="4" placeholder="Motivo da denúncia" style="width:100%;min-height:96px"></textarea>
+        <button class="btn btn-accent btn-block" type="button" onclick="submitReviewReport()" style="margin-top:12px">Enviar denúncia</button>
+      </div>
+    </div>
   </div>
 
   <div class="si-header">
@@ -465,6 +481,49 @@
       } catch(e) { console.error(e); showToast('Erro ao carregar'); }
     }
 
+    let currentReportReview = null;
+
+    function openReportReviewModal(reviewId) {
+      currentReportReview = reviewId;
+      const input = document.getElementById('reportReviewReason');
+      if (input) input.value = '';
+      document.getElementById('reportReviewModal')?.classList.add('active');
+    }
+
+    function closeReportReviewModal() {
+      document.getElementById('reportReviewModal')?.classList.remove('active');
+      currentReportReview = null;
+    }
+
+    async function submitReviewReport() {
+      if (!currentReportReview) return;
+      const reason = (document.getElementById('reportReviewReason')?.value || '').trim();
+      if (!reason) return showToast('Informe o motivo da denúncia');
+
+      try {
+        const review = (window.__loadedReviews || []).find(r => r.id === currentReportReview) || {};
+        await db.collection('reviewReports').add({
+          reviewId: currentReportReview,
+          storeId,
+          reason,
+          status: 'open',
+          reviewSnapshot: {
+            userName: review.userName || '',
+            comment: review.comment || '',
+            storeRating: review.storeRating || null,
+            driverRating: review.driverRating || null,
+            createdAt: review.createdAt || null
+          },
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        closeReportReviewModal();
+        showToast('Denúncia enviada');
+      } catch (e) {
+        console.error(e);
+        showToast('Erro ao enviar denúncia');
+      }
+    }
+
     async function loadReviews() {
       try {
         const snap = await db.collection('reviews')
@@ -472,6 +531,7 @@
           .orderBy('createdAt','desc')
           .limit(20).get();
         const reviews = snap.docs.map(d=>({id:d.id,...d.data()}));
+        window.__loadedReviews = reviews;
         const el = document.getElementById('reviewsList');
 
         if (reviews.length > 0) {
@@ -496,6 +556,7 @@
               ${r.driverRating ? `<div class="review-stars-item"><span>Entrega:</span> <span class="stars">${stars(r.driverRating)}</span> <span>${r.driverRating}/5</span></div>` : ''}
             </div>
             ${r.comment ? `<div class="review-comment">"${esc(r.comment)}"</div>` : ''}
+            <button class="review-report-btn" type="button" onclick="openReportReviewModal('${r.id}')">Denunciar avaliação</button>
           </div>
         `).join('');
       } catch(e) {

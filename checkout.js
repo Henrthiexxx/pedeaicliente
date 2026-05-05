@@ -275,6 +275,10 @@ async function buildDispatchFields({ orderType, storeId }) {
   };
 }
 
+function normalizeOrderType(mode) {
+  return mode === 'pickup' ? 'pickup' : 'delivery';
+}
+
 // ==================== INIT ====================
 window.addEventListener('DOMContentLoaded', () => initPage());
 
@@ -674,7 +678,7 @@ async function finishOrder() {
     const salesChannel   = detectSalesChannel();    // 'app' | 'store'
     const createdByRole  = detectCreatedByRole();   // 'customer' | 'store' | 'admin'
     const orderScope     = salesChannel;            // mesmo que channel
-    const orderType      = deliveryMode;            // 'delivery' | 'pickup'
+    const orderType      = normalizeOrderType(deliveryMode);
     const dispatchFields = await buildDispatchFields({ orderType, storeId: resolvedStoreId });
     const order = {
       storeId: resolvedStoreId,
@@ -686,6 +690,7 @@ async function finishOrder() {
       salesChannel,
       orderScope,
       orderType,
+      deliveryMode: orderType,
       createdByRole,
 
       deliveryPool: dispatchFields.deliveryPool,
@@ -730,6 +735,8 @@ async function finishOrder() {
       localStorage.removeItem('pedrad_cart');
       localStorage.removeItem('cartItems');
       localStorage.removeItem(LS.cartDigest);
+      sessionStorage.removeItem('pedrad_cart');
+      sessionStorage.removeItem('pedrad_store');
     } catch (_) {}
 
     await UIModal.alert({ title: 'Sucesso', text: 'Pedido realizado com sucesso.' });

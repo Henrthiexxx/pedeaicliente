@@ -3,10 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-<title>Pedrad</title>
+<title>Pedra Delivery</title>
 <meta name="theme-color" content="#09090b">
+<link rel="manifest" href="manifest.json">
 <script>(function(){var t=localStorage.getItem('pedrad-theme')||'dark';document.documentElement.setAttribute('data-theme',t)})()</script>
 <link rel="stylesheet" href="client.css">
+<script src="pwa-register.js" defer></script>
 <style>
 .splash{min-height:100dvh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px}
 .splash-title{font-size:1.6rem;font-weight:700;letter-spacing:-.03em}
@@ -30,7 +32,7 @@
 
 <!-- Splash (shown while checking auth) -->
 <div class="splash" id="splash">
-    <div class="splash-title">Pedrad</div>
+    <div class="splash-title">Pedra Delivery</div>
     <div class="splash-sub">Delivery</div>
     <div class="splash-spinner"></div>
 </div>
@@ -38,7 +40,7 @@
 <!-- Auth (shown only if not logged in) -->
 <div class="splash" id="authPage" style="display:none">
     <div style="text-align:center;margin-bottom:32px">
-        <div class="splash-title">Pedrad</div>
+        <div class="splash-title">Pedra Delivery</div>
         <div class="splash-sub">Entre ou crie sua conta</div>
     </div>
     <div class="auth-box" style="display:block">

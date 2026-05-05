@@ -3,10 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-<title>Meus Pedidos — Pedrad</title>
+<title>Meus Pedidos — Pedra Delivery</title>
 <meta name="theme-color" content="#09090b">
+<link rel="manifest" href="manifest.json">
 <script>(function(){var t=localStorage.getItem('pedrad-theme')||'dark';document.documentElement.setAttribute('data-theme',t)})()</script>
 <link rel="stylesheet" href="client.css">
+<script src="pwa-register.js" defer></script>
 <style>
 .orders-page{padding-bottom:80px;padding:68px 16px 40px;max-width:520px;margin:0 auto}
 .orders-title{font-size:1rem;font-weight:700;margin-bottom:16px}
@@ -125,7 +127,8 @@ function renderCard(o){
     }).join('');
 
     // Timeline
-    const steps=['pending','confirmed','preparing','ready',o.deliveryMode==='pickup'?'delivered':'delivering','delivered'];
+    const orderType=o.orderType||o.deliveryMode;
+    const steps=['pending','confirmed','preparing','ready',orderType==='pickup'?'delivered':'delivering','delivered'];
     const uniqueSteps=[...new Set(steps)];
     const currentIdx=uniqueSteps.indexOf(o.status);
     const tlHtml=uniqueSteps.map((s,i)=>{
@@ -154,7 +157,7 @@ function renderCard(o){
         <div class="oc-header" onclick="toggleCard('${o.id}')">
             <div>
                 <div class="oc-store">${esc(o.storeName||'Pedido')}</div>
-                <div class="oc-id">#${shortId} · ${dateStr} ${time} · ${o.deliveryMode==='pickup'?'Retirada':'Entrega'}</div>
+                <div class="oc-id">#${shortId} · ${dateStr} ${time} · ${orderType==='pickup'?'Retirada':'Entrega'}</div>
             </div>
             <div class="oc-right">
                 <div class="oc-total">${money(o.total)}</div>

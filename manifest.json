@@ -2,7 +2,7 @@
     "name": "Pedrad Delivery",
     "short_name": "Pedrad",
     "description": "Seu delivery favorito",
-    "start_url": "/index.html",
+    "start_url": "index.html",
     "display": "standalone",
     "background_color": "#0f0f1a",
     "theme_color": "#6366f1",

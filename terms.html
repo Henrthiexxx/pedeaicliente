@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>Termos de Uso - Pedra Delivery</title>
+<meta name="theme-color" content="#09090b">
+<script>(function(){var t=localStorage.getItem('pedrad-theme')||localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t)})()</script>
+<link rel="stylesheet" href="client.css">
+<style>
+body{margin:0;min-height:100dvh;background:var(--bg-0,var(--bg));color:var(--text-0,var(--text));font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+.doc-header{position:sticky;top:0;z-index:10;height:56px;background:var(--bg-1,var(--bg-card));border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;padding:0 14px}
+.back{width:38px;height:38px;border-radius:8px;border:1px solid var(--border);background:var(--bg-2,var(--bg-input));color:var(--text-0,var(--text));cursor:pointer}
+.title{font-size:.9rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase}
+.page{max-width:760px;margin:0 auto;padding:18px 16px 40px}
+.notice{border:1px solid rgba(251,191,36,.35);background:rgba(251,191,36,.08);border-radius:10px;padding:12px;margin-bottom:14px;font-size:.84rem;line-height:1.45}
+.card{background:var(--bg-1,var(--bg-card));border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
+h1{font-size:1.25rem;margin:0 0 6px}h2{font-size:.95rem;margin:0 0 8px}p,li{font-size:.86rem;line-height:1.55;color:var(--text-2,var(--text-muted))}ul{padding-left:18px;margin:8px 0 0}.muted{font-size:.8rem;color:var(--text-3,var(--text-muted))}
+</style>
+</head>
+<body>
+<header class="doc-header">
+  <button class="back" type="button" onclick="goBack()" aria-label="Voltar">‹</button>
+  <div class="title">Termos</div>
+</header>
+<main class="page">
+  <div class="notice">
+    Lembrete para publicacao: deixe esta pagina publica junto com o app. Uma URL do Vercel pode ser usada, desde que esteja aberta, estavel, sem login e acessivel pela Play Console.
+  </div>
+
+  <section class="card">
+    <h1>Termos de Uso</h1>
+    <p class="muted">Ultima atualizacao: 04/05/2026</p>
+    <p>Ao usar o Pedra Delivery, voce concorda com estes Termos de Uso. Se nao concordar, nao utilize o aplicativo.</p>
+    <p><strong>Responsavel pelo app:</strong> [NOME DO DESENVOLVEDOR OU EMPRESA]</p>
+    <p><strong>Contato:</strong> suporte@seudominio.com.br (troque antes de publicar)</p>
+  </section>
+
+  <section class="card">
+    <h2>Uso do aplicativo</h2>
+    <p>O Pedra Delivery permite consultar lojas, montar pedidos, escolher entrega ou retirada, acompanhar status e acessar historico. O usuario deve fornecer informacoes corretas para cadastro, entrega e contato.</p>
+  </section>
+
+  <section class="card">
+    <h2>Pedidos, lojas e entregas</h2>
+    <ul>
+      <li>Produtos, precos, disponibilidade, tempo de preparo e horario de funcionamento podem variar por loja.</li>
+      <li>A loja e responsavel pelo preparo e pela disponibilidade dos produtos anunciados.</li>
+      <li>A entrega pode ser feita por entregadores vinculados a loja ou pela operacao da plataforma, conforme configuracao.</li>
+      <li>Pedidos podem ser recusados ou cancelados em caso de indisponibilidade, erro operacional, suspeita de fraude ou impossibilidade de entrega.</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>Pagamentos</h2>
+    <p>O app pode exibir formas de pagamento como Pix, dinheiro, cartao ou outras opcoes configuradas. Compras de alimentos, produtos fisicos e servicos de entrega sao tratadas como transacoes de bens/servicos fisicos.</p>
+  </section>
+
+  <section class="card">
+    <h2>Conduta do usuario</h2>
+    <ul>
+      <li>Nao use dados falsos, ofensivos ou de terceiros sem autorizacao.</li>
+      <li>Nao envie comentarios, avaliacoes ou observacoes com conteudo ilegal, discriminatorio, ameacador, sexual, violento ou abusivo.</li>
+      <li>Nao tente burlar seguranca, acessar contas de terceiros ou prejudicar o funcionamento do app.</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>Avaliacoes e conteudo enviado</h2>
+    <p>Avaliacoes e comentarios podem ser exibidos para lojas, administradores e outros usuarios. Conteudos inadequados podem ser removidos e contas podem ser limitadas em caso de abuso.</p>
+  </section>
+
+  <section class="card">
+    <h2>Privacidade</h2>
+    <p>O tratamento de dados pessoais e descrito na Politica de Privacidade do app.</p>
+  </section>
+
+  <section class="card">
+    <h2>Alteracoes</h2>
+    <p>Estes termos podem ser atualizados para refletir mudancas no app, na operacao ou na legislacao. O uso continuado apos alteracoes indica concordancia com a versao vigente.</p>
+  </section>
+</main>
+<script>
+function goBack(){if(document.referrer&&document.referrer.includes(location.host))history.back();else location.href='profile.html'}
+</script>
+</body>
+</html>

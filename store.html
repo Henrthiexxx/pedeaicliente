@@ -3,10 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-<title>Pedrad</title>
+<title>Pedra Delivery</title>
 <meta name="theme-color" content="#09090b">
+<link rel="manifest" href="manifest.json">
 <script>(function(){var t=localStorage.getItem('pedrad-theme')||'dark';document.documentElement.setAttribute('data-theme',t)})()</script>
 <link rel="stylesheet" href="client.css">
+<script src="pwa-register.js" defer></script>
 <style>
 .hdr-btn.icon-svg{display:inline-flex;align-items:center;justify-content:center;padding:0}
 .hdr-btn.icon-svg svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -138,6 +140,14 @@ function renderStore(){
 
     const search=document.getElementById('storeSearch');
     if(search)search.addEventListener('input',()=>renderProductSection());
+}
+
+function refreshStoreView(){
+    const searchValue=document.getElementById('storeSearch')?.value||'';
+    renderStore();
+    const search=document.getElementById('storeSearch');
+    if(search)search.value=searchValue;
+    renderProductSection();
 }
 
 function renderElement(elId){
@@ -310,10 +320,10 @@ function openProduct(productId){
         addonsHtml=groups.map((g,gi)=>{
             const req=g.min>0?` (obrigatório, mín ${g.min})`:'';
             const maxLabel=g.max>0?`, máx ${g.max}`:'';
-            return`<div class="pm-group">
+            return`<div class="pm-group" data-group-index="${gi}" data-group-max="${g.max||0}" data-group-min="${g.min||0}">
                 <div class="pm-group-title">${esc(g.name)}${req}${maxLabel}</div>
                 ${(g.items||[]).map((it,ii)=>`<label class="pm-addon">
-                    <input type="checkbox" data-gi="${gi}" data-ii="${ii}" data-price="${it.price||0}" data-name="${esc(it.name)}">
+                    <input type="${(g.max||0)===1?'radio':'checkbox'}" name="pm-group-${gi}" data-gi="${gi}" data-ii="${ii}" data-price="${it.price||0}" data-name="${esc(it.name)}">
                     <span class="pm-addon-name">${esc(it.name)}</span>
                     <span class="pm-addon-price">${it.price>0?'+'+money(it.price):(g.type==='free'?'Grátis':'')}</span>
                 </label>`).join('')}
@@ -343,6 +353,7 @@ function openProduct(productId){
         </div>`;
     document.getElementById('productModal').classList.add('active');
     updatePmTotal(p.price);
+    syncAddonGroupLimits();
 }
 
 function closeProductModal(){document.getElementById('productModal').classList.remove('active')}
@@ -351,7 +362,7 @@ let pmQtyVal=1;
 function pmQty(d){
     pmQtyVal=Math.max(1,(parseInt(document.getElementById('pmQtyVal').textContent)||1)+d);
     document.getElementById('pmQtyVal').textContent=pmQtyVal;
-    const checks=document.querySelectorAll('#productDetail input[type=checkbox]:checked');
+    const checks=document.querySelectorAll('#productDetail input[type=checkbox]:checked, #productDetail input[type=radio]:checked');
     let extra=0;checks.forEach(c=>extra+=parseFloat(c.dataset.price)||0);
     const base=parseFloat(document.querySelector('.pm-price')?.textContent.replace(/[^\d,]/g,'').replace(',','.'))||0;
     updatePmTotal(base+extra);
@@ -364,21 +375,67 @@ function updatePmTotal(unitPrice){
 }
 
 document.addEventListener('change',e=>{
-    if(e.target.closest('#productDetail')&&e.target.type==='checkbox'){
+    if(e.target.closest('#productDetail')&&(e.target.type==='checkbox'||e.target.type==='radio')){
+        syncAddonGroupLimits();
         const base=parseFloat(document.querySelector('.pm-price')?.textContent.replace(/[^\d,]/g,'').replace(',','.'))||0;
-        const checks=document.querySelectorAll('#productDetail input[type=checkbox]:checked');
+        const checks=document.querySelectorAll('#productDetail input[type=checkbox]:checked, #productDetail input[type=radio]:checked');
         let extra=0;checks.forEach(c=>extra+=parseFloat(c.dataset.price)||0);
         updatePmTotal(base+extra);
     }
 });
 
+function syncAddonGroupLimits(){
+    document.querySelectorAll('.pm-group').forEach(groupEl=>{
+        const max=parseInt(groupEl.dataset.groupMax)||0;
+        const min=parseInt(groupEl.dataset.groupMin)||0;
+        const boxes=[...groupEl.querySelectorAll('input[type=checkbox]')];
+        const radios=[...groupEl.querySelectorAll('input[type=radio]')];
+        const checked=[...boxes, ...radios].filter(b=>b.checked);
+        const effectiveChecked=checked;
+        const limitReached=max>0 && effectiveChecked.length>=max;
+
+        boxes.forEach(box=>{
+            if(box.checked){
+                box.disabled=false;
+                return;
+            }
+            box.disabled=limitReached;
+        });
+
+        if(min>0 && effectiveChecked.length<min){
+            groupEl.dataset.groupValid='0';
+        }else{
+            groupEl.dataset.groupValid='1';
+        }
+    });
+}
+
 function addFromModal(productId){
     const p=products.find(x=>x.id===productId);if(!p)return;
     const qty=parseInt(document.getElementById('pmQtyVal')?.textContent)||1;
     const obs=(document.getElementById('pmObs')?.value||'').trim();
-    const checks=document.querySelectorAll('#productDetail input[type=checkbox]:checked');
+    const groupEls=document.querySelectorAll('.pm-group');
+    for(const groupEl of groupEls){
+        if(groupEl.dataset.groupValid==='0'){
+            toast(`Escolha pelo menos ${groupEl.dataset.groupMin||1} opção(ões) em ${groupEl.querySelector('.pm-group-title')?.textContent || 'este grupo'}`);
+            return;
+        }
+    }
+    const checks=document.querySelectorAll('#productDetail input[type=checkbox]:checked, #productDetail input[type=radio]:checked');
     const addons=[];
-    checks.forEach(c=>addons.push({name:c.dataset.name,price:parseFloat(c.dataset.price)||0}));
+    const grouped={};
+    checks.forEach(c=>{
+        const gi=c.dataset.gi||'0';
+        if(!grouped[gi])grouped[gi]=[];
+        grouped[gi].push({name:c.dataset.name,price:parseFloat(c.dataset.price)||0});
+    });
+    Object.keys(grouped).forEach(gi=>{
+        const group=(p.addonGroups||[])[parseInt(gi)];
+        const max=parseInt(group?.max)||0;
+        const list=grouped[gi];
+        const limited=max>0?list.slice(0,max):list;
+        limited.forEach(a=>addons.push(a));
+    });
 
     cart.push({id:p.id,name:p.name,price:p.price,qty,addons,observation:obs,
         productId:p.id,category:p.category||'',storeId:store.id,storeName:store.name||''});
@@ -456,7 +513,7 @@ function goCheckout(){
     }catch(e){}
     updateCartBadge();
 
-    setInterval(()=>{ if(store) renderStore(); }, 60000);
+    setInterval(()=>{ if(store) refreshStoreView(); }, 60000);
 })();
 </script>
 </body>

@@ -4,7 +4,7 @@
     <script>(function(){var t=localStorage.getItem("theme")||"dark";document.documentElement.setAttribute("data-theme",t);})()</script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sobre - Pedrad</title>
+  <title>Sobre - Pedra Delivery</title>
 
   <style>
     :root,[data-theme="dark"]{--bg:#09090b;--bg-card:#0f0f12;--bg-input:#18181b;--text:#fafafa;--text-muted:#71717a;--border:#27272a;--primary:#fff;--accent:#a78bfa;--danger:#f87171;--success:#4ade80;--warning:#fbbf24;--radius:12px;}[data-theme="light"]{--bg:#f4f4f5;--bg-card:#fff;--bg-input:#f0f0f2;--text:#18181b;--text-muted:#a1a1aa;--border:#e4e4e7;--primary:#18181b;--accent:#7c3aed;--danger:#dc2626;--success:#16a34a;--warning:#d97706;}
@@ -116,7 +116,7 @@
       <div class="brand">
         <div class="logo">PD</div>
         <div style="min-width:0">
-          <h1>Pedrad</h1>
+          <h1>Pedra Delivery</h1>
           <p>Aplicativo de delivery com foco em velocidade, simplicidade e operação local.</p>
         </div>
       </div>
@@ -125,6 +125,7 @@
         <button class="btn primary" id="btnHelp" type="button">Ajuda</button>
         <button class="btn" id="btnTerms" type="button">Termos</button>
         <button class="btn" id="btnPrivacy" type="button">Privacidade</button>
+        <button class="btn" id="btnDeleteAccount" type="button">Excluir conta</button>
         <button class="btn" id="btnCopyInfo" type="button">Copiar info</button>
       </div>
     </section>
@@ -299,28 +300,20 @@
     });
 
     document.getElementById('btnTerms')?.addEventListener('click', async () => {
-      await UIModal.alert({
-        title: 'Termos',
-        text:
-`Uso responsável.
-Pedidos e pagamentos dependem do estabelecimento.
-Ao usar o app, você concorda com as regras de funcionamento e comunicação de status.`
-      });
+      window.location.href = 'terms.html';
     });
 
     document.getElementById('btnPrivacy')?.addEventListener('click', async () => {
-      await UIModal.alert({
-        title: 'Privacidade',
-        text:
-`Dados locais: podem incluir caches (notificações, carrinho).
-Dados de conta e pedidos: ficam no servidor do projeto.
-Você pode limpar dados locais nesta tela quando quiser.`
-      });
+      window.location.href = 'privacy.html';
+    });
+
+    document.getElementById('btnDeleteAccount')?.addEventListener('click', async () => {
+      window.location.href = 'delete-account.html';
     });
 
     document.getElementById('btnCopyInfo')?.addEventListener('click', async () => {
       const text =
-`Pedrad
+`Pedra Delivery
 Versão: ${version}
 Build: ${build}
 Ambiente: ${detectEnv()}
