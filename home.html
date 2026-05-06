@@ -239,11 +239,6 @@ body {
   position: relative;
   border-radius: 20px;
   overflow: hidden;
-  background-image:
-    linear-gradient(to bottom, rgba(0,0,0,.18) 0%, rgba(4,12,7,.88) 50%, rgba(4,12,7,.97) 100%),
-    url(banner.png);
-  background-size: cover;
-  background-position: center;
   background-color: #081209;
   border: 1px solid rgba(34,197,94,.14);
   box-shadow:
@@ -251,10 +246,31 @@ body {
     0 20px 50px rgba(0,0,0,.7),
     0 4px 16px rgba(0,0,0,.5);
   min-height: 168px;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-y;
+}
+
+.featured-banner:active { cursor: grabbing; }
+
+.bn-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transition: opacity .55s ease;
+}
+
+.bn-content {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+  min-height: 168px;
   padding: 20px 18px 18px;
+  transition: opacity .2s ease;
 }
 
 .banner-tag {
@@ -700,23 +716,23 @@ body {
 
 <!-- ══════════ FEATURED BANNER ══════════ -->
 <div class="banner-wrap">
-  <div class="featured-banner">
-    <div>
-      <div class="banner-tag">Destaques</div>
-      <div class="banner-title">Melhores<br>Lojas</div>
-      <div class="banner-sub">As favoritas da sua região</div>
-    </div>
-    <div class="banner-bottom">
-      <a class="banner-btn" href="destaques.html">
-        Ver destaques
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-        </svg>
-      </a>
-      <div class="banner-dots">
-        <div class="banner-dot active"></div>
-        <div class="banner-dot"></div>
-        <div class="banner-dot"></div>
+  <div class="featured-banner" id="featBanner">
+    <div class="bn-bg" id="bnBgA"></div>
+    <div class="bn-bg" id="bnBgB" style="opacity:0"></div>
+    <div class="bn-content" id="bnContent">
+      <div>
+        <div class="banner-tag" id="bnTag"></div>
+        <div class="banner-title" id="bnTitle"></div>
+        <div class="banner-sub" id="bnSub"></div>
+      </div>
+      <div class="banner-bottom">
+        <a class="banner-btn" id="bnBtn" href="#">
+          <span id="bnBtnText"></span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </a>
+        <div class="banner-dots" id="bannerDots"></div>
       </div>
     </div>
   </div>
@@ -910,6 +926,91 @@ function render(){
     </div>`;
   }).join('');
 }
+
+/* ══════════════════════════════════════════
+   BANNER CAROUSEL
+   — Edite cada entrada do array para alterar
+     texto, subtítulo e botão de cada slide
+══════════════════════════════════════════ */
+const BANNERS = [
+  { img:'banner.png',  tag:'Destaques', title:'Melhores<br>Lojas',   sub:'As favoritas da sua região',              btn:'Ver destaques', href:'destaques.html' },
+  { img:'banner2.png', tag:'Novidades', title:'Chegando<br>Agora',   sub:'Últimas adições à plataforma',            btn:'Ver novidades',  href:'home.html'      },
+  { img:'banner3.png', tag:'Promoções', title:'Ofertas<br>do Dia',   sub:'Descontos exclusivos hoje',               btn:'Ver ofertas',   href:'home.html'      },
+  { img:'banner4.png', tag:'Top Lojas', title:'Mais<br>Avaliadas',   sub:'As mais elogiadas da sua região',         btn:'Ver ranking',   href:'home.html'      },
+  { img:'banner5.png', tag:'Exclusivo', title:'Para<br>Você',        sub:'Selecionado com base nos seus pedidos',   btn:'Ver seleção',   href:'home.html'      },
+];
+
+const BN_GRAD='linear-gradient(to bottom,rgba(0,0,0,.18) 0%,rgba(4,12,7,.88) 50%,rgba(4,12,7,.97) 100%)';
+let bnIdx=0, bnTimer=null;
+const bnBgA=document.getElementById('bnBgA');
+const bnBgB=document.getElementById('bnBgB');
+const bnContent=document.getElementById('bnContent');
+let bnFront=bnBgA;
+
+function bnRenderDots(){
+  document.getElementById('bannerDots').innerHTML=
+    BANNERS.map((_,i)=>`<div class="banner-dot${i===bnIdx?' active':''}" onclick="goToBanner(${i})"></div>`).join('');
+}
+
+function bnApply(idx,animate){
+  const b=BANNERS[idx];
+  const back=bnFront===bnBgA?bnBgB:bnBgA;
+  back.style.backgroundImage=`${BN_GRAD},url('${b.img}')`;
+  back.style.opacity='0';
+  void back.offsetWidth; // force reflow so transition fires
+  bnFront.style.opacity='0';
+  back.style.opacity='1';
+  if(animate){
+    bnContent.style.opacity='0';
+    setTimeout(()=>{
+      document.getElementById('bnTag').innerHTML=b.tag;
+      document.getElementById('bnTitle').innerHTML=b.title;
+      document.getElementById('bnSub').textContent=b.sub;
+      document.getElementById('bnBtn').href=b.href;
+      document.getElementById('bnBtnText').textContent=b.btn;
+      bnContent.style.opacity='1';
+    },220);
+  }else{
+    document.getElementById('bnTag').innerHTML=b.tag;
+    document.getElementById('bnTitle').innerHTML=b.title;
+    document.getElementById('bnSub').textContent=b.sub;
+    document.getElementById('bnBtn').href=b.href;
+    document.getElementById('bnBtnText').textContent=b.btn;
+  }
+  bnFront=back; bnIdx=idx; bnRenderDots();
+}
+
+function goToBanner(idx){if(idx===bnIdx)return;bnApply(idx,true);bnResetTimer();}
+function bnNext(){goToBanner((bnIdx+1)%BANNERS.length);}
+function bnPrev(){goToBanner((bnIdx-1+BANNERS.length)%BANNERS.length);}
+function bnResetTimer(){clearInterval(bnTimer);bnTimer=setInterval(bnNext,20000);}
+
+// Init primeiro slide
+(function(){
+  const b=BANNERS[0];
+  bnBgA.style.backgroundImage=`${BN_GRAD},url('${b.img}')`;
+  bnBgA.style.opacity='1';
+  document.getElementById('bnTag').innerHTML=b.tag;
+  document.getElementById('bnTitle').innerHTML=b.title;
+  document.getElementById('bnSub').textContent=b.sub;
+  document.getElementById('bnBtn').href=b.href;
+  document.getElementById('bnBtnText').textContent=b.btn;
+  bnRenderDots();
+  bnResetTimer();
+})();
+
+// Swipe / arrasto
+(function(){
+  const el=document.getElementById('featBanner');
+  let sx=0, moved=false;
+  el.addEventListener('pointerdown',e=>{sx=e.clientX;moved=false;},{passive:true});
+  el.addEventListener('pointermove',e=>{if(Math.abs(e.clientX-sx)>8)moved=true;},{passive:true});
+  el.addEventListener('pointerup',e=>{const dx=e.clientX-sx;if(moved&&Math.abs(dx)>40){dx<0?bnNext():bnPrev();}});
+  // impede click no botão/dots quando foi arrasto
+  el.addEventListener('click',e=>{if(moved){e.preventDefault();e.stopPropagation();moved=false;}},true);
+})();
+
+document.addEventListener('visibilitychange',()=>{document.hidden?clearInterval(bnTimer):bnResetTimer();});
 
 loadStores();
 </script>
