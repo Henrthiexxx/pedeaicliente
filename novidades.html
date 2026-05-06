@@ -11,18 +11,93 @@
 <script src="pwa-register.js" defer></script>
 <script src="page-transition.js" defer></script>
 <style>
-body{background:radial-gradient(ellipse 110% 32% at 50% 0%,#0d2018 0%,transparent 68%),#080808}
-.blank-hdr{position:sticky;top:0;z-index:10;height:64px;display:flex;align-items:center;gap:10px;padding:0 14px;background:rgba(8,8,8,.92);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.04)}
-.blank-back{width:36px;height:36px;border:0;border-radius:50%;background:#111116;color:#d8d8e0;display:flex;align-items:center;justify-content:center;cursor:pointer}
-.blank-title{font-size:.96rem;font-weight:700}
-.blank-page{min-height:calc(100dvh - 64px)}
+body{background:radial-gradient(ellipse 110% 32% at 50% 0%,#0d2018 0%,transparent 68%),radial-gradient(ellipse 90% 24% at 50% 100%,#08110c 0%,transparent 62%),#080808}
+.news-hdr{position:sticky;top:0;z-index:10;height:64px;display:flex;align-items:center;gap:10px;padding:0 14px;background:rgba(8,8,8,.92);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.04)}
+.news-back{width:36px;height:36px;border:0;border-radius:50%;background:#111116;color:#d8d8e0;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.news-title{font-size:.96rem;font-weight:800}
+.news-page{max-width:760px;margin:0 auto;padding:16px 14px 34px}
+.news-list{display:flex;flex-direction:column;gap:12px}
+.news-card{background:#0e0e12;border:1px solid #181820;border-radius:18px;overflow:hidden;cursor:pointer;transition:transform .18s,border-color .18s,background .18s}
+.news-card:hover{transform:translateY(-1px);border-color:#273026;background:#101014}
+.news-cover{height:172px;background:#15151b;display:flex;align-items:center;justify-content:center;color:#444451;font-weight:900;background-size:cover;background-position:center}
+.news-body{padding:14px}
+.store-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.store-logo{width:48px;height:48px;border-radius:14px;background:#191920;border:1px solid #24242d;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#555564;font-weight:900;flex-shrink:0}
+.store-logo img{width:100%;height:100%;object-fit:cover}
+.store-name{font-size:.9rem;color:#e2e2ea;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.store-cat{font-size:.7rem;color:#666678;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.post-title{font-size:1.02rem;color:#f0f0f5;font-weight:900;line-height:1.25;margin-bottom:7px}
+.post-text{font-size:.82rem;color:#9a9aaa;line-height:1.48;white-space:pre-wrap}
+.open-row{display:flex;justify-content:flex-end;margin-top:12px}
+.open-btn{font-size:.72rem;font-weight:900;color:#22c55e;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.18);border-radius:999px;padding:6px 10px}
+.empty,.loading{padding:54px 18px;text-align:center;color:#5b5b68;font-size:.84rem;line-height:1.45;border:1px dashed #191920;border-radius:16px;background:rgba(14,14,18,.48)}
+@media(max-width:420px){.news-cover{height:148px}.news-page{padding-left:12px;padding-right:12px}}
 </style>
 </head>
 <body class="page-enter">
-<header class="blank-hdr">
-  <button class="blank-back" onclick="history.back()" aria-label="Voltar">&lt;</button>
-  <div class="blank-title">Novidades</div>
+<header class="news-hdr">
+  <button class="news-back" onclick="history.back()" aria-label="Voltar">&lt;</button>
+  <div class="news-title">Novidades</div>
 </header>
-<main class="blank-page"></main>
+<main class="news-page">
+  <div id="newsList" class="news-list"><div class="loading">Carregando novidades...</div></div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script>
+const FC={apiKey:"AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",authDomain:"pedrad-814d0.firebaseapp.com",projectId:"pedrad-814d0",storageBucket:"pedrad-814d0.appspot.com",messagingSenderId:"293587190550",appId:"1:293587190550:web:80c9399f82847c80e20637"};
+if(!firebase.apps.length)firebase.initializeApp(FC);
+const db=firebase.firestore();
+
+function esc(s){const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML}
+function firstLetter(name){return String(name||'L').trim().charAt(0).toUpperCase()||'L'}
+function visiblePost(p){return p.active!==false&&p.storeId}
+
+async function loadNews(){
+  const snap=await db.collection('storeNews').where('active','==',true).get();
+  const posts=snap.docs.map(doc=>({id:doc.id,...doc.data()})).filter(visiblePost).sort((a,b)=>{
+    const pa=Number(a.priority||0),pb=Number(b.priority||0);
+    const da=a.createdAt?.toDate?.()?.getTime?.()||0,dbt=b.createdAt?.toDate?.()?.getTime?.()||0;
+    return pb-pa||dbt-da;
+  });
+  render(posts);
+}
+
+function render(posts){
+  const list=document.getElementById('newsList');
+  if(!posts.length){
+    list.innerHTML='<div class="empty">Nenhuma novidade publicada por enquanto.</div>';
+    return;
+  }
+  list.innerHTML=posts.map(renderPost).join('');
+}
+
+function renderPost(post){
+  const cover=(post.imageUrl||'').trim();
+  const logo=(post.storeLogo||'').trim();
+  const storeName=post.storeName||'Loja';
+  return `<article class="news-card" onclick="navigateTo('store.html?id=${encodeURIComponent(post.storeId)}')">
+    ${cover?`<div class="news-cover" style="background-image:url(&quot;${esc(cover)}&quot;)"></div>`:''}
+    <div class="news-body">
+      <div class="store-row">
+        <div class="store-logo">${logo?`<img src="${esc(logo)}" alt="">`:esc(firstLetter(storeName))}</div>
+        <div style="min-width:0">
+          <div class="store-name">${esc(storeName)}</div>
+          <div class="store-cat">${esc(post.storeCategory||'Nova loja')}</div>
+        </div>
+      </div>
+      <div class="post-title">${esc(post.title||storeName)}</div>
+      <div class="post-text">${esc(post.text||'')}</div>
+      <div class="open-row"><span class="open-btn">Abrir loja</span></div>
+    </div>
+  </article>`;
+}
+
+loadNews().catch(err=>{
+  console.error(err);
+  document.getElementById('newsList').innerHTML='<div class="empty">Nao foi possivel carregar as novidades agora.</div>';
+});
+</script>
 </body>
 </html>
