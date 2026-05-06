@@ -342,7 +342,7 @@ async function loadStoreSmart(storeId) {
   const key = LS.storeCache + storeId;
   const cached = readCache(key);
 
-  if (isFresh(cached, TTL_STORE_MS) && cached.data) {
+  if (isFresh(cached, TTL_STORE_MS) && cached.data && cached.data.category) {
     store = cached.data;
     updateTotals();
     return;
@@ -638,6 +638,111 @@ function updateTotals() {
 }
 
 // ==================== FINISH ORDER ====================
+const RECO_TRAIL_KEY = 'pedrad_recommendation_trail_v1';
+
+function normalizeRecoKey(value) {
+  return String(value || 'Outros').trim() || 'Outros';
+}
+
+function readRecommendationTrail() {
+  try {
+    const raw = localStorage.getItem(RECO_TRAIL_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (_) {}
+  return {
+    version: 1,
+    createdAt: Date.now(),
+    updatedAt: null,
+    ordersCount: 0,
+    totalSpent: 0,
+    storeCategories: {},
+    productCategories: {},
+    stores: {},
+    products: {},
+    terms: {}
+  };
+}
+
+function bumpRecoBucket(map, key, payload) {
+  const k = normalizeRecoKey(key);
+  if (!map[k]) map[k] = { orders: 0, qty: 0, spent: 0, lastAt: null };
+  map[k].orders += payload.orders || 0;
+  map[k].qty += payload.qty || 0;
+  map[k].spent += payload.spent || 0;
+  map[k].lastAt = payload.lastAt || Date.now();
+  return map[k];
+}
+
+function recordRecommendationTrail(order, storeData) {
+  try {
+    const trail = readRecommendationTrail();
+    const at = Date.now();
+    const orderTotal = Number(order.total) || 0;
+    const storeCategory = normalizeRecoKey(storeData?.category || order.storeCategory || 'Outros');
+
+    trail.version = 1;
+    trail.updatedAt = at;
+    trail.ordersCount = (trail.ordersCount || 0) + 1;
+    trail.totalSpent = (trail.totalSpent || 0) + orderTotal;
+
+    const catBucket = bumpRecoBucket(trail.storeCategories, storeCategory, { orders: 1, qty: 1, spent: orderTotal, lastAt: at });
+    if (!catBucket.stores) catBucket.stores = {};
+    catBucket.stores[order.storeId] = (catBucket.stores[order.storeId] || 0) + 1;
+
+    if (order.storeId) {
+      if (!trail.stores[order.storeId]) {
+        trail.stores[order.storeId] = { id: order.storeId, name: order.storeName || '', category: storeCategory, orders: 0, spent: 0, lastAt: null };
+      }
+      trail.stores[order.storeId].name = order.storeName || trail.stores[order.storeId].name || '';
+      trail.stores[order.storeId].category = storeCategory;
+      trail.stores[order.storeId].orders += 1;
+      trail.stores[order.storeId].spent += orderTotal;
+      trail.stores[order.storeId].lastAt = at;
+    }
+
+    (order.items || []).forEach(item => {
+      const qty = Number(item.qty) || 1;
+      const addons = Array.isArray(item.addons) ? item.addons : [];
+      const addonTotal = addons.reduce((sum, addon) => sum + (Number(addon.price) || 0), 0);
+      const spent = ((Number(item.price) || 0) + addonTotal) * qty;
+      const productCategory = normalizeRecoKey(item.category || storeCategory);
+      const productId = item.productId || item.id || item.name || '';
+
+      bumpRecoBucket(trail.productCategories, productCategory, { orders: 1, qty, spent, lastAt: at });
+
+      if (productId) {
+        if (!trail.products[productId]) {
+          trail.products[productId] = { id: productId, name: item.name || '', category: productCategory, storeId: order.storeId, qty: 0, spent: 0, lastAt: null };
+        }
+        trail.products[productId].name = item.name || trail.products[productId].name || '';
+        trail.products[productId].category = productCategory;
+        trail.products[productId].storeId = order.storeId;
+        trail.products[productId].qty += qty;
+        trail.products[productId].spent += spent;
+        trail.products[productId].lastAt = at;
+      }
+
+      String(item.name || '').toLowerCase().split(/\s+/).forEach(term => {
+        const clean = term.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+        if (clean.length < 4) return;
+        trail.terms[clean] = (trail.terms[clean] || 0) + qty;
+      });
+    });
+
+    const topEntries = obj => Object.fromEntries(Object.entries(obj || {}).sort((a, b) => {
+      const av = (b[1].qty || b[1].orders || b[1]) - (a[1].qty || a[1].orders || a[1]);
+      return av;
+    }).slice(0, 80));
+
+    trail.products = topEntries(trail.products);
+    trail.terms = Object.fromEntries(Object.entries(trail.terms || {}).sort((a, b) => b[1] - a[1]).slice(0, 80));
+
+    localStorage.setItem(RECO_TRAIL_KEY, JSON.stringify(trail));
+  } catch (err) {
+    console.warn('Recommendation trail:', err);
+  }
+}
+
 async function finishOrder() {
   user = user || auth.currentUser || getLocalCheckoutUser();
 
@@ -703,6 +808,7 @@ async function finishOrder() {
     const order = {
       storeId: resolvedStoreId,
       storeName: store?.name || cart?.[0]?.storeName || '',
+      storeCategory: store?.category || cart?.[0]?.storeCategory || '',
       userId: user.uid,
       userName: user.displayName || user.email || '',
       userPhone: localStorage.getItem('userPhone') || user.phoneNumber || '',
@@ -747,6 +853,7 @@ async function finishOrder() {
     };
 
     await db.collection('orders').add(order);
+    recordRecommendationTrail(order, store);
 
     try {
       localStorage.removeItem('cart');

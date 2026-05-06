@@ -505,8 +505,8 @@ function goCheckout(){
     sessionStorage.setItem('pedrad_cart',JSON.stringify(cart));
     localStorage.setItem('pedrad_cart',JSON.stringify(cart));
     localStorage.setItem('checkoutStoreId',store.id);
-    localStorage.setItem('cache_store_'+store.id,JSON.stringify({ts:Date.now(),data:{id:store.id,name:store.name,deliveryType:store.deliveryType||'app',phone:store.phone||'',address:store.address||''}}));
-    sessionStorage.setItem('pedrad_store',JSON.stringify({id:store.id,name:store.name,deliveryType:store.deliveryType||'app',phone:store.phone||'',address:store.address||''}));
+    localStorage.setItem('cache_store_'+store.id,JSON.stringify({ts:Date.now(),data:{id:store.id,name:store.name,category:store.category||'',deliveryType:store.deliveryType||'app',phone:store.phone||'',address:store.address||''}}));
+    sessionStorage.setItem('pedrad_store',JSON.stringify({id:store.id,name:store.name,category:store.category||'',deliveryType:store.deliveryType||'app',phone:store.phone||'',address:store.address||''}));
     navigateTo('checkout.html?storeId='+store.id);
 }
 
