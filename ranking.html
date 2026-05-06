@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-<title>Ranking - Pedra Delivery</title>
+<title>Ranking — Pedra Delivery</title>
 <meta name="theme-color" content="#080808">
 <link rel="manifest" href="manifest.json">
 <script>(function(){var t=localStorage.getItem('pedrad-theme')||'dark';document.documentElement.setAttribute('data-theme',t)})()</script>
@@ -11,18 +11,690 @@
 <script src="pwa-register.js" defer></script>
 <script src="page-transition.js" defer></script>
 <style>
-body{background:radial-gradient(ellipse 110% 32% at 50% 0%,#0d2018 0%,transparent 68%),#080808}
-.blank-hdr{position:sticky;top:0;z-index:10;height:64px;display:flex;align-items:center;gap:10px;padding:0 14px;background:rgba(8,8,8,.92);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.04)}
-.blank-back{width:36px;height:36px;border:0;border-radius:50%;background:#111116;color:#d8d8e0;display:flex;align-items:center;justify-content:center;cursor:pointer}
-.blank-title{font-size:.96rem;font-weight:700}
-.blank-page{min-height:calc(100dvh - 64px)}
+/* ── Page enter ── */
+@keyframes appIn {
+  from { opacity: 0; transform: scale(1.03); }
+  to   { opacity: 1; transform: scale(1); }
+}
+body { animation: appIn .4s cubic-bezier(.22,.61,.36,1) both; }
+
+/* ── Tokens ── */
+:root {
+  --gold:        #f5c842;
+  --gold-dim:    rgba(245,200,66,.09);
+  --gold-border: rgba(245,200,66,.32);
+  --silver:      #c4c4d4;
+  --bronze:      #c08040;
+  --surface:     #0e0e11;
+  --surface-2:   #121216;
+  --glass:       rgba(14,14,17,.84);
+}
+
+html { height: 100%; overflow: hidden; background: #060606; }
+
+body {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background:
+    radial-gradient(ellipse 130% 42% at 50% 0%, #18110000 0%, #18110066 18%, transparent 56%),
+    radial-gradient(ellipse 90% 28% at 50% 0%, #1c1400 0%, transparent 52%),
+    radial-gradient(ellipse 70% 18% at 50% 100%, #0a0d08 0%, transparent 58%),
+    #070707;
+}
+
+.rk-scroll {
+  position: absolute;
+  inset: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-thumb { background: #2a2010; border-radius: 2px; }
+
+/* ════════════════════════════════
+   HEADER
+════════════════════════════════ */
+.rk-hdr {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 18px 14px;
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border-bottom: 1px solid rgba(245,200,66,.06);
+}
+
+.rk-back-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: var(--surface-2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #8888a0;
+  transition: background .15s, color .15s;
+  flex-shrink: 0;
+}
+.rk-back-btn:hover { background: #1c1c22; color: #f0f0f2; }
+.rk-back-btn svg { width: 17px; height: 17px; }
+
+.rk-hdr-info { flex: 1; }
+.rk-hdr-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #f0f0f2;
+  letter-spacing: -.03em;
+}
+.rk-hdr-sub {
+  font-size: .6rem;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  opacity: .6;
+  margin-top: 1px;
+}
+
+.rk-hdr-trophy { color: rgba(245,200,66,.45); flex-shrink: 0; }
+.rk-hdr-trophy svg { width: 22px; height: 22px; display: block; }
+
+/* ════════════════════════════════
+   PODIUM WRAPPER
+════════════════════════════════ */
+.podium-wrap { padding: 22px 12px 0; }
+
+.podium {
+  display: grid;
+  grid-template-columns: 1fr 1.22fr 1fr;
+  gap: 7px;
+  align-items: end;
+}
+
+/* ════════════════════════════════
+   POD CARD — BASE
+════════════════════════════════ */
+.pod-card {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform .2s, box-shadow .2s;
+}
+.pod-card:active { transform: scale(.97) !important; }
+
+/* ── 1st ── */
+.pod-card.first {
+  background:
+    linear-gradient(175deg, rgba(245,200,66,.07) 0%, rgba(245,200,66,.02) 30%, transparent 60%),
+    linear-gradient(180deg, #131008 0%, #0d0c0b 100%);
+  border: 1px solid var(--gold-border);
+  box-shadow:
+    0 0 0 1px rgba(245,200,66,.08),
+    0 0 32px rgba(245,200,66,.13),
+    0 24px 56px rgba(0,0,0,.8),
+    inset 0 1px 0 rgba(245,200,66,.14);
+  padding: 46px 10px 44px;
+  min-height: 256px;
+  z-index: 2;
+}
+.pod-card.first:hover {
+  transform: translateY(-5px);
+  box-shadow:
+    0 0 0 1px rgba(245,200,66,.16),
+    0 0 48px rgba(245,200,66,.2),
+    0 32px 64px rgba(0,0,0,.85),
+    inset 0 1px 0 rgba(245,200,66,.2);
+}
+
+/* ── 2nd ── */
+.pod-card.second {
+  background: linear-gradient(175deg, rgba(196,196,212,.04) 0%, #0d0d12 60%);
+  border: 1px solid rgba(196,196,212,.14);
+  box-shadow:
+    0 0 0 1px rgba(196,196,212,.04),
+    0 16px 40px rgba(0,0,0,.65);
+  padding: 40px 8px 40px;
+  min-height: 218px;
+}
+.pod-card.second:hover { transform: translateY(-3px); }
+
+/* ── 3rd ── */
+.pod-card.third {
+  background: linear-gradient(175deg, rgba(192,128,64,.05) 0%, #0d0b09 60%);
+  border: 1px solid rgba(192,128,64,.16);
+  box-shadow:
+    0 0 0 1px rgba(192,128,64,.04),
+    0 14px 36px rgba(0,0,0,.6);
+  padding: 40px 8px 40px;
+  min-height: 200px;
+}
+.pod-card.third:hover { transform: translateY(-3px); }
+
+/* ── Top line (1st) ── */
+.pod-card.first::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 5%, rgba(245,200,66,.8) 50%, transparent 95%);
+}
+
+/* ════════════════════════════════
+   MEDAL BADGE
+════════════════════════════════ */
+.pod-medal {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .72rem;
+  font-weight: 900;
+  z-index: 3;
+}
+
+.first .pod-medal {
+  width: 30px;
+  height: 30px;
+  font-size: .78rem;
+  background: linear-gradient(135deg, #fde68a 0%, #f5c842 45%, #c97d10 100%);
+  color: #1a0e00;
+  box-shadow:
+    0 0 0 1px rgba(245,200,66,.3),
+    0 2px 10px rgba(245,200,66,.5),
+    inset 0 1px 0 rgba(255,255,255,.35);
+}
+
+.second .pod-medal {
+  background: linear-gradient(135deg, #e8e8f4 0%, #c4c4d4 50%, #8888a0 100%);
+  color: #14141e;
+  box-shadow: 0 2px 6px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.25);
+}
+
+.third .pod-medal {
+  background: linear-gradient(135deg, #dfa060 0%, #c08040 50%, #885020 100%);
+  color: #180e00;
+  box-shadow: 0 2px 6px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.2);
+}
+
+/* ════════════════════════════════
+   STORE IMAGE
+════════════════════════════════ */
+.pod-img {
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  flex-shrink: 0;
+  margin-bottom: 10px;
+}
+.pod-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.first .pod-img {
+  width: 82px; height: 82px;
+  border-radius: 22px;
+  background: #141410;
+  border: 1.5px solid rgba(245,200,66,.38);
+  box-shadow:
+    0 0 0 3px rgba(245,200,66,.06),
+    0 0 20px rgba(245,200,66,.16),
+    0 6px 20px rgba(0,0,0,.65);
+  font-size: 1.6rem;
+  color: var(--gold);
+}
+
+.second .pod-img {
+  width: 66px; height: 66px;
+  border-radius: 18px;
+  background: #141419;
+  border: 1px solid rgba(196,196,212,.16);
+  box-shadow: 0 4px 14px rgba(0,0,0,.55);
+  font-size: 1.3rem;
+  color: var(--silver);
+}
+
+.third .pod-img {
+  width: 66px; height: 66px;
+  border-radius: 18px;
+  background: #14120e;
+  border: 1px solid rgba(192,128,64,.18);
+  box-shadow: 0 4px 14px rgba(0,0,0,.55);
+  font-size: 1.3rem;
+  color: var(--bronze);
+}
+
+/* ════════════════════════════════
+   TEXT
+════════════════════════════════ */
+.pod-name {
+  font-size: .78rem;
+  font-weight: 800;
+  color: #e0e0ea;
+  line-height: 1.2;
+  letter-spacing: -.02em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  width: 100%;
+}
+.first .pod-name {
+  font-size: .88rem;
+  color: #f4f4f8;
+}
+
+.pod-cat {
+  font-size: .59rem;
+  color: #505062;
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.pod-rating {
+  margin-top: 9px;
+  font-size: .82rem;
+  font-weight: 800;
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+.pod-rating svg { width: 11px; height: 11px; fill: currentColor; }
+
+.pod-count {
+  font-size: .58rem;
+  color: #404050;
+  margin-top: 3px;
+  font-weight: 500;
+}
+
+/* ── Crown icon (1st) ── */
+.pod-crown {
+  position: absolute;
+  bottom: 11px;
+  right: 10px;
+  color: var(--gold);
+  opacity: .45;
+}
+.pod-crown svg { width: 16px; height: 16px; display: block; }
+
+/* ── Platform step ── */
+.pod-step {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 5px 0 4px;
+  font-size: .5rem;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.first .pod-step {
+  background: linear-gradient(90deg, transparent, rgba(245,200,66,.12), transparent);
+  border-top: 1px solid rgba(245,200,66,.18);
+  color: rgba(245,200,66,.55);
+}
+.second .pod-step {
+  background: linear-gradient(90deg, transparent, rgba(196,196,212,.06), transparent);
+  border-top: 1px solid rgba(196,196,212,.1);
+  color: rgba(196,196,212,.35);
+}
+.third .pod-step {
+  background: linear-gradient(90deg, transparent, rgba(192,128,64,.06), transparent);
+  border-top: 1px solid rgba(192,128,64,.1);
+  color: rgba(192,128,64,.35);
+}
+
+/* ════════════════════════════════
+   SECTION HEADER
+════════════════════════════════ */
+.rk-section-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 16px 10px;
+}
+
+.rk-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .65rem;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #80809090;
+}
+.rk-section-title svg {
+  width: 14px; height: 14px;
+  color: var(--gold);
+  opacity: .75;
+}
+
+.rk-section-count {
+  font-size: .65rem;
+  font-weight: 600;
+  color: #404050;
+}
+
+/* ════════════════════════════════
+   RANK LIST (4th+)
+════════════════════════════════ */
+.rank-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 12px 32px;
+}
+
+.rank-item {
+  display: grid;
+  grid-template-columns: 30px 52px minmax(0,1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 11px 13px;
+  background: var(--surface);
+  border: 1px solid #161619;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: border-color .18s, background .18s, transform .18s;
+}
+.rank-item:hover { border-color: #222228; background: #111116; transform: translateY(-1px); }
+.rank-item:active { transform: scale(.98); }
+
+.rank-pos {
+  font-size: .76rem;
+  font-weight: 800;
+  color: #44444e;
+  text-align: center;
+}
+
+.rank-logo {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  background: #19191f;
+  border: 1px solid #1e1e26;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #505060;
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+.rank-logo img { width: 100%; height: 100%; object-fit: cover; }
+
+.rank-name {
+  font-size: .88rem;
+  font-weight: 700;
+  color: #c8c8d4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -.02em;
+}
+.rank-meta {
+  font-size: .67rem;
+  color: #40404c;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rank-score { text-align: right; }
+.score-main {
+  font-size: .9rem;
+  font-weight: 800;
+  color: var(--gold);
+}
+.score-sub {
+  font-size: .6rem;
+  color: #40404c;
+  margin-top: 2px;
+}
+
+/* ════════════════════════════════
+   EMPTY / LOADING STATES
+════════════════════════════════ */
+.rk-empty {
+  margin: 0 12px 32px;
+  padding: 36px 20px;
+  border: 1px solid rgba(245,200,66,.11);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(245,200,66,.025), transparent);
+  text-align: center;
+}
+.rk-empty-icon {
+  width: 44px; height: 44px;
+  margin: 0 auto 12px;
+  border-radius: 13px;
+  background: rgba(245,200,66,.05);
+  border: 1px solid rgba(245,200,66,.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold);
+  opacity: .5;
+}
+.rk-empty-icon svg { width: 20px; height: 20px; }
+.rk-empty-text {
+  font-size: .78rem;
+  color: #404050;
+  line-height: 1.55;
+}
+
+.rk-loading {
+  padding: 72px 20px;
+  text-align: center;
+  color: #40404e;
+  font-size: .82rem;
+}
+
+/* ── Responsive ── */
+@media (max-width: 380px) {
+  .podium { gap: 5px; }
+  .pod-card.first  { min-height: 230px; padding: 42px 8px 40px; }
+  .pod-card.second { min-height: 196px; padding: 38px 7px 38px; }
+  .pod-card.third  { min-height: 182px; padding: 38px 7px 38px; }
+  .first .pod-img  { width: 70px; height: 70px; border-radius: 18px; }
+  .second .pod-img,
+  .third .pod-img  { width: 56px; height: 56px; border-radius: 15px; }
+  .first .pod-name { font-size: .8rem; }
+  .pod-name        { font-size: .7rem; }
+  .rank-item       { grid-template-columns: 26px 46px minmax(0,1fr) auto; gap: 8px; padding: 10px; }
+  .rank-logo       { width: 46px; height: 46px; }
+  .score-sub       { display: none; }
+}
 </style>
 </head>
 <body class="page-enter">
-<header class="blank-hdr">
-  <button class="blank-back" onclick="history.back()" aria-label="Voltar">&lt;</button>
-  <div class="blank-title">Ranking</div>
-</header>
-<main class="blank-page"></main>
+
+<div class="rk-scroll">
+
+  <!-- ══════════ HEADER ══════════ -->
+  <header class="rk-hdr">
+    <button class="rk-back-btn" onclick="history.back()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+    <div class="rk-hdr-info">
+      <div class="rk-hdr-title">Mais avaliadas</div>
+      <div class="rk-hdr-sub">Ranking de lojas</div>
+    </div>
+    <div class="rk-hdr-trophy">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+        <path d="M4 22h16"/>
+        <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+        <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+        <path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/>
+      </svg>
+    </div>
+  </header>
+
+  <!-- ══════════ DYNAMIC CONTENT ══════════ -->
+  <div id="content">
+    <div class="rk-loading">Calculando ranking…</div>
+  </div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script>
+const FC={apiKey:"AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",authDomain:"pedrad-814d0.firebaseapp.com",projectId:"pedrad-814d0",storageBucket:"pedrad-814d0.appspot.com",messagingSenderId:"293587190550",appId:"1:293587190550:web:80c9399f82847c80e20637"};
+if(!firebase.apps.length)firebase.initializeApp(FC);
+const db=firebase.firestore();
+
+function esc(s){const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML}
+function imgOf(s){return(s.imageData||s.imageUrl||s.logoUrl||s.bannerUrl||'').trim()}
+function firstLetter(n){return String(n||'L').trim().charAt(0).toUpperCase()||'L'}
+function ratingOf(r){return Number(r.storeRating||r.rating||0)}
+function isVisible(s){return s.active!==false&&!s.suspended&&s.status!=='blocked'&&s.status!=='pending'}
+
+async function loadRanking(){
+  const[storeSnap,reviewSnap]=await Promise.all([
+    db.collection('stores').get(),
+    db.collection('reviews').orderBy('createdAt','desc').limit(800).get()
+  ]);
+  const byStore={};
+  reviewSnap.docs.forEach(doc=>{
+    const r=doc.data();
+    const rating=ratingOf(r);
+    if(!r.storeId||rating<=0||r.status==='hidden')return;
+    if(!byStore[r.storeId])byStore[r.storeId]=[];
+    byStore[r.storeId].push(Math.min(5,Math.max(1,rating)));
+  });
+  const ranking=storeSnap.docs.map(doc=>{
+    const store={id:doc.id,...doc.data()};
+    const ratings=byStore[store.id]||[];
+    const count=ratings.length||(Number(store.reviewsCount)||0);
+    const avg=ratings.length?ratings.reduce((a,b)=>a+b,0)/ratings.length:(Number(store.rating)||0);
+    return{store,avg,count};
+  }).filter(item=>isVisible(item.store)&&item.avg>0&&item.count>0)
+    .sort((a,b)=>b.avg-a.avg||b.count-a.count||(a.store.name||'').localeCompare(b.store.name||'','pt-BR'));
+  render(ranking);
+}
+
+/* ── SVG helpers ── */
+const STAR=`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+
+const CROWN=`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 16 3 5l5.5 5.5L12 2l3.5 8.5L21 5l-2 11H5zm0 3h14v2H5v-2z"/></svg>`;
+
+const CHART=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`;
+
+const STORE=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`;
+
+const STEP_LABELS={first:'1º Lugar',second:'2º Lugar',third:'3º Lugar'};
+
+function renderPodium(item, place, cls){
+  const s=item.store;
+  const img=imgOf(s);
+  const imgHTML=img?`<img src="${esc(img)}" alt="${esc(s.name)}">`:`<span>${esc(firstLetter(s.name))}</span>`;
+  const plural=item.count!==1?'ões':'ão';
+  return`<article class="pod-card ${cls}" onclick="location.href='store.html?id=${encodeURIComponent(s.id)}'">
+  <div class="pod-medal">${place}</div>
+  <div class="pod-img">${imgHTML}</div>
+  <div class="pod-name">${esc(s.name||'Loja')}</div>
+  <div class="pod-cat">${esc(s.category||'')}</div>
+  <div class="pod-rating">${STAR} ${item.avg.toFixed(1)}</div>
+  <div class="pod-count">${item.count} avalia${plural}</div>
+  ${cls==='first'?`<div class="pod-crown">${CROWN}</div>`:''}
+  <div class="pod-step">${STEP_LABELS[cls]}</div>
+</article>`;
+}
+
+function renderListItem(item, pos){
+  const s=item.store;
+  const img=imgOf(s);
+  const plural=item.count!==1?'ões':'ão';
+  return`<article class="rank-item" onclick="location.href='store.html?id=${encodeURIComponent(s.id)}'">
+  <div class="rank-pos">${pos}</div>
+  <div class="rank-logo">${img?`<img src="${esc(img)}" alt="">`:esc(firstLetter(s.name))}</div>
+  <div style="min-width:0">
+    <div class="rank-name">${esc(s.name||'Loja')}</div>
+    <div class="rank-meta">${esc(s.category||'')} · ${item.count} avalia${plural}</div>
+  </div>
+  <div class="rank-score">
+    <div class="score-main">★ ${item.avg.toFixed(1)}</div>
+    <div class="score-sub">${item.count} notas</div>
+  </div>
+</article>`;
+}
+
+const EMPTY_PANEL=(msg)=>`<div class="rk-empty">
+  <div class="rk-empty-icon">${STORE}</div>
+  <div class="rk-empty-text">${msg}</div>
+</div>`;
+
+function render(items){
+  const content=document.getElementById('content');
+  if(!items.length){
+    content.innerHTML=EMPTY_PANEL('Ainda não há lojas avaliadas suficientes para montar o ranking.');
+    return;
+  }
+  const[first,second,third]=items;
+
+  // Podium order: 2nd (left) · 1st (center) · 3rd (right)
+  const podiumHTML=[
+    second?renderPodium(second,2,'second'):'',
+    first ?renderPodium(first, 1,'first') :'',
+    third ?renderPodium(third, 3,'third') :''
+  ].join('');
+
+  const rest=items.slice(3);
+  const afterPodium=rest.length
+    ?`<div class="rank-list">${rest.map((item,i)=>renderListItem(item,i+4)).join('')}</div>`
+    :EMPTY_PANEL('Ainda não há lojas após o pódio.');
+
+  content.innerHTML=`
+    <div class="podium-wrap">
+      <div class="podium">${podiumHTML}</div>
+    </div>
+    <div class="rk-section-hdr">
+      <div class="rk-section-title">${CHART} Ranking geral</div>
+      <div class="rk-section-count">${items.length} lojas</div>
+    </div>
+    ${afterPodium}`;
+}
+
+loadRanking().catch(err=>{
+  console.error(err);
+  document.getElementById('content').innerHTML=EMPTY_PANEL('Não foi possível carregar o ranking agora.');
+});
+</script>
 </body>
 </html>
