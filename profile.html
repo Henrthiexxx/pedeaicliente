@@ -11,36 +11,28 @@
 <script src="pwa-register.js" defer></script>
 <script src="page-transition.js" defer></script>
 <style>
-/* ── Page enter ── */
 @keyframes appIn {
   from { opacity: 0; transform: scale(1.03); }
   to   { opacity: 1; transform: scale(1); }
 }
 body { animation: appIn .38s cubic-bezier(.22,.61,.36,1) both; }
 
-/* ── Design tokens ── */
 :root {
   --g: #22c55e;
   --g-dim: rgba(34,197,94,.10);
-  --g-glow: rgba(34,197,94,.18);
   --surface: #0e0e11;
   --surface-2: #121216;
   --glass: rgba(14,14,17,.82);
   --bottom-nav-h: calc(64px + env(safe-area-inset-bottom, 0px));
 }
 
-html {
-  height: 100%;
-  overflow: hidden;
-  background: #080808;
-}
+html { height: 100%; overflow: hidden; background: #080808; }
 
 body {
   position: fixed;
   inset: 0;
   width: 100%;
   height: 100dvh;
-  min-height: 0;
   overflow: hidden;
   overscroll-behavior: none;
   background:
@@ -51,9 +43,7 @@ body {
 
 .pf-scroll {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 0; left: 0; right: 0;
   bottom: var(--bottom-nav-h);
   overflow-x: hidden;
   overflow-y: auto;
@@ -64,9 +54,7 @@ body {
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-thumb { background: #2a2a34; border-radius: 2px; }
 
-/* ════════════════════════════════
-   HEADER
-════════════════════════════════ */
+/* ── Header ── */
 .pf-hdr {
   position: sticky;
   top: 0;
@@ -82,14 +70,11 @@ body {
 }
 
 .pf-back-btn {
-  width: 36px;
-  height: 36px;
+  width: 36px; height: 36px;
   border: none;
   background: var(--surface-2);
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   cursor: pointer;
   color: #8888a0;
   transition: background .15s, color .15s;
@@ -105,9 +90,7 @@ body {
   color: #f0f0f2;
 }
 
-/* ════════════════════════════════
-   BODY CONTENT
-════════════════════════════════ */
+/* ── Body ── */
 .pf-body {
   padding: 14px 14px 20px;
   max-width: 500px;
@@ -117,65 +100,36 @@ body {
   gap: 8px;
 }
 
-/* ════════════════════════════════
-   ALERT
-════════════════════════════════ */
+/* ── Alert ── */
 .pf-alert {
   background: rgba(251,191,36,.06);
   border: 1px solid rgba(251,191,36,.2);
   border-radius: 14px;
-  padding: 12px 14px;
+  padding: 11px 14px;
   display: none;
   align-items: flex-start;
   gap: 8px;
   font-size: .82rem;
 }
 .pf-alert.show { display: flex; }
-.pf-alert-icon { color: #fbbf24; font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
-.pf-alert-title { font-weight: 700; color: #fbbf24; margin-bottom: 2px; font-size: .84rem; }
-.pf-alert-desc { color: #54545e; font-size: .78rem; line-height: 1.4; }
+.pf-alert-icon { color: #fbbf24; font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+.pf-alert-title { font-weight: 700; color: #fbbf24; font-size: .82rem; }
+.pf-alert-desc { color: #54545e; font-size: .76rem; line-height: 1.4; margin-top: 1px; }
 
-/* ════════════════════════════════
-   PROFILE IDENTITY CARD
-════════════════════════════════ */
+/* ── Identity card ── */
 .pf-id-card {
   background: var(--surface);
   border: 1px solid #1a1a22;
   border-radius: 18px;
-  padding: 18px;
-  box-shadow: 0 4px 24px rgba(0,0,0,.45);
+  padding: 16px 16px 14px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.4);
 }
 
-.pf-user-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 12px;
-}
-
-.pf-initials {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  background: var(--g-dim);
-  border: 1px solid rgba(34,197,94,.22);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: var(--g);
-  flex-shrink: 0;
-  letter-spacing: -.02em;
-  box-shadow: 0 0 0 4px rgba(34,197,94,.06);
-}
-
-.pf-id-info { flex: 1; min-width: 0; }
 .pf-id-name {
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: #d8d8e0;
-  letter-spacing: -.02em;
+  letter-spacing: -.03em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -193,6 +147,7 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
+  margin-top: 10px;
 }
 .pf-chip {
   border: 1px solid #1e1e26;
@@ -200,7 +155,7 @@ body {
   color: #505060;
   border-radius: 999px;
   padding: 3px 9px;
-  font-size: .64rem;
+  font-size: .62rem;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
@@ -208,23 +163,21 @@ body {
   letter-spacing: .02em;
 }
 .pf-chip-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--g); }
-.pf-chip.ok  { border-color: rgba(34,197,94,.24); color: var(--g); background: var(--g-dim); }
+.pf-chip.ok   { border-color: rgba(34,197,94,.24); color: var(--g); background: var(--g-dim); }
 .pf-chip.warn { border-color: rgba(251,191,36,.22); color: #fbbf24; background: rgba(251,191,36,.06); }
 
-/* ════════════════════════════════
-   SECTION CARD
-════════════════════════════════ */
+/* ── Section card ── */
 .pf-section {
   background: var(--surface);
   border: 1px solid #1a1a22;
   border-radius: 18px;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0,0,0,.35);
+  box-shadow: 0 4px 18px rgba(0,0,0,.32);
 }
 
 .pf-sec-label {
-  padding: 10px 16px 9px;
-  font-size: .64rem;
+  padding: 10px 16px 8px;
+  font-size: .62rem;
   font-weight: 700;
   letter-spacing: .08em;
   text-transform: uppercase;
@@ -232,17 +185,16 @@ body {
   border-bottom: 1px solid #161619;
 }
 
-/* ════════════════════════════════
-   FORM
-════════════════════════════════ */
-.pf-form { padding: 14px 16px 16px; }
+/* ── Form ── */
+.pf-form { padding: 12px 16px 14px; }
 
-.fg { margin-bottom: 14px; }
+.fg { margin-bottom: 12px; }
+.fg:last-of-type { margin-bottom: 14px; }
 
 .fl {
   display: block;
   margin-bottom: 5px;
-  font-size: .64rem;
+  font-size: .62rem;
   font-weight: 700;
   letter-spacing: .06em;
   text-transform: uppercase;
@@ -266,7 +218,7 @@ body {
 .fi.error { border-color: rgba(248,113,113,.45); }
 .fi::placeholder { color: #34343e; }
 
-.fh { font-size: .68rem; color: #34343e; margin-top: 5px; }
+.fh { font-size: .66rem; color: #34343e; margin-top: 4px; }
 .fh.error { color: #f87171; }
 
 .btn-save {
@@ -281,10 +233,7 @@ body {
   cursor: pointer;
   font-family: inherit;
   letter-spacing: -.01em;
-  box-shadow:
-    0 6px 0 #0e8038,
-    0 10px 28px rgba(34,197,94,.35),
-    inset 0 1px 0 rgba(255,255,255,.25);
+  box-shadow: 0 6px 0 #0e8038, 0 10px 28px rgba(34,197,94,.35), inset 0 1px 0 rgba(255,255,255,.25);
   transform: translateY(-2px);
   transition: transform .14s, box-shadow .14s;
 }
@@ -298,9 +247,7 @@ body {
 }
 .btn-save:disabled { opacity: .4; cursor: not-allowed; transform: none; box-shadow: none; }
 
-/* ════════════════════════════════
-   MENU ITEMS
-════════════════════════════════ */
+/* ── Menu items ── */
 .pf-item {
   display: flex;
   align-items: center;
@@ -311,18 +258,15 @@ body {
   transition: background .15s;
 }
 .pf-item:last-child { border-bottom: none; }
-.pf-item:hover { background: rgba(255,255,255,.018); }
+.pf-item:hover  { background: rgba(255,255,255,.018); }
 .pf-item:active { background: rgba(255,255,255,.03); }
 
 .pf-item-icon {
-  width: 32px;
-  height: 32px;
+  width: 32px; height: 32px;
   border-radius: 9px;
   background: var(--surface-2);
   border: 1px solid #1e1e26;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   color: #505060;
   flex-shrink: 0;
 }
@@ -330,58 +274,19 @@ body {
 
 .pf-item-text { flex: 1; min-width: 0; }
 .pf-item-title { font-size: .86rem; font-weight: 600; color: #b0b0bc; letter-spacing: -.01em; }
-.pf-item-sub { font-size: .7rem; color: #44444e; margin-top: 1px; }
+.pf-item-sub   { font-size: .7rem; color: #44444e; margin-top: 1px; }
 
 .pf-item-arrow { color: #2e2e38; display: flex; align-items: center; flex-shrink: 0; }
 .pf-item-arrow svg { width: 16px; height: 16px; }
 
 .pf-item.danger .pf-item-title { color: #f87171; }
-.pf-item.danger .pf-item-icon {
-  border-color: rgba(248,113,113,.16);
-  color: #f87171;
-  background: rgba(248,113,113,.05);
-}
+.pf-item.danger .pf-item-icon  { border-color: rgba(248,113,113,.16); color: #f87171; background: rgba(248,113,113,.05); }
 
-/* ── Theme toggle ── */
-.pf-theme-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 13px 16px;
-}
-.pf-switch { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
-.pf-switch input { opacity: 0; width: 0; height: 0; }
-.pf-switch .slider {
-  position: absolute;
-  inset: 0;
-  background: #1c1c22;
-  border: 1px solid #2a2a34;
-  border-radius: 11px;
-  cursor: pointer;
-  transition: all .2s;
-}
-.pf-switch .slider::before {
-  content: '';
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  left: 2px;
-  bottom: 2px;
-  background: #505060;
-  border-radius: 50%;
-  transition: all .2s;
-}
-.pf-switch input:checked + .slider { background: var(--g); border-color: var(--g); }
-.pf-switch input:checked + .slider::before { transform: translateX(18px); background: #041a0c; }
-
-/* ════════════════════════════════
-   BOTTOM NAV
-════════════════════════════════ */
+/* ── Bottom nav ── */
 .client-nav {
   position: absolute !important;
   bottom: 0 !important;
-  left: 0;
-  right: 0;
+  left: 0; right: 0;
   height: var(--bottom-nav-h);
   box-sizing: border-box;
   background: rgba(8,8,8,.96);
@@ -394,39 +299,25 @@ body {
   border-top: 1px solid #111116;
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
-
 .cnav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  color: #38383e;
-  font-size: .55rem;
-  cursor: pointer;
-  padding: 6px 20px;
-  transition: color .18s;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  font-weight: 600;
-  text-decoration: none;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  color: #38383e; font-size: .55rem; cursor: pointer;
+  padding: 6px 20px; transition: color .18s;
+  text-transform: uppercase; letter-spacing: .06em; font-weight: 600; text-decoration: none;
 }
-.cnav-item:hover { color: #666678; }
+.cnav-item:hover  { color: #666678; }
 .cnav-item.active { color: var(--g) !important; }
 .cnav-icon { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
 .cnav-icon svg { width: 20px; height: 20px; }
 
-/* ════════════════════════════════
-   LOGOUT POPUP
-════════════════════════════════ */
+/* ── Logout popup ── */
 .lo-overlay {
   display: none;
-  position: fixed;
-  inset: 0;
+  position: fixed; inset: 0;
   background: rgba(0,0,0,.72);
   backdrop-filter: blur(6px);
   z-index: 9999;
-  align-items: center;
-  justify-content: center;
+  align-items: center; justify-content: center;
   padding: 20px;
 }
 .lo-overlay.show { display: flex; }
@@ -434,17 +325,16 @@ body {
   background: #0e0e11;
   border: 1px solid #1e1e26;
   border-radius: 20px;
-  max-width: 320px;
-  width: 100%;
+  max-width: 320px; width: 100%;
   overflow: hidden;
   box-shadow: 0 24px 60px rgba(0,0,0,.8);
   animation: popIn .3s cubic-bezier(.34,1.56,.64,1);
 }
-@keyframes popIn { from { opacity: 0; transform: scale(.92) translateY(8px); } to { opacity: 1; transform: none; } }
-.lo-body { padding: 24px; text-align: center; }
-.lo-icon { font-size: 2rem; margin-bottom: 10px; }
-.lo-title { font-size: 1rem; font-weight: 700; color: #d8d8e0; margin-bottom: 5px; letter-spacing: -.02em; }
-.lo-desc { color: #44444e; font-size: .8rem; line-height: 1.45; }
+@keyframes popIn { from { opacity:0; transform:scale(.92) translateY(8px); } to { opacity:1; transform:none; } }
+.lo-body   { padding: 24px; text-align: center; }
+.lo-icon   { font-size: 2rem; margin-bottom: 10px; }
+.lo-title  { font-size: 1rem; font-weight: 700; color: #d8d8e0; margin-bottom: 5px; letter-spacing: -.02em; }
+.lo-desc   { color: #44444e; font-size: .8rem; line-height: 1.45; }
 .lo-actions { display: flex; border-top: 1px solid #161619; }
 .lo-actions button {
   flex: 1; padding: 14px; border: none; background: transparent;
@@ -452,27 +342,18 @@ body {
 }
 .lo-actions button:first-child { border-right: 1px solid #161619; }
 .lo-actions button:first-child:hover { background: rgba(255,255,255,.03); }
-.lo-actions button:last-child { color: #f87171; font-weight: 600; }
+.lo-actions button:last-child  { color: #f87171; font-weight: 600; }
 .lo-actions button:last-child:hover { background: rgba(248,113,113,.06); }
 
 /* ── Toast ── */
 .toast {
   position: fixed;
-  bottom: -80px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #111114;
-  border: 1px solid #222228;
-  color: #d8d8e0;
-  padding: 10px 20px;
-  border-radius: 12px;
-  font-size: .82rem;
-  z-index: 10000;
-  box-shadow: 0 14px 40px rgba(0,0,0,.7);
+  bottom: -80px; left: 50%; transform: translateX(-50%);
+  background: #111114; border: 1px solid #222228; color: #d8d8e0;
+  padding: 10px 20px; border-radius: 12px; font-size: .82rem;
+  z-index: 10000; box-shadow: 0 14px 40px rgba(0,0,0,.7);
   transition: bottom .32s cubic-bezier(.175,.885,.32,1.275);
-  max-width: 88vw;
-  text-align: center;
-  font-weight: 500;
+  max-width: 88vw; text-align: center; font-weight: 500;
 }
 .toast.show { bottom: 80px; }
 </style>
@@ -505,13 +386,8 @@ body {
 
     <!-- ══════════ IDENTITY CARD ══════════ -->
     <div class="pf-id-card">
-      <div class="pf-user-row">
-        <div class="pf-initials" id="pfAvatar">U</div>
-        <div class="pf-id-info">
-          <div class="pf-id-name" id="pfName">-</div>
-          <div class="pf-id-email" id="pfEmail">-</div>
-        </div>
-      </div>
+      <div class="pf-id-name" id="pfName">-</div>
+      <div class="pf-id-email" id="pfEmail">-</div>
       <div class="pf-badges">
         <span class="pf-chip"><span class="pf-chip-dot"></span>Conta ativa</span>
         <span class="pf-chip warn" id="chipWarn" style="display:none">Telefone pendente</span>
@@ -533,30 +409,6 @@ body {
           <div class="fh" id="phoneHint">Obrigatório para receber atualizações</div>
         </div>
         <button class="btn-save" id="btnSave" onclick="saveProfile()">Salvar alterações</button>
-      </div>
-    </div>
-
-    <!-- ══════════ APARÊNCIA ══════════ -->
-    <div class="pf-section">
-      <div class="pf-sec-label">Aparência</div>
-      <div class="pf-theme-row">
-        <div class="pf-item-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="5"/>
-            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-          </svg>
-        </div>
-        <div class="pf-item-text">
-          <div class="pf-item-title">Tema claro</div>
-          <div class="pf-item-sub">Alternar entre claro e escuro</div>
-        </div>
-        <label class="pf-switch">
-          <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
-          <span class="slider"></span>
-        </label>
       </div>
     </div>
 
@@ -700,90 +552,123 @@ body {
 <script>
 const FC={apiKey:"AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",authDomain:"pedrad-814d0.firebaseapp.com",projectId:"pedrad-814d0",storageBucket:"pedrad-814d0.appspot.com",messagingSenderId:"293587190550",appId:"1:293587190550:web:80c9399f82847c80e20637"};
 if(!firebase.apps.length)firebase.initializeApp(FC);
-const db=firebase.firestore(),auth=firebase.auth();
-let currentUser=null,userData=null;
+const db=firebase.firestore(), auth=firebase.auth();
+let currentUser=null;
 
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2500)}
 function goBack(){if(document.referrer&&document.referrer.includes(location.host))history.back();else location.href='home.html'}
 
-// Theme
-function toggleTheme(){const c=document.documentElement.getAttribute('data-theme')||'dark';const n=c==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('pedrad-theme',n);const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=n==='dark'?'#0a0a0c':'#f5f5f7';document.getElementById('themeToggle').checked=n==='light'}
-document.addEventListener('DOMContentLoaded',()=>{document.getElementById('themeToggle').checked=(localStorage.getItem('pedrad-theme')||'dark')==='light'});
+// ── Phone formatter ──
+function fmtPhone(v){
+  v=String(v||'').replace(/\D/g,'');
+  if(v.length<=2)return v;
+  if(v.length<=6)return`(${v.slice(0,2)}) ${v.slice(2)}`;
+  if(v.length<=10)return`(${v.slice(0,2)}) ${v.slice(2,6)}-${v.slice(6)}`;
+  return`(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7,11)}`;
+}
 
-// Phone formatter
-function fmtPhone(v){v=String(v||'').replace(/\D/g,'');if(v.length<=2)return v;if(v.length<=7)return`(${v.slice(0,2)}) ${v.slice(2)}`;return`(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7,11)}`}
-document.getElementById('inPhone').addEventListener('input',function(e){e.target.value=fmtPhone(e.target.value);if(e.target.value.replace(/\D/g,'').length>=10){e.target.classList.remove('error');document.getElementById('phoneHint').textContent='Obrigatório para receber atualizações';document.getElementById('phoneHint').classList.remove('error')}updateStatus()});
+document.getElementById('inPhone').addEventListener('input',function(e){
+  const cur=e.target.value;
+  e.target.value=fmtPhone(cur);
+  const digits=e.target.value.replace(/\D/g,'');
+  if(digits.length>=10){
+    e.target.classList.remove('error');
+    document.getElementById('phoneHint').textContent='Obrigatório para receber atualizações';
+    document.getElementById('phoneHint').classList.remove('error');
+  }
+  updateStatus();
+});
 
-// Status
+// ── Status chips ──
 function updateStatus(){
-  const ph=(document.getElementById('inPhone').value||'').replace(/\D/g,'');
-  const ok=ph.length>=10;
+  const ok=(document.getElementById('inPhone').value||'').replace(/\D/g,'').length>=10;
   document.getElementById('alertInc').classList.toggle('show',!ok);
   document.getElementById('chipWarn').style.display=ok?'none':'inline-flex';
   document.getElementById('chipOk').style.display=ok?'inline-flex':'none';
 }
 
-// Auth
+// ── Auth ──
 auth.onAuthStateChanged(async user=>{
   if(!user){location.href='index.html';return}
   currentUser=user;
-  document.getElementById('pfEmail').textContent=user.email||'-';
-  document.getElementById('pfAvatar').textContent=(user.displayName||user.email||'U')[0].toUpperCase();
   document.getElementById('pfName').textContent=user.displayName||'Usuário';
+  document.getElementById('pfEmail').textContent=user.email||'-';
   try{
     const doc=await db.collection('users').doc(user.uid).get();
-    userData=doc.exists?doc.data():{};
-    document.getElementById('inName').value=userData.name||user.displayName||'';
-    document.getElementById('inPhone').value=fmtPhone(userData.phone||'');
-    document.getElementById('pfName').textContent=userData.name||user.displayName||'Usuário';
+    const data=doc.exists?doc.data():{};
+    document.getElementById('inName').value=data.name||user.displayName||'';
+    document.getElementById('inPhone').value=fmtPhone(data.phone||'');
+    document.getElementById('pfName').textContent=data.name||user.displayName||'Usuário';
     updateStatus();
     if(location.hash==='#phone'||localStorage.getItem('NEED_PHONE')==='1'){
       localStorage.removeItem('NEED_PHONE');
-      const el=document.getElementById('inPhone');el.focus();el.scrollIntoView({behavior:'smooth',block:'center'});
+      const el=document.getElementById('inPhone');
+      el.focus();
+      el.scrollIntoView({behavior:'smooth',block:'center'});
     }
-  }catch(e){userData={}}
+  }catch(e){console.error('load profile',e)}
 });
 
-// Save
+// ── Save ──
 async function saveProfile(){
   if(!currentUser)return;
   const name=(document.getElementById('inName').value||'').trim();
   const phone=(document.getElementById('inPhone').value||'').replace(/\D/g,'');
+
   if(phone.length<10){
     document.getElementById('inPhone').classList.add('error');
-    document.getElementById('phoneHint').textContent='Telefone obrigatório (mínimo 10 dígitos)';
+    document.getElementById('phoneHint').textContent='Informe um telefone válido (mínimo 10 dígitos)';
     document.getElementById('phoneHint').classList.add('error');
-    document.getElementById('inPhone').focus();return;
+    document.getElementById('inPhone').focus();
+    return;
   }
-  const btn=document.getElementById('btnSave');btn.disabled=true;btn.textContent='Salvando...';
+
+  const btn=document.getElementById('btnSave');
+  btn.disabled=true;btn.textContent='Salvando…';
+
   try{
-    if(name&&name!==currentUser.displayName)await currentUser.updateProfile({displayName:name});
+    // Update display name only if changed
+    if(name&&name!==currentUser.displayName){
+      try{ await currentUser.updateProfile({displayName:name}); }catch(_){}
+    }
+
+    // Save to Firestore — phone as string, no unrelated field deletions
     await db.collection('users').doc(currentUser.uid).set({
-      name,phone,
-      cpf:firebase.firestore.FieldValue.delete(),
+      name:name||currentUser.displayName||'',
+      phone,
       email:currentUser.email,
       updatedAt:firebase.firestore.FieldValue.serverTimestamp()
     },{merge:true});
-    localStorage.setItem('pedrad_user_data',JSON.stringify({name,phone,
-      street:JSON.parse(localStorage.getItem('pedrad_user_data')||'{}').street||'',
-      number:JSON.parse(localStorage.getItem('pedrad_user_data')||'{}').number||'',
-      complement:JSON.parse(localStorage.getItem('pedrad_user_data')||'{}').complement||'',
-      neighborhood:JSON.parse(localStorage.getItem('pedrad_user_data')||'{}').neighborhood||'',
-      reference:JSON.parse(localStorage.getItem('pedrad_user_data')||'{}').reference||''
-    }));
-    document.getElementById('pfName').textContent=name||'Usuário';
+
+    // Sync localStorage for checkout — isolated try so it never masks Firestore success
+    try{
+      const prev=JSON.parse(localStorage.getItem('pedrad_user_data')||'{}');
+      localStorage.setItem('pedrad_user_data',JSON.stringify({
+        ...prev, name:name||currentUser.displayName||'', phone
+      }));
+    }catch(_){}
+
+    document.getElementById('pfName').textContent=name||currentUser.displayName||'Usuário';
     document.getElementById('inPhone').classList.remove('error');
     document.getElementById('phoneHint').textContent='Obrigatório para receber atualizações';
     document.getElementById('phoneHint').classList.remove('error');
-    updateStatus();toast('Perfil salvo!');
-  }catch(e){console.error(e);toast('Erro ao salvar')}
-  finally{btn.disabled=false;btn.textContent='Salvar alterações'}
+    updateStatus();
+    toast('Perfil salvo!');
+  }catch(e){
+    console.error('save profile',e);
+    toast('Erro ao salvar. Tente novamente.');
+  }finally{
+    btn.disabled=false;btn.textContent='Salvar alterações';
+  }
 }
 
-// Logout
+// ── Logout ──
 function showLogout(){document.getElementById('loPopup').classList.add('show')}
 function hideLogout(){document.getElementById('loPopup').classList.remove('show')}
-async function doLogout(){try{await auth.signOut();location.href='index.html'}catch(e){toast('Erro')}}
+async function doLogout(){
+  try{await auth.signOut();location.href='index.html';}
+  catch(e){toast('Erro ao sair')}
+}
 </script>
 </body>
 </html>
