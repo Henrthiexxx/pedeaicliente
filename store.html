@@ -9,6 +9,7 @@
 <script>(function(){var t=localStorage.getItem('pedrad-theme')||'dark';document.documentElement.setAttribute('data-theme',t)})()</script>
 <link rel="stylesheet" href="client.css">
 <script src="pwa-register.js" defer></script>
+<script src="page-transition.js" defer></script>
 <style>
 	.hdr-btn.icon-svg{display:inline-flex;align-items:center;justify-content:center;padding:0}
 	.hdr-btn.icon-svg svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -73,13 +74,14 @@ const db=firebase.firestore(),auth=firebase.auth();
 
 const params=new URLSearchParams(location.search);
 const storeId=params.get('id');
+const initialProductId=params.get('productId');
 
 let store=null, products=[], categories=[], cart=[], selectedCat='all';
 
 function esc(s){const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML}
 function money(v){return(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2500)}
-function goInfo(){if(storeId)location.href='store-info.html?id='+storeId}
+function goInfo(){if(storeId)navigateTo('store-info.html?id='+storeId)}
 
 // ══════════ HOURS / OPEN STATUS ══════════
 const DAY_KEYS=['sun','mon','tue','wed','thu','fri','sat'];
@@ -505,7 +507,7 @@ function goCheckout(){
     localStorage.setItem('checkoutStoreId',store.id);
     localStorage.setItem('cache_store_'+store.id,JSON.stringify({ts:Date.now(),data:{id:store.id,name:store.name,deliveryType:store.deliveryType||'app',phone:store.phone||'',address:store.address||''}}));
     sessionStorage.setItem('pedrad_store',JSON.stringify({id:store.id,name:store.name,deliveryType:store.deliveryType||'app',phone:store.phone||'',address:store.address||''}));
-    location.href='checkout.html?storeId='+store.id;
+    navigateTo('checkout.html?storeId='+store.id);
 }
 
 // ══════════ INIT ══════════
@@ -521,6 +523,9 @@ function goCheckout(){
         if(savedStore.id===storeId&&saved.length)cart=saved;
     }catch(e){}
     updateCartBadge();
+    if(initialProductId){
+        setTimeout(()=>openProduct(initialProductId), 80);
+    }
 
     setInterval(()=>{ if(store) refreshStoreView(); }, 60000);
 })();

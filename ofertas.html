@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>Ofertas - Pedra Delivery</title>
+<meta name="theme-color" content="#080808">
+<link rel="manifest" href="manifest.json">
+<script>(function(){var t=localStorage.getItem('pedrad-theme')||'dark';document.documentElement.setAttribute('data-theme',t)})()</script>
+<link rel="stylesheet" href="client.css">
+<script src="pwa-register.js" defer></script>
+<script src="page-transition.js" defer></script>
+<style>
+body{background:radial-gradient(ellipse 110% 32% at 50% 0%,#0d2018 0%,transparent 68%),#080808}
+.blank-hdr{position:sticky;top:0;z-index:10;height:64px;display:flex;align-items:center;gap:10px;padding:0 14px;background:rgba(8,8,8,.92);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.04)}
+.blank-back{width:36px;height:36px;border:0;border-radius:50%;background:#111116;color:#d8d8e0;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.blank-title{font-size:.96rem;font-weight:700}
+.blank-page{min-height:calc(100dvh - 64px)}
+</style>
+</head>
+<body class="page-enter">
+<header class="blank-hdr">
+  <button class="blank-back" onclick="history.back()" aria-label="Voltar">&lt;</button>
+  <div class="blank-title">Ofertas</div>
+</header>
+<main class="blank-page"></main>
+</body>
+</html>

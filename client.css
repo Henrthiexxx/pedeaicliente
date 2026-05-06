@@ -21,7 +21,8 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:var(--font);background:radial-gradient(ellipse 110% 32% at 50% 0%,#0d2018 0%,transparent 68%),radial-gradient(ellipse 80% 20% at 50% 100%,#090d0a 0%,transparent 60%),#080808;color:var(--text-0);min-height:100dvh;-webkit-tap-highlight-color:transparent;transition:background .3s,color .3s}
 @keyframes appIn{from{opacity:0;transform:scale(1.025)}to{opacity:1;transform:scale(1)}}
-.page-enter{animation:appIn .34s cubic-bezier(.22,.61,.36,1) both}
+.page-enter{animation:appIn .42s cubic-bezier(.16,1,.3,1) both}
+body.page-leave{opacity:0;transform:translateY(8px);filter:blur(1px);transition:opacity .22s ease,transform .22s ease,filter .22s ease}
 a{color:var(--store-accent);text-decoration:none}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
@@ -36,6 +37,23 @@ a{color:var(--store-accent);text-decoration:none}
 .toast{position:fixed;bottom:-80px;left:50%;transform:translateX(-50%);background:#0e0e11;border:1px solid #1e1e26;color:#d8d8e0;padding:10px 20px;border-radius:var(--r);font-size:.84rem;z-index:10000;box-shadow:var(--sh-lg);transition:bottom .35s cubic-bezier(.175,.885,.32,1.275);max-width:90vw;text-align:center;font-weight:500}
 .toast.show{bottom:76px}
 .loading-state{padding:60px 20px;text-align:center;color:var(--text-2);font-size:.88rem}
+
+/* ══════════ WELCOME POPUP ══════════ */
+.wp-overlay{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;transition:background .3s;pointer-events:none}
+.wp-overlay.show{background:rgba(0,0,0,.62);pointer-events:auto}
+.wp-popup-container{width:min(80vw,360px);height:min(80vh,640px);max-width:360px;max-height:640px;position:relative;display:flex;align-items:center;justify-content:center}
+.wp-popup-close{position:absolute;top:-10px;right:-10px;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.08);background:rgba(14,14,17,.86);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:var(--text-0);font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;transition:all .18s}
+.wp-popup-close:hover{border-color:var(--store-accent);background:rgba(34,197,94,.14)}
+.wp-popup-card{width:100%;height:100%;background:rgba(14,14,17,.9);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;transform:scale(.88) translateY(20px);opacity:0;transition:all .45s cubic-bezier(.16,1,.3,1);transition-delay:.12s;box-shadow:var(--sh-lg)}
+.wp-overlay.show .wp-popup-card{transform:scale(1) translateY(0);opacity:1}
+.wp-popup-title{font-size:1.1rem;font-weight:700;line-height:1.3}.wp-popup-message{font-size:.82rem;color:var(--text-1);line-height:1.5;margin-top:6px}
+.wp-popup-cta{width:100%;padding:12px;border:none;font-size:.9rem;font-weight:700;cursor:pointer;margin-top:12px;transition:all .18s;letter-spacing:.3px;text-align:center;border-radius:8px}.wp-popup-cta:active{transform:scale(.97)}
+.wp-mode-full{position:relative}.wp-full-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+.wp-full-gradient{position:relative;z-index:1;margin-top:auto;padding:50px 18px 18px;background:linear-gradient(transparent,rgba(0,0,0,.85) 35%);display:flex;flex-direction:column}
+.wp-mode-full .wp-popup-title{text-shadow:0 2px 8px rgba(0,0,0,.6)}.wp-mode-full .wp-popup-message{color:#ccc;text-shadow:0 1px 4px rgba(0,0,0,.5)}
+.wp-mode-semi{display:flex;flex-direction:column}.wp-semi-img{width:100%;flex:1 1 auto;min-height:0;overflow:hidden}.wp-semi-img img{width:100%;height:100%;object-fit:cover;display:block}
+.wp-popup-body{padding:18px;flex-shrink:0;display:flex;flex-direction:column}.wp-mode-semi .wp-popup-body{flex-shrink:0}
+@media(max-width:380px){.wp-popup-container{width:90vw;height:85vh}}@media(max-height:660px){.wp-popup-container{height:88vh}}
 
 /* ══════════ STORE HEADER ══════════ */
 .store-header{position:sticky;top:0;z-index:100;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:rgba(8,8,8,.92);backdrop-filter:blur(18px) saturate(150%);-webkit-backdrop-filter:blur(18px) saturate(150%);border-bottom:1px solid #111116;transition:background .3s}

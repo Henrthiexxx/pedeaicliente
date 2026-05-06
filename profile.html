@@ -2,175 +2,696 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
 <title>Meu Perfil — Pedra Delivery</title>
 <meta name="theme-color" content="#080808">
 <link rel="manifest" href="manifest.json">
-<script>(function(){var t=localStorage.getItem('pedrad-theme')||'dark';document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='dark'?'#0a0a0c':'#f5f5f7'})()</script>
+<script>(function(){var t=localStorage.getItem('pedrad-theme')||'dark';document.documentElement.setAttribute('data-theme',t)})()</script>
 <link rel="stylesheet" href="client.css">
 <script src="pwa-register.js" defer></script>
+<script src="page-transition.js" defer></script>
 <style>
-body{padding:0;margin:0;min-height:100dvh}
-body{background:radial-gradient(ellipse 110% 32% at 50% 0%,#0d2018 0%,transparent 68%),#080808!important}
-.pf-back{position:fixed;top:0;left:0;right:0;height:calc(52px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);padding-left:14px;padding-right:14px;background:var(--bg-1);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;z-index:100;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
-.pf-back-btn{width:36px;height:36px;border-radius:8px;background:var(--bg-2);border:1px solid var(--border);color:var(--text-0);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.pf-back-btn:hover{border-color:var(--border-h);transform:translateY(-1px)}
-.pf-back-title{font-size:.88rem;font-weight:600;letter-spacing:1px;text-transform:uppercase}
-.pf-wrap{min-height:100dvh;max-width:500px;margin:0 auto;padding:calc(68px + env(safe-area-inset-top)) 14px 100px}
+/* ── Page enter ── */
+@keyframes appIn {
+  from { opacity: 0; transform: scale(1.03); }
+  to   { opacity: 1; transform: scale(1); }
+}
+body { animation: appIn .38s cubic-bezier(.22,.61,.36,1) both; }
 
-/* Alert */
-.pf-alert{background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);border-radius:var(--r);padding:12px;margin-bottom:12px;display:none;align-items:flex-start;gap:8px;font-size:.82rem}
-.pf-alert.show{display:flex}
-.pf-alert-icon{color:var(--orange);font-size:1.1rem;flex-shrink:0;margin-top:1px}
-.pf-alert-title{font-weight:700;color:var(--orange);margin-bottom:2px;font-size:.84rem}
-.pf-alert-desc{color:var(--text-2);font-size:.78rem;line-height:1.4}
+/* ── Design tokens ── */
+:root {
+  --g: #22c55e;
+  --g-dim: rgba(34,197,94,.10);
+  --g-glow: rgba(34,197,94,.18);
+  --surface: #0e0e11;
+  --surface-2: #121216;
+  --glass: rgba(14,14,17,.82);
+  --bottom-nav-h: calc(64px + env(safe-area-inset-bottom, 0px));
+}
 
-/* Header card */
-.pf-header{background:var(--bg-1);border:1px solid var(--border);border-radius:var(--r);padding:16px;display:flex;gap:12px;align-items:center;margin-bottom:12px;box-shadow:var(--sh-sm)}
-.pf-avatar{width:64px;height:64px;border-radius:14px;border:1px solid var(--border);background:var(--bg-2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:800;flex-shrink:0}
-.pf-identity{flex:1;min-width:0}
-.pf-name{font-size:1.05rem;font-weight:700;word-break:break-word}
-.pf-email{font-size:.78rem;color:var(--text-2);word-break:break-word;margin-top:2px}
-.pf-badges{margin-top:8px;display:flex;flex-wrap:wrap;gap:4px}
-.pf-chip{border:1px solid var(--border);background:var(--bg-2);color:var(--text-2);border-radius:16px;padding:3px 8px;font-size:.68rem;display:inline-flex;align-items:center;gap:4px}
-.pf-chip-dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
-.pf-chip.warn{border-color:rgba(251,191,36,.3);color:var(--orange);background:rgba(251,191,36,.06)}
-.pf-chip.ok{border-color:rgba(52,211,153,.3);color:var(--green);background:rgba(52,211,153,.06)}
+html {
+  height: 100%;
+  overflow: hidden;
+  background: #080808;
+}
 
-/* Form */
-.pf-form{background:var(--bg-1);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px;box-shadow:var(--sh-sm)}
-.pf-form-title{font-size:.78rem;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:6px}
-.fg{margin-bottom:14px}
-.fl{display:block;margin-bottom:4px;font-size:.68rem;color:var(--text-2);text-transform:uppercase;letter-spacing:.6px;font-weight:500}
-.fl .req{color:var(--red)}.fl .opt{color:var(--text-3);font-size:.6rem;margin-left:3px}
-.fi{width:100%;padding:11px 14px;border-radius:var(--rs);background:var(--bg-2);border:1px solid var(--border);color:var(--text-0);font-size:.88rem;font-family:inherit;transition:border .2s,box-shadow .2s}
-.fi:focus{outline:none;border-color:var(--border-h);box-shadow:0 0 0 3px rgba(96,165,250,.08)}
-.fi.error{border-color:var(--red)}
-.fi::placeholder{color:var(--text-3)}
-.fh{font-size:.68rem;color:var(--text-3);margin-top:4px}.fh.error{color:var(--red)}
-.btn-save{width:100%;padding:13px;border-radius:var(--rs);border:none;background:var(--accent);color:var(--accent-t);font-size:.84rem;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.6px;font-family:inherit;transition:all .2s;box-shadow:var(--sh-sm)}
-.btn-save:hover{transform:translateY(-1px);box-shadow:var(--sh-md)}.btn-save:active{transform:scale(.98)}.btn-save:disabled{opacity:.4;cursor:not-allowed;transform:none}
+body {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background:
+    radial-gradient(ellipse 110% 32% at 50% 0%, #0d2018 0%, transparent 68%),
+    radial-gradient(ellipse 80% 20% at 50% 100%, #090d0a 0%, transparent 60%),
+    #080808;
+}
 
-/* Menu */
-.pf-menu{display:flex;flex-direction:column;gap:10px}
-.pf-sec{background:var(--bg-1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh-sm)}
-.pf-sec-title{padding:10px 14px;font-size:.64rem;letter-spacing:1px;text-transform:uppercase;color:var(--text-3);border-bottom:1px solid var(--border)}
-.pf-item{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .12s;font-size:.86rem}
-.pf-item:last-child{border-bottom:none}
-.pf-item:hover{background:rgba(255,255,255,.02)}
-[data-theme="light"] .pf-item:hover{background:rgba(0,0,0,.02)}
-.pf-item-text{flex:1;min-width:0}
-.pf-item-title{font-weight:600;font-size:.86rem;margin-bottom:1px}
-.pf-item-sub{font-size:.72rem;color:var(--text-2)}
-.pf-item-arrow{color:var(--text-3);font-size:1rem}
-.pf-item.danger .pf-item-title{color:var(--red)}
+.pf-scroll {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: var(--bottom-nav-h);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
 
-/* Theme row */
-.pf-theme-row{display:flex;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border)}
-.pf-theme-row .pf-item-text{flex:1}
-.pf-switch{position:relative;width:40px;height:22px;flex-shrink:0}
-.pf-switch input{opacity:0;width:0;height:0}
-.pf-switch .slider{position:absolute;inset:0;background:var(--bg-2);border:1px solid var(--border);border-radius:11px;cursor:pointer;transition:all .2s}
-.pf-switch .slider::before{content:'';position:absolute;width:16px;height:16px;left:2px;bottom:2px;background:var(--text-2);border-radius:50%;transition:all .2s}
-.pf-switch input:checked+.slider{background:var(--green);border-color:var(--green)}
-.pf-switch input:checked+.slider::before{transform:translateX(18px);background:#fff}
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-thumb { background: #2a2a34; border-radius: 2px; }
 
-/* Logout popup */
-.lo-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;padding:20px}
-.lo-overlay.show{display:flex}
-.lo-card{background:var(--bg-1);border:1px solid var(--border);border-radius:var(--r);max-width:320px;width:100%;overflow:hidden;box-shadow:var(--sh-lg);animation:popIn .3s cubic-bezier(.34,1.56,.64,1)}
-@keyframes popIn{from{opacity:0;transform:scale(.92) translateY(8px)}to{opacity:1;transform:none}}
-.lo-body{padding:22px;text-align:center}
-.lo-icon{font-size:2rem;margin-bottom:10px;color:var(--text-2)}
-.lo-title{font-size:1rem;font-weight:600;margin-bottom:4px}
-.lo-desc{color:var(--text-2);font-size:.82rem;line-height:1.4}
-.lo-actions{display:flex;border-top:1px solid var(--border)}
-.lo-actions button{flex:1;padding:14px;border:none;background:transparent;font-size:.84rem;cursor:pointer;font-family:inherit;transition:background .12s}
-.lo-actions button:first-child{color:var(--text-2);border-right:1px solid var(--border)}
-.lo-actions button:first-child:hover{background:var(--bg-2)}
-.lo-actions button:last-child{color:var(--red);font-weight:600}
-.lo-actions button:last-child:hover{background:rgba(248,113,113,.06)}
+/* ════════════════════════════════
+   HEADER
+════════════════════════════════ */
+.pf-hdr {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 18px 14px;
+  background: var(--glass);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border-bottom: 1px solid rgba(255,255,255,.04);
+}
+
+.pf-back-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: var(--surface-2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #8888a0;
+  transition: background .15s, color .15s;
+  flex-shrink: 0;
+}
+.pf-back-btn:hover { background: #1c1c22; color: #f0f0f2; }
+.pf-back-btn svg { width: 17px; height: 17px; }
+
+.pf-hdr-title {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  color: #f0f0f2;
+}
+
+/* ════════════════════════════════
+   BODY CONTENT
+════════════════════════════════ */
+.pf-body {
+  padding: 14px 14px 20px;
+  max-width: 500px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ════════════════════════════════
+   ALERT
+════════════════════════════════ */
+.pf-alert {
+  background: rgba(251,191,36,.06);
+  border: 1px solid rgba(251,191,36,.2);
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: none;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: .82rem;
+}
+.pf-alert.show { display: flex; }
+.pf-alert-icon { color: #fbbf24; font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+.pf-alert-title { font-weight: 700; color: #fbbf24; margin-bottom: 2px; font-size: .84rem; }
+.pf-alert-desc { color: #54545e; font-size: .78rem; line-height: 1.4; }
+
+/* ════════════════════════════════
+   PROFILE IDENTITY CARD
+════════════════════════════════ */
+.pf-id-card {
+  background: var(--surface);
+  border: 1px solid #1a1a22;
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.45);
+}
+
+.pf-user-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.pf-initials {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--g-dim);
+  border: 1px solid rgba(34,197,94,.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--g);
+  flex-shrink: 0;
+  letter-spacing: -.02em;
+  box-shadow: 0 0 0 4px rgba(34,197,94,.06);
+}
+
+.pf-id-info { flex: 1; min-width: 0; }
+.pf-id-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #d8d8e0;
+  letter-spacing: -.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pf-id-email {
+  font-size: .74rem;
+  color: #44444e;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pf-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.pf-chip {
+  border: 1px solid #1e1e26;
+  background: #111116;
+  color: #505060;
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: .64rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  letter-spacing: .02em;
+}
+.pf-chip-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--g); }
+.pf-chip.ok  { border-color: rgba(34,197,94,.24); color: var(--g); background: var(--g-dim); }
+.pf-chip.warn { border-color: rgba(251,191,36,.22); color: #fbbf24; background: rgba(251,191,36,.06); }
+
+/* ════════════════════════════════
+   SECTION CARD
+════════════════════════════════ */
+.pf-section {
+  background: var(--surface);
+  border: 1px solid #1a1a22;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,.35);
+}
+
+.pf-sec-label {
+  padding: 10px 16px 9px;
+  font-size: .64rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #34343e;
+  border-bottom: 1px solid #161619;
+}
+
+/* ════════════════════════════════
+   FORM
+════════════════════════════════ */
+.pf-form { padding: 14px 16px 16px; }
+
+.fg { margin-bottom: 14px; }
+
+.fl {
+  display: block;
+  margin-bottom: 5px;
+  font-size: .64rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: #44444e;
+}
+.fl .req { color: #f87171; }
+
+.fi {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px solid #1e1e26;
+  color: #d8d8e0;
+  font-size: .88rem;
+  font-family: inherit;
+  transition: border-color .18s, box-shadow .18s;
+  box-sizing: border-box;
+}
+.fi:focus { outline: none; border-color: rgba(34,197,94,.35); box-shadow: 0 0 0 3px rgba(34,197,94,.06); }
+.fi.error { border-color: rgba(248,113,113,.45); }
+.fi::placeholder { color: #34343e; }
+
+.fh { font-size: .68rem; color: #34343e; margin-top: 5px; }
+.fh.error { color: #f87171; }
+
+.btn-save {
+  width: 100%;
+  padding: 13px;
+  background: linear-gradient(180deg, #2edb6b 0%, #1db857 100%);
+  color: #041a0c;
+  font-size: .86rem;
+  font-weight: 800;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: -.01em;
+  box-shadow:
+    0 6px 0 #0e8038,
+    0 10px 28px rgba(34,197,94,.35),
+    inset 0 1px 0 rgba(255,255,255,.25);
+  transform: translateY(-2px);
+  transition: transform .14s, box-shadow .14s;
+}
+.btn-save:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 0 #0e8038, 0 16px 36px rgba(34,197,94,.45), inset 0 1px 0 rgba(255,255,255,.28);
+}
+.btn-save:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #0e8038, 0 4px 12px rgba(34,197,94,.2), inset 0 1px 0 rgba(255,255,255,.15);
+}
+.btn-save:disabled { opacity: .4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ════════════════════════════════
+   MENU ITEMS
+════════════════════════════════ */
+.pf-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #0d0d10;
+  transition: background .15s;
+}
+.pf-item:last-child { border-bottom: none; }
+.pf-item:hover { background: rgba(255,255,255,.018); }
+.pf-item:active { background: rgba(255,255,255,.03); }
+
+.pf-item-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: var(--surface-2);
+  border: 1px solid #1e1e26;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #505060;
+  flex-shrink: 0;
+}
+.pf-item-icon svg { width: 15px; height: 15px; }
+
+.pf-item-text { flex: 1; min-width: 0; }
+.pf-item-title { font-size: .86rem; font-weight: 600; color: #b0b0bc; letter-spacing: -.01em; }
+.pf-item-sub { font-size: .7rem; color: #44444e; margin-top: 1px; }
+
+.pf-item-arrow { color: #2e2e38; display: flex; align-items: center; flex-shrink: 0; }
+.pf-item-arrow svg { width: 16px; height: 16px; }
+
+.pf-item.danger .pf-item-title { color: #f87171; }
+.pf-item.danger .pf-item-icon {
+  border-color: rgba(248,113,113,.16);
+  color: #f87171;
+  background: rgba(248,113,113,.05);
+}
+
+/* ── Theme toggle ── */
+.pf-theme-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+}
+.pf-switch { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+.pf-switch input { opacity: 0; width: 0; height: 0; }
+.pf-switch .slider {
+  position: absolute;
+  inset: 0;
+  background: #1c1c22;
+  border: 1px solid #2a2a34;
+  border-radius: 11px;
+  cursor: pointer;
+  transition: all .2s;
+}
+.pf-switch .slider::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  left: 2px;
+  bottom: 2px;
+  background: #505060;
+  border-radius: 50%;
+  transition: all .2s;
+}
+.pf-switch input:checked + .slider { background: var(--g); border-color: var(--g); }
+.pf-switch input:checked + .slider::before { transform: translateX(18px); background: #041a0c; }
+
+/* ════════════════════════════════
+   BOTTOM NAV
+════════════════════════════════ */
+.client-nav {
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0;
+  right: 0;
+  height: var(--bottom-nav-h);
+  box-sizing: border-box;
+  background: rgba(8,8,8,.96);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 100;
+  border-top: 1px solid #111116;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.cnav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: #38383e;
+  font-size: .55rem;
+  cursor: pointer;
+  padding: 6px 20px;
+  transition: color .18s;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-weight: 600;
+  text-decoration: none;
+}
+.cnav-item:hover { color: #666678; }
+.cnav-item.active { color: var(--g) !important; }
+.cnav-icon { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+.cnav-icon svg { width: 20px; height: 20px; }
+
+/* ════════════════════════════════
+   LOGOUT POPUP
+════════════════════════════════ */
+.lo-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.72);
+  backdrop-filter: blur(6px);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.lo-overlay.show { display: flex; }
+.lo-card {
+  background: #0e0e11;
+  border: 1px solid #1e1e26;
+  border-radius: 20px;
+  max-width: 320px;
+  width: 100%;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,.8);
+  animation: popIn .3s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popIn { from { opacity: 0; transform: scale(.92) translateY(8px); } to { opacity: 1; transform: none; } }
+.lo-body { padding: 24px; text-align: center; }
+.lo-icon { font-size: 2rem; margin-bottom: 10px; }
+.lo-title { font-size: 1rem; font-weight: 700; color: #d8d8e0; margin-bottom: 5px; letter-spacing: -.02em; }
+.lo-desc { color: #44444e; font-size: .8rem; line-height: 1.45; }
+.lo-actions { display: flex; border-top: 1px solid #161619; }
+.lo-actions button {
+  flex: 1; padding: 14px; border: none; background: transparent;
+  font-size: .84rem; cursor: pointer; font-family: inherit; transition: background .12s; color: #8888a0;
+}
+.lo-actions button:first-child { border-right: 1px solid #161619; }
+.lo-actions button:first-child:hover { background: rgba(255,255,255,.03); }
+.lo-actions button:last-child { color: #f87171; font-weight: 600; }
+.lo-actions button:last-child:hover { background: rgba(248,113,113,.06); }
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  bottom: -80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #111114;
+  border: 1px solid #222228;
+  color: #d8d8e0;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: .82rem;
+  z-index: 10000;
+  box-shadow: 0 14px 40px rgba(0,0,0,.7);
+  transition: bottom .32s cubic-bezier(.175,.885,.32,1.275);
+  max-width: 88vw;
+  text-align: center;
+  font-weight: 500;
+}
+.toast.show { bottom: 80px; }
 </style>
 </head>
-<body class="page-enter">
+<body>
 <div class="toast" id="toast"></div>
 
-<div class="pf-back">
-    <button class="pf-back-btn" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><polyline points="15 18 9 12 15 6"/></svg></button>
-    <div class="pf-back-title">Meu Perfil</div>
-</div>
+<div class="pf-scroll">
 
-<div class="pf-wrap">
+  <!-- ══════════ HEADER ══════════ -->
+  <div class="pf-hdr">
+    <button class="pf-back-btn" onclick="goBack()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+    <div class="pf-hdr-title">Meu Perfil</div>
+  </div>
+
+  <div class="pf-body">
+
+    <!-- ══════════ ALERT ══════════ -->
     <div class="pf-alert" id="alertInc">
-        <span class="pf-alert-icon">⚠</span>
-        <div><div class="pf-alert-title">Complete seu cadastro</div><div class="pf-alert-desc">Adicione seu telefone para poder fazer pedidos.</div></div>
+      <span class="pf-alert-icon">⚠</span>
+      <div>
+        <div class="pf-alert-title">Complete seu cadastro</div>
+        <div class="pf-alert-desc">Adicione seu telefone para poder fazer pedidos.</div>
+      </div>
     </div>
 
-    <div class="pf-header">
-        <div class="pf-avatar" id="pfAvatar">U</div>
-        <div class="pf-identity">
-            <div class="pf-name" id="pfName">-</div>
-            <div class="pf-email" id="pfEmail">-</div>
-            <div class="pf-badges">
-                <span class="pf-chip"><span class="pf-chip-dot"></span>Conta ativa</span>
-                <span class="pf-chip warn" id="chipWarn" style="display:none">Telefone pendente</span>
-                <span class="pf-chip ok" id="chipOk" style="display:none">Cadastro completo</span>
-            </div>
+    <!-- ══════════ IDENTITY CARD ══════════ -->
+    <div class="pf-id-card">
+      <div class="pf-user-row">
+        <div class="pf-initials" id="pfAvatar">U</div>
+        <div class="pf-id-info">
+          <div class="pf-id-name" id="pfName">-</div>
+          <div class="pf-id-email" id="pfEmail">-</div>
         </div>
+      </div>
+      <div class="pf-badges">
+        <span class="pf-chip"><span class="pf-chip-dot"></span>Conta ativa</span>
+        <span class="pf-chip warn" id="chipWarn" style="display:none">Telefone pendente</span>
+        <span class="pf-chip ok"  id="chipOk"   style="display:none">Cadastro completo</span>
+      </div>
     </div>
 
-    <div class="pf-form">
-        <div class="pf-form-title">○ Dados Pessoais</div>
-        <div class="fg"><label class="fl">Nome completo</label><input type="text" class="fi" id="inName" placeholder="Seu nome completo" autocomplete="name"></div>
-        <div class="fg"><label class="fl">Telefone / WhatsApp <span class="req">*</span></label><input type="tel" class="fi" id="inPhone" placeholder="(00) 00000-0000" maxlength="15" autocomplete="tel"><div class="fh" id="phoneHint">Obrigatório para receber atualizações</div></div>
+    <!-- ══════════ DADOS PESSOAIS ══════════ -->
+    <div class="pf-section">
+      <div class="pf-sec-label">Dados Pessoais</div>
+      <div class="pf-form">
+        <div class="fg">
+          <label class="fl">Nome completo</label>
+          <input type="text" class="fi" id="inName" placeholder="Seu nome completo" autocomplete="name">
+        </div>
+        <div class="fg">
+          <label class="fl">Telefone / WhatsApp <span class="req">*</span></label>
+          <input type="tel" class="fi" id="inPhone" placeholder="(00) 00000-0000" maxlength="15" autocomplete="tel">
+          <div class="fh" id="phoneHint">Obrigatório para receber atualizações</div>
+        </div>
         <button class="btn-save" id="btnSave" onclick="saveProfile()">Salvar alterações</button>
+      </div>
     </div>
 
-    <div class="pf-menu">
-        <div class="pf-sec">
-            <div class="pf-sec-title">Aparência</div>
-            <div class="pf-theme-row">
-                <div class="pf-item-text"><div class="pf-item-title">Tema claro</div><div class="pf-item-sub">Alternar entre claro e escuro</div></div>
-                <label class="pf-switch"><input type="checkbox" id="themeToggle" onchange="toggleTheme()"><span class="slider"></span></label>
-            </div>
+    <!-- ══════════ APARÊNCIA ══════════ -->
+    <div class="pf-section">
+      <div class="pf-sec-label">Aparência</div>
+      <div class="pf-theme-row">
+        <div class="pf-item-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
         </div>
-        <div class="pf-sec">
-            <div class="pf-sec-title">Conta</div>
-            <div class="pf-item" onclick="location.href='orders.html'"><div class="pf-item-text"><div class="pf-item-title">Histórico de pedidos</div><div class="pf-item-sub">Veja seus pedidos anteriores</div></div><span class="pf-item-arrow">›</span></div>
+        <div class="pf-item-text">
+          <div class="pf-item-title">Tema claro</div>
+          <div class="pf-item-sub">Alternar entre claro e escuro</div>
         </div>
-        <div class="pf-sec">
-            <div class="pf-sec-title">Privacidade e termos</div>
-            <div class="pf-item" onclick="location.href='privacy.html'"><div class="pf-item-text"><div class="pf-item-title">Política de privacidade</div><div class="pf-item-sub">Como seus dados são usados no app</div></div><span class="pf-item-arrow">›</span></div>
-            <div class="pf-item" onclick="location.href='terms.html'"><div class="pf-item-text"><div class="pf-item-title">Termos de uso</div><div class="pf-item-sub">Regras para pedidos, lojas e entregas</div></div><span class="pf-item-arrow">›</span></div>
-            <div class="pf-item danger" onclick="location.href='delete-account.html'"><div class="pf-item-text"><div class="pf-item-title">Excluir minha conta</div><div class="pf-item-sub">Solicitar exclusão da conta e dados</div></div><span class="pf-item-arrow">›</span></div>
-        </div>
-        <div class="pf-sec">
-            <div class="pf-sec-title">Sessão</div>
-            <div class="pf-item danger" onclick="showLogout()"><div class="pf-item-text"><div class="pf-item-title">Sair da conta</div><div class="pf-item-sub">Encerrar sessão neste dispositivo</div></div><span class="pf-item-arrow">›</span></div>
-        </div>
+        <label class="pf-switch">
+          <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+          <span class="slider"></span>
+        </label>
+      </div>
     </div>
+
+    <!-- ══════════ CONTA ══════════ -->
+    <div class="pf-section">
+      <div class="pf-sec-label">Conta</div>
+      <div class="pf-item" onclick="location.href='orders.html'">
+        <div class="pf-item-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+            <rect x="9" y="3" width="6" height="4" rx="2"/>
+            <line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>
+          </svg>
+        </div>
+        <div class="pf-item-text">
+          <div class="pf-item-title">Histórico de pedidos</div>
+          <div class="pf-item-sub">Veja seus pedidos anteriores</div>
+        </div>
+        <span class="pf-item-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+      </div>
+    </div>
+
+    <!-- ══════════ PRIVACIDADE ══════════ -->
+    <div class="pf-section">
+      <div class="pf-sec-label">Privacidade e termos</div>
+      <div class="pf-item" onclick="location.href='privacy.html'">
+        <div class="pf-item-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div class="pf-item-text">
+          <div class="pf-item-title">Política de privacidade</div>
+          <div class="pf-item-sub">Como seus dados são usados no app</div>
+        </div>
+        <span class="pf-item-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+      </div>
+      <div class="pf-item" onclick="location.href='terms.html'">
+        <div class="pf-item-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+        </div>
+        <div class="pf-item-text">
+          <div class="pf-item-title">Termos de uso</div>
+          <div class="pf-item-sub">Regras para pedidos, lojas e entregas</div>
+        </div>
+        <span class="pf-item-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+      </div>
+      <div class="pf-item danger" onclick="location.href='delete-account.html'">
+        <div class="pf-item-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6"/><path d="M14 11v6"/>
+            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          </svg>
+        </div>
+        <div class="pf-item-text">
+          <div class="pf-item-title">Excluir minha conta</div>
+          <div class="pf-item-sub">Solicitar exclusão da conta e dados</div>
+        </div>
+        <span class="pf-item-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+      </div>
+    </div>
+
+    <!-- ══════════ SESSÃO ══════════ -->
+    <div class="pf-section">
+      <div class="pf-sec-label">Sessão</div>
+      <div class="pf-item danger" onclick="showLogout()">
+        <div class="pf-item-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+        </div>
+        <div class="pf-item-text">
+          <div class="pf-item-title">Sair da conta</div>
+          <div class="pf-item-sub">Encerrar sessão neste dispositivo</div>
+        </div>
+        <span class="pf-item-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+      </div>
+    </div>
+
+  </div>
 </div>
 
+<!-- ══════════ BOTTOM NAV ══════════ -->
 <nav class="client-nav">
   <a class="cnav-item" href="home.html">
-    <span class="cnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+    <span class="cnav-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+    </span>
     Início
   </a>
   <a class="cnav-item" href="orders.html">
-    <span class="cnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg></span>
+    <span class="cnav-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+        <rect x="9" y="3" width="6" height="4" rx="2"/>
+        <line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>
+      </svg>
+    </span>
     Pedidos
   </a>
   <a class="cnav-item active" href="profile.html">
-    <span class="cnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+    <span class="cnav-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+    </span>
     Perfil
   </a>
 </nav>
 
+<!-- ══════════ LOGOUT POPUP ══════════ -->
 <div class="lo-overlay" id="loPopup">
-    <div class="lo-card">
-        <div class="lo-body"><div class="lo-icon">→</div><div class="lo-title">Sair da conta</div><div class="lo-desc">Tem certeza? Você precisará fazer login novamente.</div></div>
-        <div class="lo-actions"><button onclick="hideLogout()">Cancelar</button><button onclick="doLogout()">Sair</button></div>
+  <div class="lo-card">
+    <div class="lo-body">
+      <div class="lo-icon">→</div>
+      <div class="lo-title">Sair da conta</div>
+      <div class="lo-desc">Tem certeza? Você precisará fazer login novamente.</div>
     </div>
+    <div class="lo-actions">
+      <button onclick="hideLogout()">Cancelar</button>
+      <button onclick="doLogout()">Sair</button>
+    </div>
+  </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -185,84 +706,81 @@ let currentUser=null,userData=null;
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2500)}
 function goBack(){if(document.referrer&&document.referrer.includes(location.host))history.back();else location.href='home.html'}
 
-// ── Theme ──
+// Theme
 function toggleTheme(){const c=document.documentElement.getAttribute('data-theme')||'dark';const n=c==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('pedrad-theme',n);const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=n==='dark'?'#0a0a0c':'#f5f5f7';document.getElementById('themeToggle').checked=n==='light'}
 document.addEventListener('DOMContentLoaded',()=>{document.getElementById('themeToggle').checked=(localStorage.getItem('pedrad-theme')||'dark')==='light'});
 
-// ── Formatters ──
+// Phone formatter
 function fmtPhone(v){v=String(v||'').replace(/\D/g,'');if(v.length<=2)return v;if(v.length<=7)return`(${v.slice(0,2)}) ${v.slice(2)}`;return`(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7,11)}`}
 document.getElementById('inPhone').addEventListener('input',function(e){e.target.value=fmtPhone(e.target.value);if(e.target.value.replace(/\D/g,'').length>=10){e.target.classList.remove('error');document.getElementById('phoneHint').textContent='Obrigatório para receber atualizações';document.getElementById('phoneHint').classList.remove('error')}updateStatus()});
 
-// ── Status ──
+// Status
 function updateStatus(){
-    const ph=(document.getElementById('inPhone').value||'').replace(/\D/g,'');
-    const ok=ph.length>=10;
-    document.getElementById('alertInc').classList.toggle('show',!ok);
-    document.getElementById('chipWarn').style.display=ok?'none':'inline-flex';
-    document.getElementById('chipOk').style.display=ok?'inline-flex':'none';
+  const ph=(document.getElementById('inPhone').value||'').replace(/\D/g,'');
+  const ok=ph.length>=10;
+  document.getElementById('alertInc').classList.toggle('show',!ok);
+  document.getElementById('chipWarn').style.display=ok?'none':'inline-flex';
+  document.getElementById('chipOk').style.display=ok?'inline-flex':'none';
 }
 
-// ── Auth ──
+// Auth
 auth.onAuthStateChanged(async user=>{
-    if(!user){location.href='index.html';return}
-    currentUser=user;
-    document.getElementById('pfEmail').textContent=user.email||'-';
-    document.getElementById('pfAvatar').textContent=(user.displayName||user.email||'U')[0].toUpperCase();
-    document.getElementById('pfName').textContent=user.displayName||'Usuário';
-    try{
-        const doc=await db.collection('users').doc(user.uid).get();
-        userData=doc.exists?doc.data():{};
-        document.getElementById('inName').value=userData.name||user.displayName||'';
-        document.getElementById('inPhone').value=fmtPhone(userData.phone||'');
-        document.getElementById('pfName').textContent=userData.name||user.displayName||'Usuário';
-        updateStatus();
-        // Auto-focus phone if needed
-        if(location.hash==='#phone'||localStorage.getItem('NEED_PHONE')==='1'){
-            localStorage.removeItem('NEED_PHONE');
-            const el=document.getElementById('inPhone');el.focus();el.scrollIntoView({behavior:'smooth',block:'center'});
-        }
-    }catch(e){userData={}}
+  if(!user){location.href='index.html';return}
+  currentUser=user;
+  document.getElementById('pfEmail').textContent=user.email||'-';
+  document.getElementById('pfAvatar').textContent=(user.displayName||user.email||'U')[0].toUpperCase();
+  document.getElementById('pfName').textContent=user.displayName||'Usuário';
+  try{
+    const doc=await db.collection('users').doc(user.uid).get();
+    userData=doc.exists?doc.data():{};
+    document.getElementById('inName').value=userData.name||user.displayName||'';
+    document.getElementById('inPhone').value=fmtPhone(userData.phone||'');
+    document.getElementById('pfName').textContent=userData.name||user.displayName||'Usuário';
+    updateStatus();
+    if(location.hash==='#phone'||localStorage.getItem('NEED_PHONE')==='1'){
+      localStorage.removeItem('NEED_PHONE');
+      const el=document.getElementById('inPhone');el.focus();el.scrollIntoView({behavior:'smooth',block:'center'});
+    }
+  }catch(e){userData={}}
 });
 
-// ── Save ──
+// Save
 async function saveProfile(){
-    if(!currentUser)return;
-    const name=(document.getElementById('inName').value||'').trim();
-    const phone=(document.getElementById('inPhone').value||'').replace(/\D/g,'');
-    if(phone.length<10){
-        document.getElementById('inPhone').classList.add('error');
-        document.getElementById('phoneHint').textContent='Telefone obrigatório (mínimo 10 dígitos)';
-        document.getElementById('phoneHint').classList.add('error');
-        document.getElementById('inPhone').focus();return;
-    }
-    const btn=document.getElementById('btnSave');btn.disabled=true;btn.textContent='Salvando...';
-    try{
-        if(name&&name!==currentUser.displayName)await currentUser.updateProfile({displayName:name});
-        await db.collection('users').doc(currentUser.uid).set({
-            name,
-            phone,
-            cpf: firebase.firestore.FieldValue.delete(),
-            email: currentUser.email,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        },{merge:true});
-        // Sync localStorage for checkout
-        localStorage.setItem('pedrad_user_data',JSON.stringify({name,phone,
-            street:JSON.parse(localStorage.getItem('pedrad_user_data')||'{}').street||'',
-            number:JSON.parse(localStorage.getItem('pedrad_user_data')||'{}').number||'',
-            complement:JSON.parse(localStorage.getItem('pedrad_user_data')||'{}').complement||'',
-            neighborhood:JSON.parse(localStorage.getItem('pedrad_user_data')||'{}').neighborhood||'',
-            reference:JSON.parse(localStorage.getItem('pedrad_user_data')||'{}').reference||''
-        }));
-        document.getElementById('pfName').textContent=name||'Usuário';
-        document.getElementById('inPhone').classList.remove('error');
-        document.getElementById('phoneHint').textContent='Obrigatório para receber atualizações';
-        document.getElementById('phoneHint').classList.remove('error');
-        updateStatus();toast('Perfil salvo!');
-    }catch(e){console.error(e);toast('Erro ao salvar')}
-    finally{btn.disabled=false;btn.textContent='Salvar alterações'}
+  if(!currentUser)return;
+  const name=(document.getElementById('inName').value||'').trim();
+  const phone=(document.getElementById('inPhone').value||'').replace(/\D/g,'');
+  if(phone.length<10){
+    document.getElementById('inPhone').classList.add('error');
+    document.getElementById('phoneHint').textContent='Telefone obrigatório (mínimo 10 dígitos)';
+    document.getElementById('phoneHint').classList.add('error');
+    document.getElementById('inPhone').focus();return;
+  }
+  const btn=document.getElementById('btnSave');btn.disabled=true;btn.textContent='Salvando...';
+  try{
+    if(name&&name!==currentUser.displayName)await currentUser.updateProfile({displayName:name});
+    await db.collection('users').doc(currentUser.uid).set({
+      name,phone,
+      cpf:firebase.firestore.FieldValue.delete(),
+      email:currentUser.email,
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true});
+    localStorage.setItem('pedrad_user_data',JSON.stringify({name,phone,
+      street:JSON.parse(localStorage.getItem('pedrad_user_data')||'{}').street||'',
+      number:JSON.parse(localStorage.getItem('pedrad_user_data')||'{}').number||'',
+      complement:JSON.parse(localStorage.getItem('pedrad_user_data')||'{}').complement||'',
+      neighborhood:JSON.parse(localStorage.getItem('pedrad_user_data')||'{}').neighborhood||'',
+      reference:JSON.parse(localStorage.getItem('pedrad_user_data')||'{}').reference||''
+    }));
+    document.getElementById('pfName').textContent=name||'Usuário';
+    document.getElementById('inPhone').classList.remove('error');
+    document.getElementById('phoneHint').textContent='Obrigatório para receber atualizações';
+    document.getElementById('phoneHint').classList.remove('error');
+    updateStatus();toast('Perfil salvo!');
+  }catch(e){console.error(e);toast('Erro ao salvar')}
+  finally{btn.disabled=false;btn.textContent='Salvar alterações'}
 }
 
-// ── Logout ──
+// Logout
 function showLogout(){document.getElementById('loPopup').classList.add('show')}
 function hideLogout(){document.getElementById('loPopup').classList.remove('show')}
 async function doLogout(){try{await auth.signOut();location.href='index.html'}catch(e){toast('Erro')}}

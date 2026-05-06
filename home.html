@@ -9,6 +9,7 @@
 <script>(function(){var t=localStorage.getItem('pedrad-theme')||'dark';document.documentElement.setAttribute('data-theme',t)})()</script>
 <link rel="stylesheet" href="client.css">
 <script src="pwa-register.js" defer></script>
+<script src="page-transition.js" defer></script>
 <style>
 /* ── Page enter ── */
 @keyframes appIn {
@@ -693,7 +694,7 @@ body {
     <div class="home-logo-mark"><img src="icon-192.png" alt="Pedra Delivery"></div>
     <div class="home-logo-text"><span>Pedra</span> Delivery</div>
   </div>
-  <button class="notif-btn" onclick="location.href='notifications.html'" aria-label="Notificações">
+  <button class="notif-btn" onclick="navigateTo('notifications.html')" aria-label="Notificações">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
       <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
       <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
@@ -798,6 +799,7 @@ body {
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="modules/welcome-popup.js"></script>
 <script>
 const FC={apiKey:"AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",authDomain:"pedrad-814d0.firebaseapp.com",projectId:"pedrad-814d0",storageBucket:"pedrad-814d0.appspot.com",messagingSenderId:"293587190550",appId:"1:293587190550:web:80c9399f82847c80e20637"};
 if(!firebase.apps.length)firebase.initializeApp(FC);
@@ -874,12 +876,12 @@ function renderCats(){
 }
 
 function setCat(c){catFilter=c;renderCats();render()}
-function goStore(id){location.href='store.html?id='+id}
+function goStore(id){navigateTo('store.html?id='+id)}
 function goInfo(id,e){
   if(e)e.stopPropagation();
   const s=stores.find(x=>x.id===id);
   if(s&&!s.isOpenNow)return showClosedStorePopup(s);
-  location.href='store-info.html?id='+id;
+  navigateTo('store-info.html?id='+id);
 }
 function showClosedStorePopup(store){
   document.getElementById('closedStoreText').textContent=`${store?.name||'Esta loja'} está cadastrada, mas está fechada no momento.`;
@@ -934,10 +936,10 @@ function render(){
 ══════════════════════════════════════════ */
 const BANNERS = [
   { img:'banner.png',  tag:'Destaques', title:'Melhores<br>Lojas',   sub:'As favoritas da sua região',              btn:'Ver destaques', href:'destaques.html' },
-  { img:'banner2.png', tag:'Novidades', title:'Chegando<br>Agora',   sub:'Últimas adições à plataforma',            btn:'Ver novidades',  href:'home.html'      },
-  { img:'banner3.png', tag:'Promoções', title:'Ofertas<br>do Dia',   sub:'Descontos exclusivos hoje',               btn:'Ver ofertas',   href:'home.html'      },
-  { img:'banner4.png', tag:'Top Lojas', title:'Mais<br>Avaliadas',   sub:'As mais elogiadas da sua região',         btn:'Ver ranking',   href:'home.html'      },
-  { img:'banner5.png', tag:'Exclusivo', title:'Para<br>Você',        sub:'Selecionado com base nos seus pedidos',   btn:'Ver seleção',   href:'home.html'      },
+  { img:'banner2.png', tag:'Novidades', title:'Chegando<br>Agora',   sub:'Últimas adições à plataforma',            btn:'Ver novidades',  href:'novidades.html' },
+  { img:'banner3.png', tag:'Promoções', title:'Ofertas<br>do Dia',   sub:'Descontos exclusivos hoje',               btn:'Ver ofertas',   href:'ofertas.html'    },
+  { img:'banner4.png', tag:'Top Lojas', title:'Mais<br>Avaliadas',   sub:'As mais elogiadas da sua região',         btn:'Ver ranking',   href:'ranking.html'    },
+  { img:'banner5.png', tag:'Exclusivo', title:'Para<br>Você',        sub:'Selecionado com base nos seus pedidos',   btn:'Ver seleção',   href:'selecao.html'    },
 ];
 
 const BN_GRAD='linear-gradient(to bottom,rgba(0,0,0,.18) 0%,rgba(4,12,7,.88) 50%,rgba(4,12,7,.97) 100%)';
@@ -983,7 +985,7 @@ function bnApply(idx,animate){
 function goToBanner(idx){if(idx===bnIdx)return;bnApply(idx,true);bnResetTimer();}
 function bnNext(){goToBanner((bnIdx+1)%BANNERS.length);}
 function bnPrev(){goToBanner((bnIdx-1+BANNERS.length)%BANNERS.length);}
-function bnResetTimer(){clearInterval(bnTimer);bnTimer=setInterval(bnNext,20000);}
+function bnResetTimer(){clearInterval(bnTimer);bnTimer=setInterval(bnNext,10000);}
 
 // Init primeiro slide
 (function(){
@@ -1012,7 +1014,7 @@ function bnResetTimer(){clearInterval(bnTimer);bnTimer=setInterval(bnNext,20000)
 
 document.addEventListener('visibilitychange',()=>{document.hidden?clearInterval(bnTimer):bnResetTimer();});
 
-loadStores();
+loadStores().then(()=>{ if(typeof WelcomePopup!=='undefined') WelcomePopup.check(); });
 </script>
 </body>
 </html>
