@@ -25,14 +25,40 @@ body { animation: appIn .38s cubic-bezier(.22,.61,.36,1) both; }
   --surface: #0e0e11;
   --surface-2: #121216;
   --glass: rgba(14,14,17,.82);
+  --bottom-nav-h: calc(64px + env(safe-area-inset-bottom, 0px));
 }
 
 /* ── Reset body for this page ── */
+html {
+  height: 100%;
+  overflow: hidden;
+  background: #080808;
+}
+
 body {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
   background:
     radial-gradient(ellipse 110% 32% at 50% 0%, #0d2018 0%, transparent 68%),
     radial-gradient(ellipse 80% 20% at 50% 100%, #090d0a 0%, transparent 60%),
     #080808;
+}
+
+.home-scroll {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: var(--bottom-nav-h);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ── Scrollbar ── */
@@ -341,7 +367,11 @@ body {
    STORES SECTION
 ════════════════════════════════ */
 .stores-section {
-  padding: 20px 0 100px;
+  padding: 20px 0 16px;
+}
+
+.nav-spacer {
+  display: none;
 }
 
 .section-hdr {
@@ -505,11 +535,12 @@ body {
    BOTTOM NAV
 ════════════════════════════════ */
 .client-nav {
-  position: fixed;
-  bottom: 0;
+  position: absolute !important;
+  bottom: 0 !important;
   left: 0;
   right: 0;
-  height: 64px;
+  height: var(--bottom-nav-h);
+  box-sizing: border-box;
   background: rgba(8,8,8,.96);
   backdrop-filter: blur(18px) saturate(150%);
   -webkit-backdrop-filter: blur(18px) saturate(150%);
@@ -518,7 +549,7 @@ body {
   align-items: center;
   z-index: 100;
   border-top: 1px solid #111116;
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .cnav-item {
@@ -638,6 +669,7 @@ body {
 </head>
 <body>
 <div class="toast" id="toast"></div>
+<main class="home-scroll">
 
 <!-- ══════════ HEADER ══════════ -->
 <div class="home-hdr">
@@ -700,6 +732,7 @@ body {
     <div class="stores-loading">Carregando lojas…</div>
   </div>
 </div>
+</main>
 
 <!-- ══════════ CLOSED MODAL ══════════ -->
 <div class="closed-modal" id="closedStoreModal" onclick="closeClosedStorePopup(event)">
@@ -710,6 +743,9 @@ body {
     <button class="btn" type="button" onclick="hideClosedStorePopup()">Entendi</button>
   </div>
 </div>
+
+<!-- nav spacer -->
+<div class="nav-spacer"></div>
 
 <!-- ══════════ BOTTOM NAV ══════════ -->
 <nav class="client-nav">
