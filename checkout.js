@@ -95,6 +95,17 @@ const TTL_STORE_MS = 1000 * 60 * 60 * 24 * 30;
 const TTL_ADDR_MS = 1000 * 60 * 60 * 24 * 30;
 const TTL_FEES_MS = 1000 * 60 * 60 * 24 * 7;
 
+function getLocalCheckoutUser() {
+  const uid = localStorage.getItem('auth_uid');
+  if (!uid) return null;
+  return {
+    uid,
+    displayName: localStorage.getItem('auth_name') || '',
+    email: localStorage.getItem('auth_email') || '',
+    phoneNumber: localStorage.getItem('userPhone') || ''
+  };
+}
+
 // ==================== CACHE HELPERS ====================
 function now() {
   return Date.now();
@@ -284,19 +295,28 @@ window.addEventListener('DOMContentLoaded', () => initPage());
 
 async function initPage() {
   const storeId = getParam('storeId') || localStorage.getItem(LS.storeId) || '';
+  const localUser = getLocalCheckoutUser();
 
-  syncCart(null);
+  if (localUser) user = localUser;
+
+  syncCart(localUser?.uid || null);
   renderCartOptimized(true);
   updateTotals();
 
   if (storeId) await loadStoreSmart(storeId);
 
+  if (localUser) {
+    await loadDeliveryFeesSmart();
+    await loadAddressesSmart();
+    if (!selectedAddressId && addresses.length) selectedAddressId = addresses[0].id;
+    renderAddresses();
+    updateTotals();
+  }
+
   auth.onAuthStateChanged(async (u) => {
-    user = u;
+    user = u || getLocalCheckoutUser();
 
     if (!user) {
-      await UIModal.alert({ title: 'Login', text: 'Faça login para continuar.' });
-      window.location.href = 'index.html';
       return;
     }
 
@@ -565,7 +585,6 @@ function getCurrentTotal() {
   if (deliveryMode === 'delivery') {
     const addr = getSelectedAddress();
     if (addr?.neighborhood) deliveryFee = getDeliveryFee(addr.neighborhood);
-    else if (store && store.deliveryFee != null) deliveryFee = Number(store.deliveryFee) || 0;
   }
 
   return subtotal + deliveryFee;
@@ -597,7 +616,6 @@ function updateTotals() {
   if (deliveryMode === 'delivery') {
     const addr = getSelectedAddress();
     if (addr?.neighborhood) deliveryFee = getDeliveryFee(addr.neighborhood);
-    else if (store && store.deliveryFee != null) deliveryFee = Number(store.deliveryFee) || 0;
   }
 
   const total = subtotal + deliveryFee;
@@ -621,6 +639,8 @@ function updateTotals() {
 
 // ==================== FINISH ORDER ====================
 async function finishOrder() {
+  user = user || auth.currentUser || getLocalCheckoutUser();
+
   if (!user) {
     await UIModal.alert({ title: 'Login', text: 'Faça login para continuar.' });
     return;
@@ -657,7 +677,7 @@ async function finishOrder() {
 
     const addr = getSelectedAddress();
     const deliveryFee = (deliveryMode === 'delivery')
-      ? (addr?.neighborhood ? getDeliveryFee(addr.neighborhood) : (Number(store?.deliveryFee) || 0))
+      ? (addr?.neighborhood ? getDeliveryFee(addr.neighborhood) : 0)
       : 0;
 
     const total = subtotal + deliveryFee;

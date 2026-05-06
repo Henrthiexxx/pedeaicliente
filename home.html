@@ -131,8 +131,21 @@ async function loadStores(){
     renderCats();render();
 }
 
-// Reavalia a cada 60s — refresca lista quando uma loja abre/fecha
-setInterval(()=>{ loadStores(); }, 60000);
+function refreshStoreStatuses(){
+    if(!stores.length)return;
+    let changed=false;
+    stores=stores.map(s=>{
+        const isOpenNow=isStoreOpen(s);
+        if(isOpenNow===s.isOpenNow)return s;
+        changed=true;
+        return {...s,isOpenNow};
+    });
+    if(changed){renderCats();render()}
+}
+
+// Reavalia horários localmente, sem buscar todas as lojas no Firestore.
+setInterval(()=>{ if(!document.hidden)refreshStoreStatuses(); }, 60000);
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden)refreshStoreStatuses(); });
 
 function renderCats(){
     const base=stores.filter(s=>s.isOpenNow);
@@ -178,8 +191,7 @@ function render(){
                 ${desc?`<div class="sr-desc">${esc(desc)}</div>`:''}
                 <div class="sr-meta">
                     ${s.rating?`<span>★ ${s.rating.toFixed(1)}</span><span class="dot">·</span>`:''}
-                    ${closed?`<span>Fechada</span><span class="dot">·</span>`:(s.deliveryTime?`<span>${esc(s.deliveryTime)}</span><span class="dot">·</span>`:'')}
-                    ${closed?'':`<span>${s.deliveryFee?money(s.deliveryFee):'Grátis'}</span>`}
+                    ${closed?`<span>Fechada</span><span class="dot">·</span>`:(s.deliveryTime?`<span>${esc(s.deliveryTime)}</span>`:'')}
                     ${s.category?`<span class="sr-tag">${esc(s.category)}</span>`:''}
                     ${closed?`<span class="sr-tag closed">Fora do expediente</span>`:''}
                 </div>

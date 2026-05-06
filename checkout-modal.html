@@ -328,9 +328,50 @@
         let store = null;
         let user = null;
         let addresses = [];
+        let deliveryFees = [];
         let deliveryMode = 'delivery';
         let selectedAddress = null;
         let selectedPayment = 'pix';
+
+        function normalizeOrderType(mode) {
+            return mode === 'pickup' ? 'pickup' : 'delivery';
+        }
+
+        async function resolveDeliveryPoolByStore(orderType, storeId) {
+            if (orderType !== 'delivery') return 'none';
+            if (!storeId) return 'app';
+
+            try {
+                const q1 = db.collection('drivers').where('linkedStores', 'array-contains', storeId).limit(1).get();
+                const q2 = db.collection('drivers').where('linkedStoreId', '==', storeId).limit(1).get();
+                const q3 = db.collection('drivers').where('storeId', '==', storeId).limit(1).get();
+                const [s1, s2, s3] = await Promise.all([q1, q2, q3]);
+                return (!s1.empty || !s2.empty || !s3.empty) ? 'store' : 'app';
+            } catch (err) {
+                console.error('resolveDeliveryPoolByStore:', err);
+                return 'app';
+            }
+        }
+
+        async function buildDispatchFields(orderType, storeId) {
+            const isDelivery = orderType === 'delivery';
+            return {
+                orderType,
+                deliveryMode: orderType,
+                deliveryPool: await resolveDeliveryPoolByStore(orderType, storeId),
+                deliveryPoolSource: 'storeLinkedDrivers',
+                dispatchVersion: 2,
+                dispatchState: isDelivery ? 'available' : 'not_applicable',
+                dispatchAvailableAt: isDelivery ? firebase.firestore.FieldValue.serverTimestamp() : null,
+                driverId: null,
+                driverName: null,
+                driverPhone: null,
+                driverVehicle: null,
+                driver: null,
+                driverEarning: null,
+                acceptedAt: null
+            };
+        }
         
         window.addEventListener('DOMContentLoaded', init);
         
@@ -347,6 +388,7 @@
             if (storeId) {
                 await loadStore(storeId);
             }
+            await loadDeliveryFees();
             
             // Usuário atual
             auth.onAuthStateChanged(async (u) => {
@@ -387,6 +429,22 @@
             } catch (err) {
                 console.error('Erro ao carregar endereços:', err);
             }
+        }
+
+        async function loadDeliveryFees() {
+            try {
+                const snapshot = await db.collection('deliveryFees').where('active', '==', true).get();
+                deliveryFees = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            } catch (err) {
+                console.error('Erro ao carregar bairros:', err);
+                deliveryFees = [];
+            }
+        }
+
+        function getDeliveryFee(neighborhood) {
+            if (!neighborhood) return 0;
+            const found = deliveryFees.find(f => String(f.name || '').toLowerCase() === String(neighborhood).toLowerCase());
+            return Number(found?.fee) || 0;
         }
         
         function renderCart() {
@@ -465,7 +523,7 @@
                 return sum + (itemPrice * item.qty);
             }, 0);
             
-            const deliveryFee = (deliveryMode === 'delivery' && store) ? (store.deliveryFee || 0) : 0;
+            const deliveryFee = deliveryMode === 'delivery' ? getDeliveryFee(selectedAddress?.neighborhood) : 0;
             const total = subtotal + deliveryFee;
             
             document.getElementById('subtotal').textContent = formatCurrency(subtotal);
@@ -501,16 +559,18 @@
                     return sum + (itemPrice * item.qty);
                 }, 0);
                 
-                const deliveryFee = (deliveryMode === 'delivery' && store) ? (store.deliveryFee || 0) : 0;
+                const deliveryFee = deliveryMode === 'delivery' ? getDeliveryFee(selectedAddress?.neighborhood) : 0;
                 const total = subtotal + deliveryFee;
                 
+                const orderType = normalizeOrderType(deliveryMode);
+                const dispatchFields = await buildDispatchFields(orderType, store.id);
                 const order = {
                     storeId: store.id,
                     userId: user.uid,
                     userName: user.displayName || user.email,
                     userPhone: user.phoneNumber || '',
                     items: cart,
-                    deliveryMode,
+                    ...dispatchFields,
                     address: deliveryMode === 'delivery' ? selectedAddress : null,
                     paymentMethod: selectedPayment,
                     needChange: selectedPayment === 'cash',
