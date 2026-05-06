@@ -10,11 +10,17 @@
 <link rel="stylesheet" href="client.css">
 <script src="pwa-register.js" defer></script>
 <style>
-.hdr-btn.icon-svg{display:inline-flex;align-items:center;justify-content:center;padding:0}
-.hdr-btn.icon-svg svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.store-header{gap:6px}
-body{background:radial-gradient(ellipse 110% 32% at 50% 0%,#0d2018 0%,transparent 68%),#080808!important}
-</style>
+	.hdr-btn.icon-svg{display:inline-flex;align-items:center;justify-content:center;padding:0}
+	.hdr-btn.icon-svg svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+	.store-header{gap:6px}
+	body{background:radial-gradient(ellipse 110% 32% at 50% 0%,#0d2018 0%,transparent 68%),#080808!important}
+	body.page-enter{animation:storeFadeIn .28s ease both;transform:none!important}
+	body.modal-open{overflow:hidden}
+	@keyframes storeFadeIn{from{opacity:0}to{opacity:1}}
+	#productModal{position:fixed!important;inset:0!important;z-index:10000!important}
+	#productModal.active{display:flex!important}
+	#productModal .modal-sheet{position:relative;z-index:1;transform:translateZ(0)}
+	</style>
 </head>
 <body class="page-enter">
 <div class="toast" id="toast"></div>
@@ -311,6 +317,7 @@ function renderPromos(){
 function openProduct(productId){
     const p=products.find(x=>x.id===productId);
     if(!p)return;
+    pmQtyVal=1;
     const img=p.imageData||p.imageUrl||'';
     const groups=p.addonGroups||[];
     const inCart=cart.find(c=>c.id===p.id);
@@ -351,12 +358,16 @@ function openProduct(productId){
                 <button class="btn btn-accent" onclick="addFromModal('${p.id}')" id="pmAddBtn">Adicionar ${money(p.price)}</button>
             </div>
         </div>`;
+    document.body.classList.add('modal-open');
     document.getElementById('productModal').classList.add('active');
     updatePmTotal(p.price);
     syncAddonGroupLimits();
 }
 
-function closeProductModal(){document.getElementById('productModal').classList.remove('active')}
+function closeProductModal(){
+    document.getElementById('productModal').classList.remove('active');
+    document.body.classList.remove('modal-open');
+}
 
 let pmQtyVal=1;
 function pmQty(d){
