@@ -9,7 +9,7 @@
   </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no" />
-  <meta name="theme-color" content="#09090b" />
+  <meta name="theme-color" content="#080808" />
   <title>Finalizar Pedido</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="client.css" />
@@ -19,21 +19,21 @@
     *{margin:0;padding:0;box-sizing:border-box}
 
     :root,[data-theme="dark"]{
-      --bg:#09090b;
-      --bg-card:#0f0f12;
-      --bg-input:#18181b;
-      --bg-elevated:#1c1c20;
+      --bg:#080808;
+      --bg-card:#0e0e11;
+      --bg-input:#121216;
+      --bg-elevated:#191920;
       --bg-secondary:#141418;
-      --text:#fafafa;
-      --text-secondary:#d4d4d8;
-      --text-muted:#71717a;
-      --border:#27272a;
-      --border-hover:#3f3f46;
+      --text:#d8d8e0;
+      --text-secondary:#8888a0;
+      --text-muted:#505060;
+      --border:#161619;
+      --border-hover:#252530;
       --primary:#fff;
       --accent:#a78bfa;
       --accent-rgb:167,139,250;
       --danger:#f87171;
-      --success:#4ade80;
+      --success:#22c55e;
       --warning:#fbbf24;
       --glass-bg:rgba(24,24,27,.72);
       --glass-border:rgba(255,255,255,.08);
@@ -76,9 +76,7 @@
 
     body{
       font-family:var(--font);
-      background:
-        radial-gradient(circle at top, rgba(255,255,255,.03), transparent 34%),
-        var(--bg);
+      background: radial-gradient(ellipse 110% 32% at 50% 0%,#0d2018 0%,transparent 68%),#080808;
       color:var(--text-0);
       padding:0;
       max-width:720px;
@@ -662,12 +660,15 @@
       .footer{max-width:none}
       .payment-methods{grid-template-columns:1fr}
     }
+
+    @keyframes appIn{from{opacity:0;transform:scale(1.025)}to{opacity:1;transform:scale(1)}}
+    .page-enter{animation:appIn .34s cubic-bezier(.22,.61,.36,1) both}
   </style>
 </head>
 
-<body>
+<body class="page-enter">
   <div class="header">
-    <button class="hdr-btn" type="button" onclick="goBack()" title="Voltar">←</button>
+    <button class="hdr-btn" type="button" onclick="goBack()" title="Voltar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><polyline points="15 18 9 12 15 6"/></svg></button>
     <div class="header-title">Finalizar Pedido</div>
     <div class="header-actions">
       <button class="hdr-btn" type="button" onclick="toggleTheme()" title="Tema">◐</button>

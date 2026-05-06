@@ -4,75 +4,745 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
 <title>Pedra Delivery</title>
-<meta name="theme-color" content="#09090b">
+<meta name="theme-color" content="#080808">
 <link rel="manifest" href="manifest.json">
 <script>(function(){var t=localStorage.getItem('pedrad-theme')||'dark';document.documentElement.setAttribute('data-theme',t)})()</script>
 <link rel="stylesheet" href="client.css">
 <script src="pwa-register.js" defer></script>
 <style>
-.home-header{padding:20px 16px 10px;display:flex;align-items:center;justify-content:space-between}
-.home-title{font-size:1.2rem;font-weight:700;letter-spacing:-.03em}
-.home-search{padding:0 16px 14px}
-.home-search input{width:100%;padding:10px 14px;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text-0);font-family:inherit;font-size:.86rem}
-.home-search input:focus{outline:none;border-color:var(--border-h)}
-.cat-filter{display:flex;gap:6px;padding:0 16px 14px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-.cat-btn{padding:6px 14px;font-size:.76rem;border-radius:20px;border:1px solid var(--border);color:var(--text-2);background:var(--bg-1);cursor:pointer;white-space:nowrap;font-family:inherit;transition:all .15s}
-.cat-btn:hover{border-color:var(--border-h);color:var(--text-0)}
-.cat-btn.active{background:var(--accent);color:var(--accent-t);border-color:var(--accent)}
+/* ── Page enter ── */
+@keyframes appIn {
+  from { opacity: 0; transform: scale(1.03); }
+  to   { opacity: 1; transform: scale(1); }
+}
+body { animation: appIn .38s cubic-bezier(.22,.61,.36,1) both; }
 
-/* ===== LISTA VERTICAL ===== */
-.stores-list{display:flex;flex-direction:column;gap:8px;padding:0 16px 80px}
-.store-row{display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg-1);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all .15s;box-shadow:var(--sh-sm)}
-.store-row:hover{border-color:var(--border-h);box-shadow:var(--sh-md);transform:translateY(-1px)}
-.store-row.closed{opacity:.72;cursor:default}
-.store-row.closed:hover{border-color:var(--border);box-shadow:var(--sh-sm);transform:none}
-.sr-img{width:64px;height:64px;border-radius:50%;background:var(--bg-2);overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--text-3);flex:0 0 auto;border:1px solid var(--border)}
-.sr-img img{width:100%;height:100%;object-fit:cover}
-.sr-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
-.sr-name{font-size:.92rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sr-desc{font-size:.74rem;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sr-meta{display:flex;gap:8px;font-size:.7rem;color:var(--text-2);align-items:center;flex-wrap:wrap}
-.sr-meta .dot{opacity:.5}
-.sr-tag{padding:2px 7px;border-radius:10px;background:var(--bg-2);border:1px solid var(--border);font-size:.64rem;color:var(--text-2)}
-.sr-tag.closed{color:var(--orange);border-color:rgba(251,191,36,.28);background:rgba(251,191,36,.08)}
-.sr-info-btn{flex:0 0 auto;width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--bg-2);color:var(--text-2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
-.sr-info-btn:hover{border-color:var(--border-h);color:var(--text-0);background:var(--bg-3)}
-.sr-info-btn svg{width:18px;height:18px}
-.empty{padding:60px 20px;text-align:center;color:var(--text-3);font-size:.88rem}
-.closed-modal{position:fixed;inset:0;z-index:600;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.58);backdrop-filter:blur(4px);padding:18px}
-.closed-modal.show{display:flex}
-.closed-card{width:min(360px,100%);background:var(--bg-1);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh-lg);padding:22px;text-align:center}
-.closed-icon{width:54px;height:54px;margin:0 auto 14px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(251,191,36,.10);border:1px solid rgba(251,191,36,.25);color:var(--orange);font-size:1.45rem}
-.closed-title{font-size:1rem;font-weight:700;margin-bottom:6px}
-.closed-text{font-size:.82rem;color:var(--text-2);line-height:1.45;margin-bottom:16px}
-.closed-card .btn{width:100%}
+/* ── Design tokens ── */
+:root {
+  --g: #22c55e;
+  --g-dim: rgba(34,197,94,.10);
+  --g-glow: rgba(34,197,94,.18);
+  --surface: #0e0e11;
+  --surface-2: #121216;
+  --glass: rgba(14,14,17,.82);
+}
+
+/* ── Reset body for this page ── */
+body {
+  background:
+    radial-gradient(ellipse 110% 32% at 50% 0%, #0d2018 0%, transparent 68%),
+    radial-gradient(ellipse 80% 20% at 50% 100%, #090d0a 0%, transparent 60%),
+    #080808;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-thumb { background: #2a2a34; border-radius: 2px; }
+
+/* ════════════════════════════════
+   HEADER
+════════════════════════════════ */
+.home-hdr {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 18px 14px;
+  background: var(--glass);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border-bottom: 1px solid rgba(255,255,255,.04);
+}
+
+.home-logo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.home-logo-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,.5);
+}
+.home-logo-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.home-logo-text {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  color: #f0f0f2;
+}
+
+.home-logo-text span {
+  color: var(--g);
+}
+
+.notif-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: var(--surface-2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #8888a0;
+  transition: background .15s, color .15s;
+  flex-shrink: 0;
+}
+
+.notif-btn:hover { background: #1c1c22; color: #f0f0f2; }
+
+.notif-btn svg { width: 17px; height: 17px; }
+
+/* ════════════════════════════════
+   SEARCH
+════════════════════════════════ */
+.home-search {
+  padding: 14px 16px 0;
+}
+
+.search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid #1e1e26;
+  border-radius: 999px;
+  padding: 0 16px;
+  transition: border-color .18s;
+}
+
+.search-wrap:focus-within {
+  border-color: rgba(34,197,94,.35);
+  box-shadow: 0 0 0 3px rgba(34,197,94,.06);
+}
+
+.search-wrap svg {
+  width: 16px;
+  height: 16px;
+  color: #44444e;
+  flex-shrink: 0;
+}
+
+.search-wrap input {
+  flex: 1;
+  padding: 12px 0;
+  background: none;
+  border: none;
+  color: #f0f0f2;
+  font-family: inherit;
+  font-size: .88rem;
+  outline: none;
+}
+
+.search-wrap input::placeholder { color: #44444e; }
+
+/* ════════════════════════════════
+   CATEGORIES
+════════════════════════════════ */
+.cat-bar {
+  display: flex;
+  gap: 7px;
+  padding: 14px 16px 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.cat-bar::-webkit-scrollbar { display: none; }
+
+.cat-pill {
+  flex-shrink: 0;
+  padding: 10px 18px;
+  font-size: .76rem;
+  font-weight: 600;
+  border-radius: 14px;
+  border: 1px solid #191920;
+  background: #111116;
+  color: #505060;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: inherit;
+  transition: all .18s;
+  letter-spacing: -.01em;
+  box-shadow:
+    0 2px 8px rgba(0,0,0,.45),
+    inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.cat-pill:hover {
+  border-color: #252530;
+  color: #b0b0c0;
+  box-shadow:
+    0 4px 12px rgba(0,0,0,.5),
+    inset 0 1px 0 rgba(255,255,255,.06);
+  transform: translateY(-1px);
+}
+
+.cat-pill:active { transform: translateY(0); }
+
+.cat-pill.active {
+  background: rgba(34,197,94,.10);
+  border-color: rgba(34,197,94,.28);
+  color: #22c55e;
+  box-shadow:
+    0 4px 16px rgba(34,197,94,.14),
+    inset 0 1px 0 rgba(34,197,94,.12);
+}
+
+/* ════════════════════════════════
+   FEATURED BANNER
+════════════════════════════════ */
+.banner-wrap {
+  padding: 18px 16px 0;
+}
+
+.featured-banner {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  background-image:
+    linear-gradient(to bottom, rgba(0,0,0,.18) 0%, rgba(4,12,7,.88) 50%, rgba(4,12,7,.97) 100%),
+    url(banner.png);
+  background-size: cover;
+  background-position: center;
+  background-color: #081209;
+  border: 1px solid rgba(34,197,94,.14);
+  box-shadow:
+    0 0 0 1px rgba(34,197,94,.06),
+    0 20px 50px rgba(0,0,0,.7),
+    0 4px 16px rgba(0,0,0,.5);
+  min-height: 168px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px 18px 18px;
+}
+
+.banner-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: .64rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--g);
+  background: var(--g-dim);
+  border: 1px solid rgba(34,197,94,.24);
+  border-radius: 999px;
+  padding: 3px 9px;
+  margin-bottom: 8px;
+  width: fit-content;
+}
+
+.banner-tag::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  background: var(--g);
+  border-radius: 50%;
+}
+
+.banner-title {
+  font-size: 1.18rem;
+  font-weight: 800;
+  color: #f0f0f2;
+  letter-spacing: -.04em;
+  line-height: 1.15;
+  margin-bottom: 4px;
+}
+
+.banner-sub {
+  font-size: .74rem;
+  color: rgba(160,160,180,.6);
+  margin-bottom: 14px;
+  line-height: 1.4;
+}
+
+.banner-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.banner-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 13px 26px;
+  background: linear-gradient(180deg, #2edb6b 0%, #1db857 100%);
+  color: #041a0c;
+  font-size: .86rem;
+  font-weight: 800;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: -.01em;
+  text-decoration: none;
+  box-shadow:
+    0 6px 0 #0e8038,
+    0 10px 28px rgba(34,197,94,.45),
+    inset 0 1px 0 rgba(255,255,255,.25);
+  transform: translateY(-2px);
+  transition: transform .14s, box-shadow .14s;
+}
+
+.banner-btn:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 8px 0 #0e8038,
+    0 16px 36px rgba(34,197,94,.52),
+    inset 0 1px 0 rgba(255,255,255,.28);
+}
+
+.banner-btn:active {
+  transform: translateY(2px);
+  box-shadow:
+    0 2px 0 #0e8038,
+    0 4px 12px rgba(34,197,94,.28),
+    inset 0 1px 0 rgba(255,255,255,.15);
+}
+
+.banner-dots {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.banner-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.18);
+}
+
+.banner-dot.active {
+  width: 16px;
+  border-radius: 999px;
+  background: var(--g);
+  opacity: .85;
+}
+
+/* ════════════════════════════════
+   STORES SECTION
+════════════════════════════════ */
+.stores-section {
+  padding: 20px 0 100px;
+}
+
+.section-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px 12px;
+}
+
+.section-label {
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #44444e;
+}
+
+.section-count {
+  font-size: .7rem;
+  color: #44444e;
+}
+
+.stores-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 14px;
+}
+
+/* Store card */
+.store-card {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 13px 14px;
+  background: var(--surface);
+  border: 1px solid #161619;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: border-color .18s, background .18s;
+  position: relative;
+  overflow: hidden;
+}
+
+.store-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0);
+  transition: background .18s;
+  pointer-events: none;
+}
+
+.store-card:hover { border-color: #222228; }
+.store-card:hover::before { background: rgba(255,255,255,.016); }
+.store-card:active::before { background: rgba(255,255,255,.03); }
+
+.store-card.closed { opacity: .52; cursor: default; }
+.store-card.closed:hover { border-color: #161619; }
+.store-card.closed:hover::before { background: none; }
+
+.sc-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #19191e;
+  border: 1px solid #1e1e26;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #34343e;
+  flex-shrink: 0;
+  font-size: 1.2rem;
+}
+
+.sc-logo img { width: 100%; height: 100%; object-fit: cover; }
+
+.sc-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sc-name {
+  font-size: .9rem;
+  font-weight: 700;
+  color: #d8d8e0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -.02em;
+}
+
+.sc-cat {
+  font-size: .7rem;
+  color: #44444e;
+  margin-bottom: 4px;
+}
+
+.sc-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .68rem;
+  color: #54545e;
+}
+
+.sc-rating {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: #c0c02a;
+  font-weight: 600;
+}
+
+.sc-dot { opacity: .4; }
+
+.sc-time { color: #54545e; }
+
+.sc-status {
+  flex-shrink: 0;
+  font-size: .6rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(248,113,113,.2);
+  background: rgba(248,113,113,.06);
+  color: #f87171;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
+
+.sc-chevron {
+  flex-shrink: 0;
+  color: #2e2e38;
+  display: flex;
+  align-items: center;
+}
+
+.sc-chevron svg { width: 16px; height: 16px; }
+
+/* Empty / loading */
+.stores-empty {
+  padding: 48px 20px;
+  text-align: center;
+  color: #34343e;
+  font-size: .84rem;
+}
+
+.stores-loading {
+  padding: 48px 20px;
+  text-align: center;
+  color: #34343e;
+  font-size: .82rem;
+}
+
+/* ════════════════════════════════
+   BOTTOM NAV
+════════════════════════════════ */
+.client-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: rgba(8,8,8,.96);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 100;
+  border-top: 1px solid #111116;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.cnav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: #38383e;
+  font-size: .55rem;
+  cursor: pointer;
+  padding: 6px 20px;
+  transition: color .18s;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.cnav-item:hover { color: #666678; }
+.cnav-item.active { color: var(--g) !important; }
+
+.cnav-icon {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cnav-icon svg { width: 20px; height: 20px; }
+
+/* ════════════════════════════════
+   CLOSED STORE MODAL
+════════════════════════════════ */
+.closed-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 600;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,.72);
+  backdrop-filter: blur(6px);
+  padding: 20px;
+}
+
+.closed-modal.show { display: flex; }
+
+.closed-card {
+  width: min(340px, 100%);
+  background: #0e0e11;
+  border: 1px solid #1e1e26;
+  border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(0,0,0,.8);
+  padding: 26px;
+  text-align: center;
+}
+
+.closed-icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(251,191,36,.08);
+  border: 1px solid rgba(251,191,36,.2);
+  font-size: 1.3rem;
+}
+
+.closed-title {
+  font-size: .96rem;
+  font-weight: 700;
+  color: #d8d8e0;
+  margin-bottom: 6px;
+  letter-spacing: -.02em;
+}
+
+.closed-text {
+  font-size: .78rem;
+  color: #44444e;
+  line-height: 1.5;
+  margin-bottom: 18px;
+}
+
+.closed-card .btn {
+  width: 100%;
+  background: var(--g);
+  color: #050f08;
+  border: none;
+  font-weight: 700;
+  border-radius: 12px;
+}
+
+/* Toast override */
+.toast {
+  position: fixed;
+  bottom: -80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #111114;
+  border: 1px solid #222228;
+  color: #d8d8e0;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: .82rem;
+  z-index: 10000;
+  box-shadow: 0 14px 40px rgba(0,0,0,.7);
+  transition: bottom .32s cubic-bezier(.175,.885,.32,1.275);
+  max-width: 88vw;
+  text-align: center;
+  font-weight: 500;
+}
+.toast.show { bottom: 80px; }
 </style>
 </head>
 <body>
 <div class="toast" id="toast"></div>
 
-<div class="home-header">
-    <div class="home-title">Pedra Delivery</div>
-    <button class="hdr-btn" onclick="toggleTheme()" title="Tema">◐</button>
+<!-- ══════════ HEADER ══════════ -->
+<div class="home-hdr">
+  <div class="home-logo">
+    <div class="home-logo-mark"><img src="icon-192.png" alt="Pedra Delivery"></div>
+    <div class="home-logo-text"><span>Pedra</span> Delivery</div>
+  </div>
+  <button class="notif-btn" onclick="location.href='notifications.html'" aria-label="Notificações">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+    </svg>
+  </button>
 </div>
 
+<!-- ══════════ SEARCH ══════════ -->
 <div class="home-search">
-    <input id="searchInput" placeholder="Buscar restaurantes..." oninput="render()">
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input id="searchInput" placeholder="Buscar restaurantes..." oninput="render()" autocomplete="off">
+  </div>
 </div>
 
-<div class="cat-filter" id="catFilter"></div>
-<div class="stores-list" id="storesList">
-    <div class="loading-state">Carregando lojas...</div>
-</div>
+<!-- ══════════ CATEGORIES ══════════ -->
+<div class="cat-bar" id="catFilter"></div>
 
-<div class="closed-modal" id="closedStoreModal" onclick="closeClosedStorePopup(event)">
-    <div class="closed-card" role="dialog" aria-modal="true" aria-labelledby="closedStoreTitle">
-        <div class="closed-icon">⏱</div>
-        <div class="closed-title" id="closedStoreTitle">Loja Fora do Horario Expediente</div>
-        <div class="closed-text" id="closedStoreText">Esta loja está cadastrada, mas está fechada no momento.</div>
-        <button class="btn btn-accent" type="button" onclick="hideClosedStorePopup()">Entendi</button>
+<!-- ══════════ FEATURED BANNER ══════════ -->
+<div class="banner-wrap">
+  <div class="featured-banner">
+    <div>
+      <div class="banner-tag">Destaques</div>
+      <div class="banner-title">Melhores<br>Lojas</div>
+      <div class="banner-sub">As favoritas da sua região</div>
     </div>
+    <div class="banner-bottom">
+      <a class="banner-btn" href="destaques.html">
+        Ver destaques
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+        </svg>
+      </a>
+      <div class="banner-dots">
+        <div class="banner-dot active"></div>
+        <div class="banner-dot"></div>
+        <div class="banner-dot"></div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<!-- ══════════ STORES ══════════ -->
+<div class="stores-section">
+  <div class="section-hdr">
+    <span class="section-label">Lojas abertas</span>
+    <span class="section-count" id="storeCount"></span>
+  </div>
+  <div class="stores-list" id="storesList">
+    <div class="stores-loading">Carregando lojas…</div>
+  </div>
+</div>
+
+<!-- ══════════ CLOSED MODAL ══════════ -->
+<div class="closed-modal" id="closedStoreModal" onclick="closeClosedStorePopup(event)">
+  <div class="closed-card" role="dialog" aria-modal="true" aria-labelledby="closedStoreTitle">
+    <div class="closed-icon">⏱</div>
+    <div class="closed-title" id="closedStoreTitle">Loja fora do horário</div>
+    <div class="closed-text" id="closedStoreText">Esta loja está cadastrada, mas está fechada no momento.</div>
+    <button class="btn" type="button" onclick="hideClosedStorePopup()">Entendi</button>
+  </div>
+</div>
+
+<!-- ══════════ BOTTOM NAV ══════════ -->
+<nav class="client-nav">
+  <a class="cnav-item active" href="home.html">
+    <span class="cnav-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+    </span>
+    Início
+  </a>
+  <a class="cnav-item" href="orders.html">
+    <span class="cnav-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+        <rect x="9" y="3" width="6" height="4" rx="2"/>
+        <line x1="9" y1="12" x2="15" y2="12"/>
+        <line x1="9" y1="16" x2="13" y2="16"/>
+      </svg>
+    </span>
+    Pedidos
+  </a>
+  <a class="cnav-item" href="profile.html">
+    <span class="cnav-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+    </span>
+    Perfil
+  </a>
+</nav>
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -85,131 +755,127 @@ let stores=[],catFilter='all';
 const DAY_KEYS=['sun','mon','tue','wed','thu','fri','sat'];
 
 function esc(s){const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML}
-function money(v){return(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2500)}
 function getTheme(){return localStorage.getItem('pedrad-theme')||'dark'}
-function toggleTheme(){const n=getTheme()==='dark'?'light':'dark';localStorage.setItem('pedrad-theme',n);document.documentElement.setAttribute('data-theme',n)}
 
-// ===== STATUS ABERTO/FECHADO =====
 function parseHM(s){const[h,m]=String(s||'00:00').split(':').map(Number);return(h||0)*60+(m||0)}
 
 function legacyHoursToNew(s){
-    if(!s) return null;
-    const wO=s.weekdayOpen, wC=s.weekdayClose, eO=s.weekendOpen, eC=s.weekendClose;
-    if(!wO && !eO) return null;
-    const wOpen=wO||'11:00', wClose=wC||'22:00';
-    const eOpen=eO||'11:00', eClose=eC||'23:00';
-    return {
-        mon:{enabled:true,open:wOpen,close:wClose}, tue:{enabled:true,open:wOpen,close:wClose},
-        wed:{enabled:true,open:wOpen,close:wClose}, thu:{enabled:true,open:wOpen,close:wClose},
-        fri:{enabled:true,open:wOpen,close:wClose},
-        sat:{enabled:true,open:eOpen,close:eClose}, sun:{enabled:true,open:eOpen,close:eClose},
-        holidays:{enabled:false,open:'11:00',close:'22:00'}
-    };
+  if(!s)return null;
+  const wO=s.weekdayOpen,wC=s.weekdayClose,eO=s.weekendOpen,eC=s.weekendClose;
+  if(!wO&&!eO)return null;
+  const wOpen=wO||'11:00',wClose=wC||'22:00',eOpen=eO||'11:00',eClose=eC||'23:00';
+  return{
+    mon:{enabled:true,open:wOpen,close:wClose},tue:{enabled:true,open:wOpen,close:wClose},
+    wed:{enabled:true,open:wOpen,close:wClose},thu:{enabled:true,open:wOpen,close:wClose},
+    fri:{enabled:true,open:wOpen,close:wClose},
+    sat:{enabled:true,open:eOpen,close:eClose},sun:{enabled:true,open:eOpen,close:eClose},
+    holidays:{enabled:false,open:'11:00',close:'22:00'}
+  };
 }
 
 function isStoreOpen(store){
-    if(store.manuallyClosed===true)return false;
-    const hours=store?.settings?.hours||legacyHoursToNew(store?.settings);
-    if(!hours)return store.open!==false;
-    const now=new Date();
-    const day=hours[DAY_KEYS[now.getDay()]];
-    if(!day||day.enabled===false)return false;
-    const cur=now.getHours()*60+now.getMinutes();
-    const open=parseHM(day.open),close=parseHM(day.close);
-    if(open===close)return false;
-    return close>open?(cur>=open&&cur<close):(cur>=open||cur<close);
+  if(store.manuallyClosed===true)return false;
+  const hours=store?.settings?.hours||legacyHoursToNew(store?.settings);
+  if(!hours)return store.open!==false;
+  const now=new Date();
+  const day=hours[DAY_KEYS[now.getDay()]];
+  if(!day||day.enabled===false)return false;
+  const cur=now.getHours()*60+now.getMinutes();
+  const open=parseHM(day.open),close=parseHM(day.close);
+  if(open===close)return false;
+  return close>open?(cur>=open&&cur<close):(cur>=open||cur<close);
 }
 
 async function loadStores(){
-    const snap=await db.collection('stores').get();
-    stores=snap.docs
-        .map(d=>({id:d.id,...d.data()}))
-        .filter(s=>!s.suspended)
-        .map(s=>({...s,isOpenNow:isStoreOpen(s)}));
-    stores.sort((a,b)=>(a.name||'').localeCompare(b.name||'','pt-BR'));
-    renderCats();render();
+  const snap=await db.collection('stores').get();
+  stores=snap.docs
+    .map(d=>({id:d.id,...d.data()}))
+    .filter(s=>!s.suspended)
+    .map(s=>({...s,isOpenNow:isStoreOpen(s)}));
+  stores.sort((a,b)=>(a.name||'').localeCompare(b.name||'','pt-BR'));
+  renderCats();render();
 }
 
 function refreshStoreStatuses(){
-    if(!stores.length)return;
-    let changed=false;
-    stores=stores.map(s=>{
-        const isOpenNow=isStoreOpen(s);
-        if(isOpenNow===s.isOpenNow)return s;
-        changed=true;
-        return {...s,isOpenNow};
-    });
-    if(changed){renderCats();render()}
+  if(!stores.length)return;
+  let changed=false;
+  stores=stores.map(s=>{
+    const isOpenNow=isStoreOpen(s);
+    if(isOpenNow===s.isOpenNow)return s;
+    changed=true;
+    return{...s,isOpenNow};
+  });
+  if(changed){renderCats();render()}
 }
 
-// Reavalia horários localmente, sem buscar todas as lojas no Firestore.
-setInterval(()=>{ if(!document.hidden)refreshStoreStatuses(); }, 60000);
-document.addEventListener('visibilitychange',()=>{ if(!document.hidden)refreshStoreStatuses(); });
+setInterval(()=>{if(!document.hidden)refreshStoreStatuses();},60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshStoreStatuses();});
 
 function renderCats(){
-    const base=stores.filter(s=>s.isOpenNow);
-    const cats=[...new Set(base.map(s=>s.category).filter(Boolean))].sort();
-    document.getElementById('catFilter').innerHTML=
-        `<button class="cat-btn ${catFilter==='all'?'active':''}" onclick="setCat('all')">Todos</button>`
-        +cats.map(c=>`<button class="cat-btn ${catFilter===c?'active':''}" onclick="setCat('${esc(c)}')">${esc(c)}</button>`).join('')
-        +`<button class="cat-btn ${catFilter==='inactive'?'active':''}" onclick="setCat('inactive')">Inativas</button>`;
+  const base=stores.filter(s=>s.isOpenNow);
+  const cats=[...new Set(base.map(s=>s.category).filter(Boolean))].sort();
+  document.getElementById('catFilter').innerHTML=
+    `<button class="cat-pill ${catFilter==='all'?'active':''}" onclick="setCat('all')">Todos</button>`
+    +cats.map(c=>`<button class="cat-pill ${catFilter===c?'active':''}" onclick="setCat('${esc(c)}')">${esc(c)}</button>`).join('')
+    +`<button class="cat-pill ${catFilter==='inactive'?'active':''}" onclick="setCat('inactive')">Inativas</button>`;
 }
 
 function setCat(c){catFilter=c;renderCats();render()}
 function goStore(id){location.href='store.html?id='+id}
 function goInfo(id,e){
-    if(e)e.stopPropagation();
-    const s=stores.find(x=>x.id===id);
-    if(s&&!s.isOpenNow)return showClosedStorePopup(s);
-    location.href='store-info.html?id='+id;
+  if(e)e.stopPropagation();
+  const s=stores.find(x=>x.id===id);
+  if(s&&!s.isOpenNow)return showClosedStorePopup(s);
+  location.href='store-info.html?id='+id;
 }
 function showClosedStorePopup(store){
-    document.getElementById('closedStoreText').textContent=`${store?.name||'Esta loja'} está cadastrada, mas está fechada no momento.`;
-    document.getElementById('closedStoreModal').classList.add('show');
+  document.getElementById('closedStoreText').textContent=`${store?.name||'Esta loja'} está cadastrada, mas está fechada no momento.`;
+  document.getElementById('closedStoreModal').classList.add('show');
 }
 function showClosedStorePopupById(id){showClosedStorePopup(stores.find(s=>s.id===id))}
 function hideClosedStorePopup(){document.getElementById('closedStoreModal').classList.remove('show')}
 function closeClosedStorePopup(e){if(e.target.id==='closedStoreModal')hideClosedStorePopup()}
 
 function render(){
-    const q=(document.getElementById('searchInput').value||'').toLowerCase().trim();
-    const showingInactive=catFilter==='inactive';
-    let list=stores.filter(s=>showingInactive?!s.isOpenNow:s.isOpenNow);
-    if(catFilter!=='all'&&!showingInactive)list=list.filter(s=>(s.category||'')===catFilter);
-    if(q)list=list.filter(s=>(s.name||'').toLowerCase().includes(q)||(s.description||'').toLowerCase().includes(q));
-    const el=document.getElementById('storesList');
-    if(!list.length){el.innerHTML=`<div class="empty">${showingInactive?'Nenhuma loja inativa no momento':'Nenhuma loja aberta no momento'}</div>`;return}
-    el.innerHTML=list.map(s=>{
-        const img=s.imageUrl||'';
-        const desc=s.description?(s.description.length>60?s.description.slice(0,58)+'…':s.description):'';
-        const closed=!s.isOpenNow;
-        return`<div class="store-row ${closed?'closed':''}" onclick="${closed?`showClosedStorePopupById('${s.id}')`:`goStore('${s.id}')`}">
-            <div class="sr-img">${img?`<img src="${esc(img)}" alt="">`:'—'}</div>
-            <div class="sr-body">
-                <div class="sr-name">${esc(s.name)}</div>
-                ${desc?`<div class="sr-desc">${esc(desc)}</div>`:''}
-                <div class="sr-meta">
-                    ${s.rating?`<span>★ ${s.rating.toFixed(1)}</span><span class="dot">·</span>`:''}
-                    ${closed?`<span>Fechada</span><span class="dot">·</span>`:(s.deliveryTime?`<span>${esc(s.deliveryTime)}</span>`:'')}
-                    ${s.category?`<span class="sr-tag">${esc(s.category)}</span>`:''}
-                    ${closed?`<span class="sr-tag closed">Fora do expediente</span>`:''}
-                </div>
-            </div>
-            <button class="sr-info-btn" onclick="goInfo('${s.id}',event)" title="${closed?'Loja fechada':'Informações'}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="12" y1="16" x2="12" y2="12"/>
-                    <line x1="12" y1="8" x2="12.01" y2="8"/>
-                </svg>
-            </button>
-        </div>`;
-    }).join('');
+  const q=(document.getElementById('searchInput').value||'').toLowerCase().trim();
+  const showingInactive=catFilter==='inactive';
+  let list=stores.filter(s=>showingInactive?!s.isOpenNow:s.isOpenNow);
+  if(catFilter!=='all'&&!showingInactive)list=list.filter(s=>(s.category||'')===catFilter);
+  if(q)list=list.filter(s=>(s.name||'').toLowerCase().includes(q)||(s.description||'').toLowerCase().includes(q));
+
+  const el=document.getElementById('storesList');
+  const countEl=document.getElementById('storeCount');
+
+  if(!list.length){
+    countEl.textContent='';
+    el.innerHTML=`<div class="stores-empty">${showingInactive?'Nenhuma loja inativa no momento':'Nenhuma loja aberta no momento'}</div>`;
+    return;
+  }
+
+  countEl.textContent=list.length+' loja'+(list.length!==1?'s':'');
+
+  el.innerHTML=list.map(s=>{
+    const img=s.imageUrl||'';
+    const closed=!s.isOpenNow;
+    const rating=s.rating?`<span class="sc-rating">★ ${s.rating.toFixed(1)}</span><span class="sc-dot">·</span>`:'' ;
+    const time=s.deliveryTime?`<span class="sc-time">${esc(s.deliveryTime)}</span>`:'';
+    return`<div class="store-card ${closed?'closed':''}" onclick="${closed?`showClosedStorePopupById('${s.id}')`:`goStore('${s.id}')`}">
+      <div class="sc-logo">${img?`<img src="${esc(img)}" alt="">`:''}</div>
+      <div class="sc-body">
+        <div class="sc-name">${esc(s.name)}</div>
+        ${s.category?`<div class="sc-cat">${esc(s.category)}</div>`:''}
+        <div class="sc-meta">
+          ${rating}${time}
+          ${closed?`<span class="sc-dot">·</span><span style="color:#f87171;font-size:.64rem;font-weight:600">Fechada</span>`:''}
+        </div>
+      </div>
+      ${closed?`<div class="sc-status">Fechada</div>`:`<div class="sc-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>`}
+    </div>`;
+  }).join('');
 }
 
 loadStores();
 </script>
-
-<nav class="client-nav"><a class="cnav-item active" href="home.html"><span class="cnav-icon">⌂</span>Início</a><a class="cnav-item" href="orders.html"><span class="cnav-icon">≡</span>Pedidos</a><a class="cnav-item" href="profile.html"><span class="cnav-icon">○</span>Perfil</a></nav>
 </body>
 </html>

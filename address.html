@@ -10,6 +10,17 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
   <style>
+    :root,[data-theme="dark"]{
+      --bg:#080808;--bg-card:#0e0e11;--bg-input:#121216;--bg-elevated:#191920;
+      --text:#d8d8e0;--text-secondary:#8888a0;--text-muted:#505060;
+      --border:#161619;--border-hover:#252530;
+      --glass-bg:rgba(8,8,8,.92);--glass-border:rgba(255,255,255,.04);
+      --shadow-sm:0 2px 8px rgba(0,0,0,.5);--shadow-md:0 6px 18px rgba(0,0,0,.6);
+      --success:#22c55e;
+    }
+    body{background:radial-gradient(ellipse 110% 32% at 50% 0%,#0d2018 0%,transparent 68%),#080808!important}
+    @keyframes appIn{from{opacity:0;transform:scale(1.025)}to{opacity:1;transform:scale(1)}}
+    .page-enter{animation:appIn .34s cubic-bezier(.22,.61,.36,1) both}
     body { padding:0; margin:0; min-height:100vh; }
 
     /* Layout */
@@ -249,9 +260,9 @@
   </style>
 </head>
 
-<body>
+<body class="page-enter">
   <div class="addresses-back-header">
-    <button class="addresses-back-btn" onclick="goBack()" aria-label="Voltar">←</button>
+    <button class="addresses-back-btn" onclick="goBack()" aria-label="Voltar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><polyline points="15 18 9 12 15 6"/></svg></button>
     <div class="addresses-back-title">Meus Endereços</div>
   </div>
 

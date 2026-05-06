@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
 <title>Pedra Delivery</title>
-<meta name="theme-color" content="#09090b">
+<meta name="theme-color" content="#080808">
 <link rel="manifest" href="manifest.json">
 <script>(function(){var t=localStorage.getItem('pedrad-theme')||'dark';document.documentElement.setAttribute('data-theme',t)})()</script>
 <link rel="stylesheet" href="client.css">
@@ -13,20 +13,21 @@
 .hdr-btn.icon-svg{display:inline-flex;align-items:center;justify-content:center;padding:0}
 .hdr-btn.icon-svg svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .store-header{gap:6px}
+body{background:radial-gradient(ellipse 110% 32% at 50% 0%,#0d2018 0%,transparent 68%),#080808!important}
 </style>
 </head>
-<body>
+<body class="page-enter">
 <div class="toast" id="toast"></div>
 
 <header class="store-header" id="storeHeader">
-    <button class="hdr-btn" onclick="history.back()">←</button>
+    <button class="hdr-btn" onclick="history.back()" aria-label="Voltar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
     <span class="hdr-title" id="hdrTitle">Carregando...</span>
     <button class="hdr-btn icon-svg" onclick="goInfo()" title="Informações da loja">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
     </button>
     <button class="hdr-btn" onclick="openCart()">
         <span id="cartBadge" class="cart-badge" style="display:none">0</span>
-        ◉
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
     </button>
 </header>
 

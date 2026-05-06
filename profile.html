@@ -4,13 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <title>Meu Perfil — Pedra Delivery</title>
-<meta name="theme-color" content="#09090b">
+<meta name="theme-color" content="#080808">
 <link rel="manifest" href="manifest.json">
 <script>(function(){var t=localStorage.getItem('pedrad-theme')||'dark';document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='dark'?'#0a0a0c':'#f5f5f7'})()</script>
 <link rel="stylesheet" href="client.css">
 <script src="pwa-register.js" defer></script>
 <style>
 body{padding:0;margin:0;min-height:100dvh}
+body{background:radial-gradient(ellipse 110% 32% at 50% 0%,#0d2018 0%,transparent 68%),#080808!important}
 .pf-back{position:fixed;top:0;left:0;right:0;height:calc(52px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);padding-left:14px;padding-right:14px;background:var(--bg-1);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;z-index:100;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
 .pf-back-btn{width:36px;height:36px;border-radius:8px;background:var(--bg-2);border:1px solid var(--border);color:var(--text-0);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .pf-back-btn:hover{border-color:var(--border-h);transform:translateY(-1px)}
@@ -91,11 +92,11 @@ body{padding:0;margin:0;min-height:100dvh}
 .lo-actions button:last-child:hover{background:rgba(248,113,113,.06)}
 </style>
 </head>
-<body>
+<body class="page-enter">
 <div class="toast" id="toast"></div>
 
 <div class="pf-back">
-    <button class="pf-back-btn" onclick="goBack()">‹</button>
+    <button class="pf-back-btn" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><polyline points="15 18 9 12 15 6"/></svg></button>
     <div class="pf-back-title">Meu Perfil</div>
 </div>
 
@@ -150,7 +151,20 @@ body{padding:0;margin:0;min-height:100dvh}
     </div>
 </div>
 
-<nav class="client-nav"><a class="cnav-item" href="home.html"><span class="cnav-icon">⌂</span>Início</a><a class="cnav-item" href="orders.html"><span class="cnav-icon">≡</span>Pedidos</a><a class="cnav-item active" href="profile.html"><span class="cnav-icon">○</span>Perfil</a></nav>
+<nav class="client-nav">
+  <a class="cnav-item" href="home.html">
+    <span class="cnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+    Início
+  </a>
+  <a class="cnav-item" href="orders.html">
+    <span class="cnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg></span>
+    Pedidos
+  </a>
+  <a class="cnav-item active" href="profile.html">
+    <span class="cnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+    Perfil
+  </a>
+</nav>
 
 <div class="lo-overlay" id="loPopup">
     <div class="lo-card">
