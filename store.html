@@ -82,6 +82,23 @@ function esc(s){const d=document.createElement('div');d.textContent=String(s||''
 function money(v){return(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2500)}
 function goInfo(){if(storeId)navigateTo('store-info.html?id='+storeId)}
+function tsDate(v){return v?.toDate?.()||new Date(v||0)}
+function isPromoActive(p){
+    if(p.promo!==true&&p.promotional!==true&&p.onSale!==true)return false;
+    if(p.promotionStatus==='inactive')return false;
+    const now=Date.now(),start=tsDate(p.promotionStartsAt).getTime()||0,end=tsDate(p.promotionEndsAt).getTime()||0;
+    return (!start||start<=now)&&(!end||end>=now);
+}
+function productPrice(p){
+    const promo=Number(p.promoPrice||p.discountPrice||p.salePrice||0);
+    const price=Number(p.price||0);
+    return isPromoActive(p)&&promo>0&&promo<price?promo:price;
+}
+function priceHtml(p,cls){
+    const current=productPrice(p),old=Number(p.oldPrice||p.price||0);
+    const oldHtml=isPromoActive(p)&&old>current?` <span style="color:var(--text-3);text-decoration:line-through;font-size:.78em">${money(old)}</span>`:'';
+    return `<div class="${cls}">${money(current)}${oldHtml}</div>`;
+}
 
 // ══════════ HOURS / OPEN STATUS ══════════
 const DAY_KEYS=['sun','mon','tue','wed','thu','fri','sat'];
@@ -232,7 +249,7 @@ function renderFeatured(){
         const img=p.imageData||p.imageUrl||'';
         return`<div class="el-feat-card" onclick="openProduct('${p.id}')">
             <div class="el-feat-img">${img?`<img src="${esc(img)}" alt="">`:'<span>—</span>'}</div>
-            <div class="el-feat-body"><div class="el-feat-name">${esc(p.name)}</div><div class="el-feat-price">${money(p.price)}</div></div>
+            <div class="el-feat-body"><div class="el-feat-name">${esc(p.name)}</div>${priceHtml(p,'el-feat-price')}</div>
         </div>`;
     }).join('')}</div>`;
 }
@@ -276,7 +293,7 @@ function renderGridCard(p){
         <div class="el-grid-img">${img?`<img src="${esc(img)}" alt="">`:'<span>—</span>'}</div>
         <div class="el-grid-body">
             <div class="el-grid-name">${esc(p.name)}</div>
-            <div class="el-grid-price">${money(p.price)}</div>
+            ${priceHtml(p,'el-grid-price')}
         </div>
         ${inCart?`<div class="el-grid-qty">${inCart.qty}</div>`:''}
     </div>`;
@@ -285,7 +302,7 @@ function renderGridCard(p){
 function renderMiniCard(p){
     return`<div class="el-mini-card" onclick="quickAdd('${p.id}')">
         <div class="el-mini-name">${esc(p.name)}</div>
-        <div class="el-mini-price">${money(p.price)}</div>
+        ${priceHtml(p,'el-mini-price')}
     </div>`;
 }
 
@@ -293,7 +310,7 @@ function quickAdd(productId){
     const p=products.find(x=>x.id===productId);if(!p)return;
     const existing=cart.find(c=>c.id===p.id&&!c.addons.length);
     if(existing){existing.qty++}
-    else{cart.push({id:p.id,name:p.name,price:p.price,qty:1,addons:[],observation:'',productId:p.id,category:p.category||'',storeId:store.id,storeName:store.name||''})}
+    else{cart.push({id:p.id,name:p.name,price:productPrice(p),qty:1,addons:[],observation:'',productId:p.id,category:p.category||'',storeId:store.id,storeName:store.name||''})}
     updateCartBadge();renderProductSection();toast(p.name+' adicionado');
 }
 
@@ -305,7 +322,7 @@ function renderListCard(p){
         <div class="el-list-info">
             <div class="el-list-name">${esc(p.name)}</div>
             ${p.description?`<div class="el-list-desc">${esc(p.description.length>60?p.description.slice(0,58)+'…':p.description)}</div>`:''}
-            <div class="el-list-price">${money(p.price)}</div>
+            ${priceHtml(p,'el-list-price')}
         </div>
         ${inCart?`<div class="el-list-qty">${inCart.qty}</div>`:''}
     </div>`;
@@ -345,7 +362,7 @@ function openProduct(productId){
         <div class="pm-body">
             <div class="pm-name">${esc(p.name)}</div>
             ${p.description?`<div class="pm-desc">${esc(p.description)}</div>`:''}
-            <div class="pm-price">${money(p.price)}</div>
+            <div class="pm-price" data-base="${productPrice(p)}">${money(productPrice(p))}${isPromoActive(p)&&Number(p.oldPrice||p.price)>productPrice(p)?` <span style="color:var(--text-3);text-decoration:line-through;font-size:.78em">${money(p.oldPrice||p.price)}</span>`:''}</div>
             ${addonsHtml}
             <div class="pm-obs-group">
                 <label class="pm-obs-label">Observação</label>
@@ -357,12 +374,12 @@ function openProduct(productId){
                     <span id="pmQtyVal">${inCart?inCart.qty:1}</span>
                     <button onclick="pmQty(1)">+</button>
                 </div>
-                <button class="btn btn-accent" onclick="addFromModal('${p.id}')" id="pmAddBtn">Adicionar ${money(p.price)}</button>
+                <button class="btn btn-accent" onclick="addFromModal('${p.id}')" id="pmAddBtn">Adicionar ${money(productPrice(p))}</button>
             </div>
         </div>`;
     document.body.classList.add('modal-open');
     document.getElementById('productModal').classList.add('active');
-    updatePmTotal(p.price);
+    updatePmTotal(productPrice(p));
     syncAddonGroupLimits();
 }
 
@@ -377,7 +394,7 @@ function pmQty(d){
     document.getElementById('pmQtyVal').textContent=pmQtyVal;
     const checks=document.querySelectorAll('#productDetail input[type=checkbox]:checked, #productDetail input[type=radio]:checked');
     let extra=0;checks.forEach(c=>extra+=parseFloat(c.dataset.price)||0);
-    const base=parseFloat(document.querySelector('.pm-price')?.textContent.replace(/[^\d,]/g,'').replace(',','.'))||0;
+    const base=parseFloat(document.querySelector('.pm-price')?.dataset.base)||0;
     updatePmTotal(base+extra);
 }
 
@@ -390,7 +407,7 @@ function updatePmTotal(unitPrice){
 document.addEventListener('change',e=>{
     if(e.target.closest('#productDetail')&&(e.target.type==='checkbox'||e.target.type==='radio')){
         syncAddonGroupLimits();
-        const base=parseFloat(document.querySelector('.pm-price')?.textContent.replace(/[^\d,]/g,'').replace(',','.'))||0;
+        const base=parseFloat(document.querySelector('.pm-price')?.dataset.base)||0;
         const checks=document.querySelectorAll('#productDetail input[type=checkbox]:checked, #productDetail input[type=radio]:checked');
         let extra=0;checks.forEach(c=>extra+=parseFloat(c.dataset.price)||0);
         updatePmTotal(base+extra);
@@ -450,7 +467,7 @@ function addFromModal(productId){
         limited.forEach(a=>addons.push(a));
     });
 
-    cart.push({id:p.id,name:p.name,price:p.price,qty,addons,observation:obs,
+    cart.push({id:p.id,name:p.name,price:productPrice(p),qty,addons,observation:obs,
         productId:p.id,category:p.category||'',storeId:store.id,storeName:store.name||''});
     closeProductModal();
     updateCartBadge();
