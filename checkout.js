@@ -77,7 +77,8 @@ const LS = {
   addrCache: 'cache_addresses_v1_',
   cartDigest: 'cache_cart_digest_v1',
   checkoutOrigin: 'checkoutOrigin',
-  checkoutRole: 'checkoutRole'
+  checkoutRole: 'checkoutRole',
+  closedStoreAttempts: 'checkout_closed_store_attempts'
 };
 
 let cart = [];
@@ -132,6 +133,108 @@ function writeCache(key, value) {
 function isFresh(cacheObj, ttlMs) {
   if (!cacheObj || !cacheObj.ts) return false;
   return (now() - cacheObj.ts) < ttlMs;
+}
+
+function parseHM(value) {
+  const parts = String(value || '00:00').split(':').map(Number);
+  return ((parts[0] || 0) * 60) + (parts[1] || 0);
+}
+
+function legacyHoursToNew(settings) {
+  if (!settings) return null;
+  const wO = settings.weekdayOpen, wC = settings.weekdayClose, eO = settings.weekendOpen, eC = settings.weekendClose;
+  if (!wO && !eO) return null;
+  const wOpen = wO || '11:00', wClose = wC || '22:00', eOpen = eO || '11:00', eClose = eC || '23:00';
+  return {
+    mon: { enabled: true, open: wOpen, close: wClose },
+    tue: { enabled: true, open: wOpen, close: wClose },
+    wed: { enabled: true, open: wOpen, close: wClose },
+    thu: { enabled: true, open: wOpen, close: wClose },
+    fri: { enabled: true, open: wOpen, close: wClose },
+    sat: { enabled: true, open: eOpen, close: eClose },
+    sun: { enabled: true, open: eOpen, close: eClose },
+    holidays: { enabled: false, open: '11:00', close: '22:00' }
+  };
+}
+
+function isStoreOpenNow(currentStore) {
+  if (!currentStore) return false;
+  if (currentStore.manuallyClosed === true) return false;
+  const hours = currentStore?.settings?.hours || legacyHoursToNew(currentStore?.settings);
+  if (!hours) return currentStore.open !== false;
+
+  const dayKeys = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+  const nowDate = new Date();
+  const day = hours[dayKeys[nowDate.getDay()]];
+  if (!day || day.enabled === false) return false;
+
+  const cur = nowDate.getHours() * 60 + nowDate.getMinutes();
+  const open = parseHM(day.open);
+  const close = parseHM(day.close);
+  if (open === close) return false;
+  return close > open ? (cur >= open && cur < close) : (cur >= open || cur < close);
+}
+
+function bumpClosedStoreAttempts() {
+  const current = Math.max(0, parseInt(localStorage.getItem(LS.closedStoreAttempts) || '0', 10) || 0);
+  const next = current + 1;
+  localStorage.setItem(LS.closedStoreAttempts, String(next));
+  return next;
+}
+
+async function logoutAndRedirectHome() {
+  try {
+    localStorage.removeItem('cart');
+    localStorage.removeItem('LS_CART');
+    localStorage.removeItem('pedrad_cart');
+    localStorage.removeItem('cartItems');
+    localStorage.removeItem(LS.cartDigest);
+    localStorage.removeItem(LS.storeId);
+    localStorage.removeItem(LS.checkoutOrigin);
+    localStorage.removeItem(LS.checkoutRole);
+    localStorage.removeItem(LS.closedStoreAttempts);
+    sessionStorage.removeItem('pedrad_cart');
+    sessionStorage.removeItem('pedrad_store');
+  } catch (_) {}
+
+  try {
+    if (window.AuthManager && typeof AuthManager.logout === 'function') {
+      await AuthManager.logout();
+      return;
+    }
+  } catch (err) {
+    console.warn('AuthManager.logout falhou:', err);
+  }
+
+  try {
+    await auth.signOut();
+  } catch (_) {}
+
+  try {
+    localStorage.removeItem('auth_uid');
+    localStorage.removeItem('auth_name');
+    localStorage.removeItem('auth_email');
+    localStorage.removeItem('auth_last_check');
+  } catch (_) {}
+
+  location.href = 'home.html';
+}
+
+async function blockClosedStoreCheckout() {
+  const attempts = bumpClosedStoreAttempts();
+  await UIModal.alert({
+    title: 'Loja fechada',
+    text: attempts >= 3
+      ? 'Esta loja está fechada. Você foi desconectado após várias tentativas.'
+      : 'Esta loja está fechada no momento.'
+  });
+
+  if (attempts >= 3) {
+    await logoutAndRedirectHome();
+    return;
+  }
+
+  location.href = 'home.html';
 }
 
 // ==================== CART ====================
@@ -762,6 +865,20 @@ async function finishOrder() {
     return;
   }
 
+  if (!store) {
+    await loadStoreSmart(resolvedStoreId);
+  }
+
+  if (!store) {
+    await UIModal.alert({ title: 'Loja', text: 'Não foi possível verificar o status da loja.' });
+    return;
+  }
+
+  if (!isStoreOpenNow(store)) {
+    await blockClosedStoreCheckout();
+    return;
+  }
+
   if (deliveryMode === 'delivery' && !getSelectedAddress()) {
     await UIModal.alert({ title: 'Endereço', text: 'Selecione um endereço para entrega.' });
     return;
@@ -862,6 +979,7 @@ async function finishOrder() {
       localStorage.removeItem('pedrad_cart');
       localStorage.removeItem('cartItems');
       localStorage.removeItem(LS.cartDigest);
+      localStorage.removeItem(LS.closedStoreAttempts);
       sessionStorage.removeItem('pedrad_cart');
       sessionStorage.removeItem('pedrad_store');
     } catch (_) {}
