@@ -702,51 +702,43 @@ body {
   </button>
 </div>
 
-<!-- ══════════ SEARCH ══════════ -->
-<div class="home-search">
-  <div class="search-wrap">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-    </svg>
-    <input id="searchInput" placeholder="Buscar restaurantes..." oninput="render()" autocomplete="off">
-  </div>
-</div>
+<div id="storeSelection">
+  <!-- ══════════ CATEGORIES ══════════ -->
+  <div class="cat-bar" id="catFilter"></div>
 
-<!-- ══════════ CATEGORIES ══════════ -->
-<div class="cat-bar" id="catFilter"></div>
-
-<!-- ══════════ FEATURED BANNER ══════════ -->
-<div class="banner-wrap">
-  <div class="featured-banner" id="featBanner">
-    <div class="bn-bg" id="bnBgA"></div>
-    <div class="bn-bg" id="bnBgB" style="opacity:0"></div>
-    <div class="bn-content" id="bnContent">
-      <div>
-        <div class="banner-tag" id="bnTag"></div>
-        <div class="banner-title" id="bnTitle"></div>
-        <div class="banner-sub" id="bnSub"></div>
-      </div>
-      <div class="banner-bottom">
-        <a class="banner-btn" id="bnBtn" href="#">
-          <span id="bnBtnText"></span>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-          </svg>
-        </a>
-        <div class="banner-dots" id="bannerDots"></div>
+  <!-- ══════════ FEATURED BANNER ══════════ -->
+  <div class="banner-wrap">
+    <div class="featured-banner" id="featBanner">
+      <div class="bn-bg" id="bnBgA"></div>
+      <div class="bn-bg" id="bnBgB" style="opacity:0"></div>
+      <div class="bn-content" id="bnContent">
+        <div>
+          <div class="banner-tag" id="bnTag"></div>
+          <div class="banner-title" id="bnTitle"></div>
+          <div class="banner-sub" id="bnSub"></div>
+        </div>
+        <div class="banner-bottom">
+          <a class="banner-btn" id="bnBtn" href="#">
+            <span id="bnBtnText"></span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </a>
+          <div class="banner-dots" id="bannerDots"></div>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- ══════════ STORES ══════════ -->
-<div class="stores-section">
-  <div class="section-hdr">
-    <span class="section-label">Lojas abertas</span>
-    <span class="section-count" id="storeCount"></span>
-  </div>
-  <div class="stores-list" id="storesList">
-    <div class="stores-loading">Carregando lojas…</div>
+  <!-- ══════════ STORES ══════════ -->
+  <div class="stores-section">
+    <div class="section-hdr">
+      <span class="section-label">Lojas abertas</span>
+      <span class="section-count" id="storeCount"></span>
+    </div>
+    <div class="stores-list" id="storesList">
+      <div class="stores-loading">Carregando lojas…</div>
+    </div>
   </div>
 </div>
 </main>
@@ -895,6 +887,8 @@ function renderCats(){
 
 function setCat(c){catFilter=c;renderCats();render()}
 function goStore(id){navigateTo('store.html?id='+id)}
+window.selectStore = goStore;
+window.openStore = goStore;
 function goInfo(id,e){
   if(e)e.stopPropagation();
   const s=stores.find(x=>x.id===id);
@@ -910,11 +904,9 @@ function hideClosedStorePopup(){document.getElementById('closedStoreModal').clas
 function closeClosedStorePopup(e){if(e.target.id==='closedStoreModal')hideClosedStorePopup()}
 
 function render(){
-  const q=(document.getElementById('searchInput').value||'').toLowerCase().trim();
   const showingInactive=catFilter==='inactive';
   let list=stores.filter(s=>showingInactive?!s.isOpenNow:s.isOpenNow);
   if(catFilter!=='all'&&!showingInactive)list=list.filter(s=>(s.category||'')===catFilter);
-  if(q)list=list.filter(s=>(s.name||'').toLowerCase().includes(q)||(s.description||'').toLowerCase().includes(q));
 
   const el=document.getElementById('storesList');
   const countEl=document.getElementById('storeCount');
@@ -1035,6 +1027,7 @@ document.addEventListener('visibilitychange',()=>{document.hidden?clearInterval(
 
 loadStores().then(()=>{ if(typeof WelcomePopup!=='undefined') WelcomePopup.check(); });
 </script>
+<script src="modules/search.js"></script>
 <script src="safe-area.js" defer></script>
 <script src="swipe-back.js" defer></script>
 </body>
