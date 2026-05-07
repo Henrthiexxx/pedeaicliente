@@ -467,22 +467,22 @@ function renderCartOptimized(force = false) {
 
   container.innerHTML = cart.map(item => {
     const addons = Array.isArray(item.addons) ? item.addons : [];
-    const addonsText = addons.length ? addons.map(a => a.name).filter(Boolean).join(', ') : '';
     const addonsSum = addons.reduce((s, a) => s + (Number(a.price) || 0), 0);
-
     const unit = (Number(item.price) || 0) + addonsSum;
     const qty = Number(item.qty) || 1;
     const total = unit * qty;
+
+    const addonsHtml = addons.length
+      ? addons.map(a => `<div class="ci-addon-row"><span class="ci-addon-dot">+</span><span class="ci-addon-name">${escapeHtml(a.name || '')}</span><span class="ci-addon-price">${formatCurrency(Number(a.price) || 0)}</span></div>`).join('')
+      : '';
 
     return `
       <div class="cart-item">
         <div class="cart-item-info">
           <div class="cart-item-name">${escapeHtml(item.name || 'Item')}</div>
-          <div class="cart-item-meta">
-            ${addonsText ? `Adicionais: ${escapeHtml(addonsText)}<br>` : ``}
-            ${item.observation ? `Obs: ${escapeHtml(item.observation)}<br>` : ``}
-            <span class="pill">${qty}x ${formatCurrency(unit)}</span>
-          </div>
+          <div class="cart-item-base">${qty}x ${formatCurrency(Number(item.price) || 0)}${addons.length ? ' + adicionais' : ''}</div>
+          ${addonsHtml}
+          ${item.observation ? `<div class="cart-item-obs">"${escapeHtml(item.observation)}"</div>` : ``}
         </div>
         <div class="cart-item-price">${formatCurrency(total)}</div>
       </div>
@@ -866,8 +866,12 @@ async function finishOrder() {
       sessionStorage.removeItem('pedrad_store');
     } catch (_) {}
 
-    await UIModal.alert({ title: 'Sucesso', text: 'Pedido realizado com sucesso.' });
-    window.location.href = 'index.html';
+    try {
+      sessionStorage.setItem('pedrad_order_success', JSON.stringify({
+        storeName: store?.name || ''
+      }));
+    } catch(_) {}
+    window.location.replace('order-success.html');
   } catch (err) {
     console.error('Erro ao finalizar pedido:', err);
     await UIModal.alert({ title: 'Erro', text: 'Não foi possível finalizar o pedido.' });

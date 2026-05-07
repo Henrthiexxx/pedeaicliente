@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <script>(function(){var t=localStorage.getItem('pedrad-theme')||'dark';document.documentElement.setAttribute('data-theme',t)})()</script>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,viewport-fit=cover"/>
+  <meta name="theme-color" content="#080808"/>
+  <title>Pedido confirmado — Pedra Delivery</title>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="stylesheet" href="client.css"/>
+  <script src="pwa-register.js" defer></script>
+  <style>
+    :root{
+      --g:#22c55e;--g-dim:rgba(34,197,94,.10);--g-glow:rgba(34,197,94,.22);
+      --surface:#0e0e11;--surface-2:#121216;
+    }
+    html,body{height:100%;overflow:hidden;background:#080808;margin:0}
+    body{
+      font-family:var(--font,'DM Sans',system-ui,sans-serif);
+      background:radial-gradient(ellipse 110% 40% at 50% 0%,#0d2018 0%,transparent 65%),#080808;
+      color:var(--text-0,#d8d8e0);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      padding:24px 20px calc(24px + env(safe-area-inset-bottom,0px));
+      -webkit-tap-highlight-color:transparent;
+      max-width:480px;margin:0 auto;
+    }
+
+    /* ── Checkmark ── */
+    .check-wrap{
+      width:88px;height:88px;border-radius:50%;
+      background:var(--g-dim);border:1.5px solid rgba(34,197,94,.3);
+      display:flex;align-items:center;justify-content:center;
+      margin-bottom:28px;position:relative;
+      animation:popIn .5s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    @keyframes popIn{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+
+    .check-wrap::before{
+      content:'';position:absolute;inset:-8px;border-radius:50%;
+      border:1px solid rgba(34,197,94,.12);animation:ringPulse 2.4s ease infinite;
+    }
+    @keyframes ringPulse{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:.15;transform:scale(1.12)}}
+
+    .check-svg{width:40px;height:40px;stroke:var(--g);stroke-width:2.5;
+      stroke-linecap:round;stroke-linejoin:round;fill:none;
+      stroke-dasharray:60;stroke-dashoffset:60;
+      animation:drawCheck .45s .3s ease forwards;
+    }
+    @keyframes drawCheck{to{stroke-dashoffset:0}}
+
+    /* ── Text ── */
+    .success-title{
+      font-size:1.5rem;font-weight:800;letter-spacing:-.04em;
+      color:#f0f0f2;text-align:center;margin-bottom:8px;
+      animation:fadeUp .4s .4s both;
+    }
+    .success-sub{
+      font-size:.88rem;color:var(--text-2,#505060);text-align:center;
+      line-height:1.5;margin-bottom:6px;
+      animation:fadeUp .4s .5s both;
+    }
+    .store-name{
+      font-size:.84rem;font-weight:700;color:var(--g);text-align:center;
+      margin-bottom:32px;animation:fadeUp .4s .55s both;
+    }
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+    /* ── Progress bar ── */
+    .progress-wrap{
+      width:100%;max-width:260px;margin-bottom:32px;
+      animation:fadeUp .4s .6s both;
+    }
+    .progress-label{font-size:.72rem;color:var(--text-2,#505060);text-align:center;margin-bottom:8px}
+    .progress-track{height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden}
+    .progress-bar{height:100%;background:var(--g);border-radius:2px;width:0%;transition:width linear}
+
+    /* ── Buttons ── */
+    .btn-row{display:flex;flex-direction:column;gap:10px;width:100%;max-width:320px;animation:fadeUp .4s .7s both;}
+    .btn{
+      border:0;font:inherit;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      width:100%;border-radius:16px;padding:15px 20px;
+      font-size:.92rem;font-weight:800;letter-spacing:-.01em;
+      transition:transform .14s,box-shadow .14s,opacity .15s
+    }
+    .btn-primary{
+      background:linear-gradient(180deg,#2edb6b 0%,#1ab553 100%);
+      color:#041a0c;transform:translateY(-2px);
+      box-shadow:0 5px 0 #0c7a32,0 8px 28px rgba(34,197,94,.38),inset 0 1px 0 rgba(255,255,255,.22)
+    }
+    .btn-primary:active{transform:translateY(0);box-shadow:0 2px 0 #0c7a32,0 4px 12px rgba(34,197,94,.22)}
+    .btn-secondary{
+      background:var(--surface);border:1px solid rgba(255,255,255,.08);
+      color:var(--text-0,#d8d8e0)
+    }
+    .btn-secondary:hover{border-color:rgba(255,255,255,.18)}
+    .btn-secondary:active{opacity:.7}
+  </style>
+</head>
+<body>
+  <div class="check-wrap">
+    <svg class="check-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+  </div>
+
+  <div class="success-title">Pedido enviado!</div>
+  <div class="success-sub">Seu pedido foi recebido com sucesso.</div>
+  <div class="store-name" id="storeName"></div>
+
+  <div class="progress-wrap">
+    <div class="progress-label" id="progressLabel">Redirecionando em 5s…</div>
+    <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="go('home.html')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Ir para o início
+    </button>
+    <button class="btn btn-secondary" onclick="go('orders.html')">Ver meus pedidos</button>
+  </div>
+
+  <script src="safe-area.js" defer></script>
+  <script>
+    var REDIRECT_TO = 'home.html';
+    var DELAY = 5000;
+
+    // Lê dados do pedido passados pelo checkout
+    (function(){
+      try {
+        var info = JSON.parse(sessionStorage.getItem('pedrad_order_success') || '{}');
+        if (info.storeName) {
+          document.getElementById('storeName').textContent = info.storeName;
+        }
+        sessionStorage.removeItem('pedrad_order_success');
+      } catch(_) {}
+    })();
+
+    // Barra de progresso + auto-redirect
+    var bar = document.getElementById('progressBar');
+    var label = document.getElementById('progressLabel');
+    var start = Date.now();
+
+    bar.style.transitionDuration = DELAY + 'ms';
+    // Força reflow para a transição iniciar do zero
+    bar.getBoundingClientRect();
+    bar.style.width = '100%';
+
+    var interval = setInterval(function(){
+      var elapsed = Date.now() - start;
+      var remaining = Math.max(0, Math.ceil((DELAY - elapsed) / 1000));
+      label.textContent = remaining > 0
+        ? 'Redirecionando em ' + remaining + 's…'
+        : 'Redirecionando…';
+    }, 250);
+
+    var timer = setTimeout(function(){
+      clearInterval(interval);
+      go(REDIRECT_TO);
+    }, DELAY);
+
+    function go(page) {
+      clearTimeout(timer);
+      clearInterval(interval);
+      window.location.replace(page);
+    }
+  </script>
+</body>
+</html>
