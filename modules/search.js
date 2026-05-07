@@ -7,9 +7,11 @@
   var allStores = [];
   var allProducts = [];
   var searchConfig = {};
+  var storeStatusById = {};
   var dataLoaded = false;
   var injected = false;
   var debounceTimer = null;
+  var DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
   // ===== INIT =====
   function init() {
@@ -26,10 +28,10 @@
 
     var TTL = 1000 * 60 * 30;
     try {
-      var cached = JSON.parse(localStorage.getItem('searchCache') || 'null');
+      var cached = JSON.parse(localStorage.getItem('searchCache_v2') || 'null');
       if (cached && cached.ts && (Date.now() - cached.ts) < TTL) {
-        cached.stores.forEach(function (s) { allStores.push(s); });
-        cached.products.forEach(function (p) { allProducts.push(p); });
+        allStores = (cached.stores || []).slice();
+        allProducts = (cached.products || []).slice();
         (cached.config || []).forEach(function (c) { if (c.refId) searchConfig[c.refId] = c; });
         dataLoaded = true;
         return Promise.resolve();
@@ -41,13 +43,17 @@
       db.collection('stores').get(),
       db.collection('products').get()
     ]).then(function (snaps) {
+      allStores = [];
+      allProducts = [];
       var cfgArr = [];
       snaps[0].docs.forEach(function (doc) {
         var d = doc.data();
         if (d.refId) { searchConfig[d.refId] = d; cfgArr.push(d); }
       });
       snaps[1].docs.forEach(function (doc) {
-        allStores.push(Object.assign({ id: doc.id }, doc.data()));
+        var store = Object.assign({ id: doc.id }, doc.data());
+        allStores.push(store);
+        storeStatusById[store.id] = isStoreOpen(store);
       });
       snaps[2].docs.forEach(function (doc) {
         allProducts.push(Object.assign({ id: doc.id }, doc.data()));
@@ -55,16 +61,19 @@
       dataLoaded = true;
 
       try {
-        localStorage.setItem('searchCache', JSON.stringify({
+        localStorage.setItem('searchCache_v2', JSON.stringify({
           ts: Date.now(),
           stores: allStores.map(function (s) {
             return { id:s.id, name:s.name, category:s.category, emoji:s.emoji,
               bannerData:s.bannerData||'', imageData:s.imageData||'', imageUrl:s.imageUrl||'',
-              storeId:s.storeId, open:s.open, deliveryTime:s.deliveryTime };
+              storeId:s.storeId, open:s.open, deliveryTime:s.deliveryTime,
+              manuallyClosed:s.manuallyClosed, settings:s.settings };
           }),
           products: allProducts.map(function (p) {
             return { id:p.id, name:p.name, description:p.description,
-              price:p.price, emoji:p.emoji, storeId:p.storeId };
+              price:p.price, emoji:p.emoji, storeId:p.storeId,
+              imageUrl:p.imageUrl||'', imageData:p.imageData||'',
+              photoUrl:p.photoUrl||'', thumbnailUrl:p.thumbnailUrl||'' };
           }),
           config: cfgArr
         }));
@@ -182,6 +191,7 @@
     allStores.forEach(function (store) {
       var cfg = searchConfig[store.id] || {};
       if (cfg.visible === false) return;
+      if (!isStoreOpen(store)) return;
       var name = norm(store.name || '');
       var cat = norm(store.category || '');
       var match = name.indexOf(q) >= 0 || cat.indexOf(q) >= 0;
@@ -200,6 +210,7 @@
     allProducts.forEach(function (prod) {
       var cfg = searchConfig[prod.id] || {};
       if (cfg.visible === false) return;
+      if (!isProductSearchable(prod)) return;
       var name = norm(prod.name || '');
       var desc = norm(prod.description || '');
       var match = name.indexOf(q) >= 0 || desc.indexOf(q) >= 0;
@@ -227,6 +238,7 @@
     allStores.forEach(function (s) {
       var cfg = searchConfig[s.id] || {};
       if (cfg.visible === false) return;
+      if (!isStoreOpen(s)) return;
       if (cfg.absolute) {
         abs.push({ type:'store', name:s.name||'Loja',
           subtitle:cfg.tag||s.category||'', emoji:s.emoji||'🏪',
@@ -237,6 +249,7 @@
     allProducts.forEach(function (p) {
       var cfg = searchConfig[p.id] || {};
       if (cfg.visible === false) return;
+      if (!isProductSearchable(p)) return;
       if (cfg.absolute) {
         abs.push({ type:'product', name:p.name||'Produto',
           subtitle:cfg.tag||'', emoji:p.emoji||'🍽️',
@@ -336,6 +349,50 @@
 
   // ===== UTILS =====
   function norm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+  function parseHM(s) {
+    var parts = String(s || '00:00').split(':').map(Number);
+    return ((parts[0] || 0) * 60) + (parts[1] || 0);
+  }
+  function legacyHoursToNew(s) {
+    if (!s) return null;
+    var wO = s.weekdayOpen, wC = s.weekdayClose, eO = s.weekendOpen, eC = s.weekendClose;
+    if (!wO && !eO) return null;
+    var wOpen = wO || '11:00', wClose = wC || '22:00', eOpen = eO || '11:00', eClose = eC || '23:00';
+    return {
+      mon: { enabled: true, open: wOpen, close: wClose },
+      tue: { enabled: true, open: wOpen, close: wClose },
+      wed: { enabled: true, open: wOpen, close: wClose },
+      thu: { enabled: true, open: wOpen, close: wClose },
+      fri: { enabled: true, open: wOpen, close: wClose },
+      sat: { enabled: true, open: eOpen, close: eClose },
+      sun: { enabled: true, open: eOpen, close: eClose },
+      holidays: { enabled: false, open: '11:00', close: '22:00' }
+    };
+  }
+  function isStoreOpen(store) {
+    if (!store) return false;
+    if (store.manuallyClosed === true) return false;
+    var hours = (store && store.settings && store.settings.hours) || legacyHoursToNew(store && store.settings);
+    if (!hours) return store.open !== false;
+    var now = new Date();
+    var day = hours[DAY_KEYS[now.getDay()]];
+    if (!day || day.enabled === false) return false;
+    var cur = now.getHours() * 60 + now.getMinutes();
+    var open = parseHM(day.open), close = parseHM(day.close);
+    if (open === close) return false;
+    return close > open ? (cur >= open && cur < close) : (cur >= open || cur < close);
+  }
+  function isProductSearchable(prod) {
+    if (!prod) return false;
+    var storeId = prod.storeId || '';
+    if (!storeId) return true;
+    if (Object.prototype.hasOwnProperty.call(storeStatusById, storeId)) return !!storeStatusById[storeId];
+    var store = allStores.find(function (s) { return s.id === storeId; });
+    if (!store) return true;
+    var open = isStoreOpen(store);
+    storeStatusById[storeId] = open;
+    return open;
+  }
   function getImg(r) {
     var d = (r.imageData || '').trim();
     return (d && (d.indexOf('data:image/') === 0 || /^https?:\/\//.test(d))) ? d : null;
