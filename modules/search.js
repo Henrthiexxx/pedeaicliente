@@ -87,7 +87,12 @@
         '<input type="text" id="globalSearchInput" placeholder="Buscar lojas e produtos..." autocomplete="off" style="' +
           'width:100%;padding:14px 16px 14px 42px;background:var(--bg-input,#171717);border:1px solid var(--border,#262626);' +
           'border-radius:12px;color:var(--text,#fff);font-size:0.95rem;transition:border-color 0.2s;outline:none;">' +
-        '<span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted,#737373);font-size:1.1rem;pointer-events:none;">🔍</span>' +
+        '<span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted,#737373);pointer-events:none;display:flex;align-items:center;justify-content:center;width:16px;height:16px;">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+            '<circle cx="11" cy="11" r="7.5"></circle>' +
+            '<path d="M20 20l-3.5-3.5"></path>' +
+          '</svg>' +
+        '</span>' +
         '<button id="globalSearchClear" type="button" style="' +
           'display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);background:var(--bg-card,#0a0a0a);' +
           'border:1px solid var(--border,#262626);border-radius:50%;width:28px;height:28px;color:var(--text-muted,#737373);' +
@@ -184,7 +189,7 @@
         results.push({
           type: 'store', name: store.name || 'Loja',
           subtitle: store.category || '', emoji: store.emoji || '🏪',
-          imageData: store.bannerData || store.imageData || store.imageUrl || '',
+          imageData: store.bannerData || store.imageData || store.imageUrl || store.logoUrl || '',
           priority: cfg.priority || 0, absolute: !!cfg.absolute,
           score: match ? (name.indexOf(q) === 0 ? 100 : 50) : 0,
           storeId: store.id, productId: '', price: 0
@@ -202,7 +207,7 @@
         results.push({
           type: 'product', name: prod.name || 'Produto',
           subtitle: cfg.tag || '', emoji: prod.emoji || '🍽️',
-          imageData: '', price: prod.price || 0,
+          imageData: prod.imageData || prod.imageUrl || prod.bannerData || prod.photoUrl || prod.thumbnailUrl || '', price: prod.price || 0,
           priority: cfg.priority || 0, absolute: !!cfg.absolute,
           score: match ? (name.indexOf(q) === 0 ? 100 : 50) : 0,
           storeId: prod.storeId || '', productId: prod.id
@@ -221,19 +226,21 @@
     var abs = [];
     allStores.forEach(function (s) {
       var cfg = searchConfig[s.id] || {};
-      if (cfg.absolute && cfg.visible !== false) {
+      if (cfg.visible === false) return;
+      if (cfg.absolute) {
         abs.push({ type:'store', name:s.name||'Loja',
           subtitle:cfg.tag||s.category||'', emoji:s.emoji||'🏪',
-          imageData:s.bannerData||s.imageData||s.imageUrl||'',
+          imageData:s.bannerData||s.imageData||s.imageUrl||s.logoUrl||'',
           priority:cfg.priority||0, storeId:s.id, productId:'', price:0 });
       }
     });
     allProducts.forEach(function (p) {
       var cfg = searchConfig[p.id] || {};
-      if (cfg.absolute && cfg.visible !== false) {
+      if (cfg.visible === false) return;
+      if (cfg.absolute) {
         abs.push({ type:'product', name:p.name||'Produto',
           subtitle:cfg.tag||'', emoji:p.emoji||'🍽️',
-          imageData:'', price:p.price||0,
+          imageData:p.imageData||p.imageUrl||p.bannerData||p.photoUrl||p.thumbnailUrl||'', price:p.price||0,
           priority:cfg.priority||0, storeId:p.storeId||'', productId:p.id });
       }
     });
@@ -272,18 +279,16 @@
       var r = list[i];
       var img = getImg(r);
       var priceHtml = r.price ? '<span style="color:var(--primary);font-weight:600;font-size:0.85rem;">' + fmtCur(r.price) + '</span>' : '';
-      var icon = r.type === 'store' ? '🏪 ' : '';
 
       html +=
         '<div data-type="' + r.type + '" data-store="' + esc(r.storeId) + '" data-product="' + esc(r.productId) + '"' +
         ' style="display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border);">' +
           '<div style="width:48px;height:48px;min-width:48px;border-radius:10px;background:var(--bg-input);' +
-            'display:flex;align-items:center;justify-content:center;font-size:1.5rem;overflow:hidden;border:1px solid var(--border);' +
-            (img ? "background-image:url('" + img + "');background-size:cover;background-position:center;font-size:0;" : '') + '">' +
-            (img ? '' : (r.emoji || '🍽️')) +
+            'overflow:hidden;border:1px solid var(--border);' +
+            (img ? "background-image:url('" + img + "');background-size:cover;background-position:center;" : '') + '">' +
           '</div>' +
           '<div style="flex:1;min-width:0;">' +
-            '<div style="font-weight:600;font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + icon + esc(r.name) + '</div>' +
+            '<div style="font-weight:600;font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + esc(r.name) + '</div>' +
             '<div style="font-size:0.8rem;color:var(--text-muted);margin-top:2px;">' + esc(r.subtitle) + '</div>' +
           '</div>' +
           priceHtml +
@@ -345,19 +350,11 @@
     if (typeof firebase === 'undefined') return false;
     if (typeof db === 'undefined') return false;
     if (!document.getElementById('storeSelection')) return false;
-    var user = firebase.auth().currentUser;
-    if (!user) return false;
     init();
     return true;
   }
 
   if (tryInit()) return;
-
-  if (typeof firebase !== 'undefined' && firebase.auth) {
-    firebase.auth().onAuthStateChanged(function () {
-      if (!tryInit()) setTimeout(tryInit, 800);
-    });
-  }
 
   var att = 0;
   var iv = setInterval(function () {

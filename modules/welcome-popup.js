@@ -15,13 +15,14 @@ const WelcomePopup = {
 
             const doc = snap.docs[0];
             const data = doc.data();
+            const testMode = data.testMode === true;
             const now = new Date();
             const startsAt = data.startsAt?.toDate?.() || new Date(data.startsAt);
             const expiresAt = data.expiresAt?.toDate?.() || new Date(data.expiresAt);
-            if (now < startsAt || now > expiresAt) return;
+            if (!testMode && (now < startsAt || now > expiresAt)) return;
 
             const seenId = localStorage.getItem(this.SEEN_KEY);
-            if (seenId === doc.id) return;
+            if (!testMode && seenId === doc.id) return;
 
             this.show(doc.id, data);
         } catch (e) {
@@ -30,7 +31,9 @@ const WelcomePopup = {
     },
 
     show(id, data) {
-        localStorage.setItem(this.SEEN_KEY, id);
+        if (data.testMode !== true) {
+            localStorage.setItem(this.SEEN_KEY, id);
+        }
         this._track(id, 'views');
 
         const mode = data.imageMode || 'semi';
@@ -91,12 +94,6 @@ const WelcomePopup = {
         // Store action data
         overlay.dataset.action = JSON.stringify(data.action || null);
 
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay || e.target.classList.contains('wp-popup-container')) {
-                this.dismiss(id);
-            }
-        });
-
         document.body.appendChild(overlay);
         this._popup = overlay;
         requestAnimationFrame(() => overlay.classList.add('show'));
@@ -118,6 +115,10 @@ const WelcomePopup = {
             if (typeof selectStore === 'function') {
                 if (typeof showPage === 'function') showPage('home');
                 setTimeout(() => selectStore(action.storeId), 200);
+            } else {
+                const url = 'store.html?id=' + encodeURIComponent(action.storeId);
+                if (typeof navigateTo === 'function') navigateTo(url);
+                else location.href = url;
             }
             return;
         }
@@ -130,6 +131,10 @@ const WelcomePopup = {
                         if (typeof openProductModal === 'function') openProductModal(action.productId);
                     }, 600);
                 }, 200);
+            } else {
+                const url = 'store.html?id=' + encodeURIComponent(action.storeId) + '&productId=' + encodeURIComponent(action.productId);
+                if (typeof navigateTo === 'function') navigateTo(url);
+                else location.href = url;
             }
             return;
         }

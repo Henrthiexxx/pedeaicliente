@@ -1,11 +1,36 @@
 // ==================== FCM MODULE ====================
-// Push notifications - App Entregador
+// Push notifications - App Cliente
 
 const FCMModule = {
     messaging: null,
     token: null,
     swReg: null,
-    customSoundUrl: null, // base64 ou URL do som custom
+    customSoundUrl: null,
+
+    getAppBasePath() {
+        return new URL('./', window.location.href).pathname;
+    },
+
+    ensureMessagingSdk() {
+        if (window.firebase?.messaging) return Promise.resolve(true);
+
+        return new Promise(resolve => {
+            const existing = document.querySelector('script[data-firebase-messaging-sdk]');
+            if (existing) {
+                existing.addEventListener('load', () => resolve(!!window.firebase?.messaging), { once: true });
+                existing.addEventListener('error', () => resolve(false), { once: true });
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.src = 'https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js';
+            script.defer = true;
+            script.dataset.firebaseMessagingSdk = 'true';
+            script.onload = () => resolve(!!window.firebase?.messaging);
+            script.onerror = () => resolve(false);
+            document.head.appendChild(script);
+        });
+    },
 
     async init() {
         if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
@@ -13,10 +38,16 @@ const FCMModule = {
             return false;
         }
         try {
-            this.swReg = await navigator.serviceWorker.register('/pedeaientregador/firebase-messaging-sw.js', {
-                scope: '/pedeaientregador/'
+            if (!window.firebase || !(await this.ensureMessagingSdk())) {
+                console.warn('Firebase Messaging SDK não carregado');
+                return false;
+            }
+
+            const basePath = this.getAppBasePath();
+            this.swReg = await navigator.serviceWorker.register(`${basePath}firebase-messaging-sw.js`, {
+                scope: basePath
             });
-            console.log('✅ SW registrado');
+            console.log('✅ SW do cliente registrado');
 
             this.messaging = firebase.messaging();
 
@@ -103,32 +134,32 @@ const FCMModule = {
         // Monta mensagem baseada no tipo
         const messages = {
             new_order: {
-                title: '📦 Nova Entrega!',
-                body: `${data.storeName || 'Loja'} → ${data.neighborhood || ''}`,
+                title: 'Pedido recebido',
+                body: data.message || 'Seu pedido foi registrado.',
                 urgent: true
             },
             order_ready: {
-                title: '✅ Pedido Pronto!',
-                body: `#${(data.orderId || '').slice(-6).toUpperCase()} pronto para retirada`,
+                title: 'Pedido pronto',
+                body: `#${(data.orderId || '').slice(-6).toUpperCase()} está pronto.`,
                 urgent: true
             },
             order_status: {
-                title: '🔔 Atualização',
+                title: 'Atualização do pedido',
                 body: data.message || notif.body || 'Pedido atualizado',
                 urgent: false
             },
             transfer_offer: {
-                title: '🔄 Oferta de Troca',
-                body: `${data.driverName || 'Entregador'} quer trocar entrega`,
+                title: 'Atualização de entrega',
+                body: data.message || 'Sua entrega foi atualizada.',
                 urgent: false
             },
             rating: {
-                title: '⭐ Nova Avaliação',
-                body: data.message || 'Você recebeu uma avaliação',
+                title: 'Avaliação',
+                body: data.message || 'Obrigado por avaliar seu pedido.',
                 urgent: false
             },
             marketing: {
-                title: notif.title || data.title || '🎉 Pedrad',
+                title: notif.title || data.title || 'Pedrad',
                 body: notif.body || data.body || 'Confira!',
                 urgent: false
             }
@@ -155,7 +186,7 @@ const FCMModule = {
         if (Notification.permission === 'granted') {
             new Notification(title, {
                 body,
-                icon: '/pedeaientregador/icon-192.png',
+                icon: `${this.getAppBasePath()}icon-192.png`,
                 tag: data.orderId || `pedrad-${type}`,
                 data
             });
@@ -163,11 +194,13 @@ const FCMModule = {
     },
 
     handleNotificationClick(data) {
-        // Quando usuário clica na notificação e app já está aberto
-        if (data.type === 'new_order') {
-            // Scroll para pedidos disponíveis
-            const el = document.getElementById('availableSection');
-            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        if (data.storeId) {
+            window.location.href = `${this.getAppBasePath()}store.html?id=${encodeURIComponent(data.storeId)}`;
+            return;
+        }
+
+        if (['new_order', 'order_status', 'order_update', 'order_ready', 'order_delivered'].includes(data.type)) {
+            window.location.href = `${this.getAppBasePath()}orders.html`;
         }
     },
 
@@ -250,12 +283,21 @@ const FCMModule = {
 // ==================== SETUP FUNCTIONS ====================
 
 async function setupDriverPushNotifications() {
+    return setupClientPushNotifications();
+}
+
+async function setupClientPushNotifications(userId) {
     const initialized = await FCMModule.init();
-    if (!initialized) return;
+    if (!initialized) return null;
     const token = await FCMModule.requestPermissionAndGetToken();
-    if (token && driverData) {
-        await FCMModule.saveTokenToFirestore(driverData.id, 'driver');
+    if (!token) return null;
+
+    const resolvedUserId = userId || firebase.auth?.().currentUser?.uid;
+    if (resolvedUserId) {
+        await FCMModule.saveTokenToFirestore(resolvedUserId, 'customer');
     }
+
+    return token;
 }
 
 async function cleanupPushNotifications(userId, userType) {
@@ -263,7 +305,7 @@ async function cleanupPushNotifications(userId, userType) {
 }
 
 // ==================== SOUND PICKER (para profile.html) ====================
-// Chame openSoundPicker() de um botão no perfil do entregador
+// Chame openSoundPicker() de um botão no perfil.
 
 function openSoundPicker() {
     const input = document.createElement('input');

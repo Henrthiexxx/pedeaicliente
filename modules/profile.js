@@ -12,7 +12,6 @@ const ProfileModule = {
     scoreConfig: {
         name: 10,
         phone: 10,
-        cpf: 15,
         email: 5,
         address: 20,       // Endereço completo
         photo: 10,
@@ -94,7 +93,6 @@ const ProfileModule = {
         // Pontos por campos preenchidos
         if (this.userData.name) score += this.scoreConfig.name;
         if (this.userData.phone) score += this.scoreConfig.phone;
-        if (this.userData.cpf) score += this.scoreConfig.cpf;
         if (this.userData.email || currentUser?.email) score += this.scoreConfig.email;
         if (this.userData.photoURL) score += this.scoreConfig.photo;
         
@@ -162,7 +160,6 @@ const ProfileModule = {
         const name = this.userData?.name || currentUser?.displayName || 'Usuário';
         const email = this.userData?.email || currentUser?.email || '';
         const phone = this.userData?.phone || '';
-        const cpf = this.userData?.cpf || '';
         const reputation = this.userData?.reputation || { score: 0, level: 'bronze' };
         const levelInfo = this.getLevelInfo(reputation.level);
         const isComplete = this.isProfileComplete();
@@ -218,13 +215,6 @@ const ProfileModule = {
                     <input type="tel" class="input" id="profilePhoneInput" 
                            value="${phone}" placeholder="(00) 00000-0000"
                            oninput="ProfileModule.formatPhone(this)">
-                </div>
-                
-                <div class="input-group">
-                    <label>CPF <span class="optional">(+15 pts)</span></label>
-                    <input type="text" class="input" id="profileCpfInput" 
-                           value="${cpf}" placeholder="000.000.000-00"
-                           oninput="ProfileModule.formatCpf(this)">
                 </div>
                 
                 <button class="btn btn-primary" onclick="ProfileModule.handleSave()">
@@ -293,7 +283,6 @@ const ProfileModule = {
     async handleSave() {
         const name = document.getElementById('profileNameInput')?.value?.trim();
         const phone = document.getElementById('profilePhoneInput')?.value?.trim();
-        const cpf = document.getElementById('profileCpfInput')?.value?.trim();
         
         if (!name) {
             showToast('Digite seu nome');
@@ -305,14 +294,7 @@ const ProfileModule = {
             return;
         }
         
-        // Valida CPF se preenchido
-        if (cpf && !this.validateCpf(cpf)) {
-            showToast('CPF inválido');
-            return;
-        }
-        
-        const data = { name, phone };
-        if (cpf) data.cpf = cpf;
+        const data = { name, phone, cpf: firebase.firestore.FieldValue.delete() };
         
         const success = await this.saveProfile(data);
         
@@ -343,40 +325,7 @@ const ProfileModule = {
         input.value = value;
     },
     
-    formatCpf(input) {
-        let value = input.value.replace(/\D/g, '');
-        if (value.length > 11) value = value.slice(0, 11);
-        
-        if (value.length > 9) {
-            value = `${value.slice(0,3)}.${value.slice(3,6)}.${value.slice(6,9)}-${value.slice(9)}`;
-        } else if (value.length > 6) {
-            value = `${value.slice(0,3)}.${value.slice(3,6)}.${value.slice(6)}`;
-        } else if (value.length > 3) {
-            value = `${value.slice(0,3)}.${value.slice(3)}`;
-        }
-        
-        input.value = value;
-    },
     
-    validateCpf(cpf) {
-        cpf = cpf.replace(/\D/g, '');
-        if (cpf.length !== 11) return false;
-        if (/^(\d)\1+$/.test(cpf)) return false;
-        
-        let sum = 0;
-        for (let i = 0; i < 9; i++) sum += parseInt(cpf[i]) * (10 - i);
-        let digit = (sum * 10) % 11;
-        if (digit === 10) digit = 0;
-        if (digit !== parseInt(cpf[9])) return false;
-        
-        sum = 0;
-        for (let i = 0; i < 10; i++) sum += parseInt(cpf[i]) * (11 - i);
-        digit = (sum * 10) % 11;
-        if (digit === 10) digit = 0;
-        if (digit !== parseInt(cpf[10])) return false;
-        
-        return true;
-    }
 };
 
 // Hook para validar antes do checkout
