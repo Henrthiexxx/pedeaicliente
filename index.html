@@ -10,11 +10,30 @@
 <link rel="stylesheet" href="client.css">
 <script src="pwa-register.js" defer></script>
 <style>
+/* ── Splash: fullscreen icon ── */
+#splash{
+  position:fixed;inset:0;z-index:9999;
+  background:#080808;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+  transition:opacity .32s ease;
+}
+#splash.out{opacity:0;pointer-events:none}
+.splash-icon{
+  width:100%;height:100%;
+  object-fit:cover;
+  object-position:center;
+  animation:splashPulse 1.4s ease-in-out infinite;
+}
+@keyframes splashPulse{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.03)}
+}
+
+/* ── Auth page ── */
 .splash{min-height:100dvh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px}
 .splash-title{font-size:1.6rem;font-weight:700;letter-spacing:-.03em}
 .splash-sub{font-size:.82rem;color:var(--text-2)}
-.splash-spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;margin-top:12px}
-@keyframes spin{to{transform:rotate(360deg)}}
 .auth-box{display:none;width:100%;max-width:380px;padding:0 20px}
 .auth-card{background:var(--bg-1);border:1px solid var(--border);border-radius:var(--r);padding:28px;box-shadow:var(--sh-lg)}
 .form-group{margin-bottom:16px}
@@ -30,11 +49,9 @@
 </head>
 <body>
 
-<!-- Splash (shown while checking auth) -->
-<div class="splash" id="splash">
-    <div class="splash-title">Pedra Delivery</div>
-    <div class="splash-sub">Delivery</div>
-    <div class="splash-spinner"></div>
+<!-- Splash: fullscreen icon while checking auth -->
+<div id="splash">
+  <img src="icon-512.png" class="splash-icon" alt="Pedra Delivery">
 </div>
 
 <!-- Auth (shown only if not logged in) -->
@@ -130,17 +147,22 @@ async function handleRegister(e){
 }
 
 // ══════════ AUTH GATE ══════════
-// Waits for Firebase Auth to resolve, then redirects or shows login
 auth.onAuthStateChanged(user=>{
+    const splash=document.getElementById('splash');
     if(user){
-        // Logged in → go to home (no flash)
-        location.replace('home.html');
+        // Logged in → fade out icon, then go to home
+        splash.classList.add('out');
+        setTimeout(()=>location.replace('home.html'),320);
     }else{
-        // Not logged in → show auth page
-        document.getElementById('splash').style.display='none';
-        document.getElementById('authPage').style.display='flex';
+        // Not logged in → fade out icon, show auth
+        splash.classList.add('out');
+        setTimeout(()=>{
+            splash.style.display='none';
+            document.getElementById('authPage').style.display='flex';
+        },320);
     }
 });
 </script>
+<script src="safe-area.js" defer></script>
 </body>
 </html>

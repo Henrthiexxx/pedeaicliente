@@ -841,13 +841,31 @@ function isStoreOpen(store){
   return close>open?(cur>=open&&cur<close):(cur>=open||cur<close);
 }
 
+const STORES_CACHE_KEY='pedrad_stores_cache';
+const STORES_CACHE_TTL=5*60*1000; // 5 min
+
+function loadStoresFromCache(){
+  try{
+    const raw=localStorage.getItem(STORES_CACHE_KEY);
+    if(!raw)return false;
+    const {ts,data}=JSON.parse(raw);
+    if(Date.now()-ts>STORES_CACHE_TTL)return false;
+    stores=data.map(s=>({...s,isOpenNow:isStoreOpen(s)}));
+    renderCats();render();
+    return true;
+  }catch(e){return false;}
+}
+
 async function loadStores(){
+  const hadCache=loadStoresFromCache(); // renderiza imediatamente se cache válido
   const snap=await db.collection('stores').get();
-  stores=snap.docs
+  const fresh=snap.docs
     .map(d=>({id:d.id,...d.data()}))
     .filter(s=>!s.suspended)
     .map(s=>({...s,isOpenNow:isStoreOpen(s)}));
-  stores.sort((a,b)=>(a.name||'').localeCompare(b.name||'','pt-BR'));
+  fresh.sort((a,b)=>(a.name||'').localeCompare(b.name||'','pt-BR'));
+  try{localStorage.setItem(STORES_CACHE_KEY,JSON.stringify({ts:Date.now(),data:fresh}));}catch(e){}
+  stores=fresh;
   renderCats();render();
 }
 
@@ -1017,5 +1035,7 @@ document.addEventListener('visibilitychange',()=>{document.hidden?clearInterval(
 
 loadStores().then(()=>{ if(typeof WelcomePopup!=='undefined') WelcomePopup.check(); });
 </script>
+<script src="safe-area.js" defer></script>
+<script src="swipe-back.js" defer></script>
 </body>
 </html>
