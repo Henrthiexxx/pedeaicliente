@@ -35,6 +35,46 @@ let selectedAddon = null;
 let deliveryMode = 'delivery';
 let selectedPayment = 'pix';
 
+function normalizeOrderType(mode) {
+    return mode === 'pickup' ? 'pickup' : 'delivery';
+}
+
+async function resolveDeliveryPoolByStore(orderType, storeId) {
+    if (orderType !== 'delivery') return 'none';
+    if (!storeId) return 'app';
+
+    try {
+        const q1 = db.collection('drivers').where('linkedStores', 'array-contains', storeId).limit(1).get();
+        const q2 = db.collection('drivers').where('linkedStoreId', '==', storeId).limit(1).get();
+        const q3 = db.collection('drivers').where('storeId', '==', storeId).limit(1).get();
+        const [s1, s2, s3] = await Promise.all([q1, q2, q3]);
+        return (!s1.empty || !s2.empty || !s3.empty) ? 'store' : 'app';
+    } catch (err) {
+        console.error('resolveDeliveryPoolByStore:', err);
+        return 'app';
+    }
+}
+
+async function buildDispatchFields(orderType, storeId) {
+    const isDelivery = orderType === 'delivery';
+    return {
+        orderType,
+        deliveryMode: orderType,
+        deliveryPool: await resolveDeliveryPoolByStore(orderType, storeId),
+        deliveryPoolSource: 'storeLinkedDrivers',
+        dispatchVersion: 2,
+        dispatchState: isDelivery ? 'available' : 'not_applicable',
+        dispatchAvailableAt: isDelivery ? firebase.firestore.FieldValue.serverTimestamp() : null,
+        driverId: null,
+        driverName: null,
+        driverPhone: null,
+        driverVehicle: null,
+        driver: null,
+        driverEarning: null,
+        acceptedAt: null
+    };
+}
+
 // ==================== XSS SANITIZER ====================
 function esc(str) {
     if (typeof str !== 'string') return '';
@@ -163,6 +203,36 @@ function switchAuthTab(tab) {
     }
 }
 
+const KNOWN_EMAIL_PROVIDERS = new Set([
+    'gmail.com', 'hotmail.com', 'outlook.com', 'live.com', 'msn.com',
+    'yahoo.com', 'icloud.com', 'me.com', 'uol.com.br', 'bol.com.br', 'globo.com'
+]);
+
+function isValidName(name) {
+    return /^[A-Za-zÀ-ÖØ-öø-ÿ'`´^~Çç\s.-]+$/.test(name) && /[A-Za-zÀ-ÖØ-öø-ÿÇç]/.test(name);
+}
+
+function isKnownProviderEmail(email) {
+    const parts = String(email).toLowerCase().split('@');
+    if (parts.length !== 2 || !parts[0] || !parts[1]) return false;
+    return KNOWN_EMAIL_PROVIDERS.has(parts[1]);
+}
+
+function formatPhoneToRequired(value) {
+    let digits = String(value || '').replace(/\D/g, '').slice(0, 11);
+    if (!digits) return '';
+    let out = `(${digits.slice(0, 2)}`;
+    if (digits.length >= 2) out += ')';
+    if (digits.length > 2) out += ` ${digits.slice(2, 3)}`;
+    if (digits.length > 3) out += ` ${digits.slice(3, 7)}`;
+    if (digits.length > 7) out += ` ${digits.slice(7, 11)}`;
+    return out;
+}
+
+function isValidPhoneRequiredFormat(phone) {
+    return /^\(\d{2}\)\s\d\s\d{4}\s\d{4}$/.test(phone);
+}
+
 async function handleLogin(e) {
     e.preventDefault();
     const email = document.getElementById('loginEmail')?.value;
@@ -180,12 +250,15 @@ async function handleLogin(e) {
 
 async function handleRegister(e) {
     e.preventDefault();
-    const name = document.getElementById('registerName')?.value;
-    const email = document.getElementById('registerEmail')?.value;
-    const phone = document.getElementById('registerPhone')?.value;
+    const name = document.getElementById('registerName')?.value?.trim();
+    const email = document.getElementById('registerEmail')?.value?.trim().toLowerCase();
+    const phone = formatPhoneToRequired(document.getElementById('registerPhone')?.value?.trim());
     const password = document.getElementById('registerPassword')?.value;
     
     if (!name || !email || !password) return showToast('Preencha todos os campos');
+    if (!isValidName(name)) return showToast('Nome não pode conter números');
+    if (!isKnownProviderEmail(email)) return showToast('Use um provedor conhecido (gmail, hotmail, outlook...)');
+    if (!isValidPhoneRequiredFormat(phone)) return showToast('Telefone no formato: (01) 2 3456 7890');
     
     try {
         const { user } = await auth.createUserWithEmailAndPassword(email, password);
@@ -841,6 +914,9 @@ async function submitOrder() {
     const discount = calculateDiscount(subtotal);
     const total = subtotal - discount + delivery;
     
+    const orderType = normalizeOrderType(deliveryMode);
+    const dispatchFields = await buildDispatchFields(orderType, store.id);
+
     const order = {
         userId: currentUser.uid,
         userName: currentUser.displayName || 'Cliente',
@@ -856,7 +932,7 @@ async function submitOrder() {
         })),
         subtotal, delivery, discount, total,
         couponCode: appliedCoupon?.code || null,
-        deliveryMode,
+        ...dispatchFields,
         address: deliveryMode === 'delivery' ? {
             label: address.label,
             street: address.street,
@@ -1004,6 +1080,7 @@ function openOrderDetail(orderId) {
     
     const content = document.getElementById('orderDetailContent');
     if (!content) return;
+    const orderType = order.orderType || order.deliveryMode;
     
     content.innerHTML = `
         <div style="margin-bottom:20px;">
@@ -1011,7 +1088,7 @@ function openOrderDetail(orderId) {
             <h3>Pedido #${order.id.slice(-6).toUpperCase()}</h3>
             <p style="color:var(--text-muted);">${formatDate(order.createdAt)}</p>
             <p style="color:var(--text-muted);font-size:0.85rem;">
-                ${order.deliveryMode === 'pickup' ? '🏪 Retirada' : '🛵 Entrega'} • ${payments[order.paymentMethod] || 'Dinheiro'}
+                ${(order.orderType || order.deliveryMode) === 'pickup' ? '🏪 Retirada' : '🛵 Entrega'} • ${payments[order.paymentMethod] || 'Dinheiro'}
             </p>
         </div>
         ${canTrack ? `<button class="order-track-btn" onclick="closeModal('orderModal');TrackingModule.openTracking('${order.id}')">🗺️ Rastrear</button>` : ''}
@@ -1030,7 +1107,7 @@ function openOrderDetail(orderId) {
                 </div>
             `;}).join('')}
         </div>
-        ${order.deliveryMode !== 'pickup' && order.address ? `
+        ${orderType !== 'pickup' && order.address ? `
             <h4 style="margin:16px 0 12px;">📍 Entrega</h4>
             <div class="card"><p><strong>${order.address.label}</strong></p><p style="color:var(--text-muted);">${order.address.street}, ${order.address.number} - ${order.address.neighborhood}</p></div>
         ` : ''}
@@ -1049,7 +1126,7 @@ function openOrderDetail(orderId) {
         <div class="card" style="margin-top:20px;">
             <div class="summary-row"><span>Subtotal</span><span>${formatCurrency(order.subtotal)}</span></div>
             ${order.discount > 0 ? `<div class="summary-row" style="color:var(--success);"><span>Desconto</span><span>- ${formatCurrency(order.discount)}</span></div>` : ''}
-            ${order.deliveryMode !== 'pickup' ? `<div class="summary-row"><span>Entrega</span><span>${formatCurrency(order.delivery)}</span></div>` : ''}
+            ${orderType !== 'pickup' ? `<div class="summary-row"><span>Entrega</span><span>${formatCurrency(order.delivery)}</span></div>` : ''}
             <div class="summary-row total"><span>Total</span><span>${formatCurrency(order.total)}</span></div>
         </div>
         ${order.status === 'delivered' && !order.reviewed ? `<button class="btn btn-primary" onclick="closeModal('orderModal');NotificationsModule?.openReviewModal('${order.id}')" style="margin-top:16px;">⭐ Avaliar</button>` : ''}
@@ -1124,9 +1201,42 @@ window.addEventListener("message", (e) => {
         const product = products.find(p => p.id === productId);
         if (!product) return showToast("Produto inválido");
         const addons = [];
-        if (selections?.flavor?.name) addons.push({ name: selections.flavor.name, price: parseFloat(selections.flavor.price) || 0 });
-        if (selections?.size?.name) addons.push({ name: selections.size.name, price: parseFloat(selections.size.price) || 0 });
-        if (Array.isArray(selections?.extras)) selections.extras.forEach(ex => { if (ex?.name) addons.push({ name: ex.name, price: parseFloat(ex.price) || 0 }); });
+
+        if (selections?.flavor?.name) {
+            addons.push({ name: selections.flavor.name, price: parseFloat(selections.flavor.price) || 0 });
+        }
+        if (selections?.size?.name) {
+            addons.push({ name: selections.size.name, price: parseFloat(selections.size.price) || 0 });
+        }
+
+        const productGroups = Array.isArray(product.addonGroups) ? product.addonGroups : [];
+        if (Array.isArray(selections?.addonGroups)) {
+            selections.addonGroups.forEach((groupSel) => {
+                const group = productGroups.find(g => (g.name || '') === (groupSel.groupName || '')) || null;
+                if (!group) return;
+                const max = Number(group.max) || 0;
+                const validItems = Array.isArray(group.items) ? group.items : [];
+                const chosen = Array.isArray(groupSel.items) ? groupSel.items : [];
+                const normalized = [];
+
+                chosen.forEach((item) => {
+                    const found = validItems.find(x => (x.name || '') === (item?.name || ''));
+                    if (!found) return;
+                    if (normalized.some(x => x.name === found.name)) return;
+                    normalized.push({ name: found.name, price: parseFloat(found.price) || 0 });
+                });
+
+                const limited = max > 0 ? normalized.slice(0, max) : normalized;
+                limited.forEach(item => addons.push(item));
+            });
+        }
+
+        if (Array.isArray(selections?.extras)) {
+            selections.extras.forEach(ex => {
+                if (ex?.name) addons.push({ name: ex.name, price: parseFloat(ex.price) || 0 });
+            });
+        }
+
         addToCart(product, qty || 1, addons);
         closeProductPopup();
     }

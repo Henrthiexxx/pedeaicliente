@@ -45,6 +45,20 @@
 .tab{flex:1;padding:10px;text-align:center;font-size:.82rem;font-weight:500;cursor:pointer;background:var(--bg-2);color:var(--text-2);transition:all .15s;font-family:inherit;border:none}
 .tab.active{background:var(--accent);color:var(--accent-t)}
 .auth-hint{text-align:center;color:var(--text-3);font-size:.76rem;margin-top:16px}
+.terms-check{display:flex;align-items:flex-start;gap:8px;margin:10px 0 16px;color:var(--text-2);font-size:.8rem;line-height:1.3}
+.terms-check input{margin-top:2px}
+.terms-backdrop{
+  position:fixed;inset:0;z-index:10000;display:none;
+  background:rgba(0,0,0,.72);align-items:center;justify-content:center;padding:20px;
+}
+.terms-modal{
+  width:min(560px,100%);max-height:88dvh;overflow:hidden;
+  background:var(--bg-1);border:1px solid var(--border);border-radius:16px;
+  box-shadow:var(--sh-lg);display:flex;flex-direction:column;
+}
+.terms-head{padding:16px 18px;border-bottom:1px solid var(--border);font-weight:700}
+.terms-body{padding:14px 18px;overflow:auto;color:var(--text-1);line-height:1.45}
+.terms-actions{display:flex;gap:10px;justify-content:flex-end;padding:14px 18px;border-top:1px solid var(--border)}
 </style>
 </head>
 <body>
@@ -76,10 +90,14 @@
 
             <!-- Register form -->
             <form id="registerForm" style="display:none" onsubmit="handleRegister(event)">
-                <div class="form-group"><label class="form-label">Nome</label><input type="text" class="form-input" id="regName" placeholder="Seu nome" required></div>
+                <div class="form-group"><label class="form-label">Nome</label><input type="text" class="form-input" id="regName" placeholder="Seu nome" required oninput="sanitizeNameInput(this)"></div>
                 <div class="form-group"><label class="form-label">E-mail</label><input type="email" class="form-input" id="regEmail" placeholder="seu@email.com" required></div>
-                <div class="form-group"><label class="form-label">Telefone</label><input type="tel" class="form-input" id="regPhone" placeholder="(00) 00000-0000" required></div>
+                <div class="form-group"><label class="form-label">Telefone</label><input type="tel" class="form-input" id="regPhone" placeholder="(01) 2 3456 7890" required oninput="formatRegisterPhone(this)" maxlength="17"></div>
                 <div class="form-group"><label class="form-label">Senha</label><input type="password" class="form-input" id="regPassword" placeholder="Mínimo 6 caracteres" required minlength="6"></div>
+                <label class="terms-check">
+                    <input type="checkbox" id="regTermsCheck" required>
+                    <span>Li e aceito os <a href="terms.html" target="_blank" rel="noopener">Termos de Uso</a>.</span>
+                </label>
                 <button type="submit" class="btn btn-accent btn-block" id="regBtn">Criar conta</button>
             </form>
 
@@ -89,6 +107,18 @@
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="terms-backdrop" id="termsBackdrop" aria-hidden="true">
+    <div class="terms-modal" role="dialog" aria-modal="true" aria-labelledby="termsTitle">
+        <div class="terms-head" id="termsTitle">Termos de uso</div>
+        <div class="terms-body">
+            Para criar a conta, você precisa aceitar os Termos de Uso.<br><br>
+            Leia os termos completos em <a href="terms.html" target="_blank" rel="noopener">terms.html</a>.
+        </div>
+        <div class="terms-actions">
+            <button type="button" class="btn btn-accent" id="acceptTermsBtn">Aceito</button>
+        </div>
+    </div>
+</div>
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -105,6 +135,67 @@ function showTab(tab){
     document.getElementById('tabRegister').classList.toggle('active',tab==='register');
     document.getElementById('loginForm').style.display=tab==='login'?'block':'none';
     document.getElementById('registerForm').style.display=tab==='register'?'block':'none';
+}
+
+const KNOWN_EMAIL_PROVIDERS = new Set([
+    'gmail.com', 'hotmail.com', 'outlook.com', 'live.com', 'msn.com',
+    'yahoo.com', 'icloud.com', 'me.com', 'uol.com.br', 'bol.com.br', 'globo.com'
+]);
+
+function sanitizeNameInput(input){
+    input.value = input.value.replace(/[0-9]/g, '');
+}
+
+function isValidName(name){
+    return /^[A-Za-zÀ-ÖØ-öø-ÿ'`´^~Çç\s.-]+$/.test(name) && /[A-Za-zÀ-ÖØ-öø-ÿÇç]/.test(name);
+}
+
+function isKnownProviderEmail(email){
+    const parts = String(email).toLowerCase().split('@');
+    if(parts.length !== 2 || !parts[0] || !parts[1]) return false;
+    return KNOWN_EMAIL_PROVIDERS.has(parts[1]);
+}
+
+function formatPhoneToRequired(value){
+    let digits = String(value || '').replace(/\D/g, '').slice(0, 11);
+    if(!digits) return '';
+    let out = `(${digits.slice(0,2)}`;
+    if(digits.length >= 2) out += ')';
+    if(digits.length > 2) out += ` ${digits.slice(2,3)}`;
+    if(digits.length > 3) out += ` ${digits.slice(3,7)}`;
+    if(digits.length > 7) out += ` ${digits.slice(7,11)}`;
+    return out;
+}
+
+function formatRegisterPhone(input){
+    input.value = formatPhoneToRequired(input.value);
+}
+
+function isValidPhoneRequiredFormat(phone){
+    return /^\(\d{2}\)\s\d\s\d{4}\s\d{4}$/.test(phone);
+}
+
+function waitForTermsAcceptance(){
+    return new Promise((resolve)=>{
+        const backdrop = document.getElementById('termsBackdrop');
+        const acceptBtn = document.getElementById('acceptTermsBtn');
+        if(!backdrop || !acceptBtn){
+            resolve(false);
+            return;
+        }
+
+        backdrop.style.display = 'flex';
+        backdrop.setAttribute('aria-hidden', 'false');
+
+        const onAccept = () => {
+            acceptBtn.removeEventListener('click', onAccept);
+            backdrop.style.display = 'none';
+            backdrop.setAttribute('aria-hidden', 'true');
+            resolve(true);
+        };
+
+        acceptBtn.addEventListener('click', onAccept, { once:true });
+    });
 }
 
 async function handleLogin(e){
@@ -127,15 +218,25 @@ async function handleRegister(e){
     e.preventDefault();
     const name=document.getElementById('regName').value.trim();
     const email=document.getElementById('regEmail').value.trim();
-    const phone=document.getElementById('regPhone').value.trim();
+    const phone=formatPhoneToRequired(document.getElementById('regPhone').value.trim());
     const pw=document.getElementById('regPassword').value;
     if(!name||!phone){toast('Preencha todos os campos');return}
+    if(!isValidName(name)){toast('Nome não pode conter números');return}
+    if(!isKnownProviderEmail(email)){toast('Use um provedor conhecido (gmail, hotmail, outlook...)');return}
+    if(!isValidPhoneRequiredFormat(phone)){toast('Telefone no formato: (01) 2 3456 7890');return}
+    const termsChecked = !!document.getElementById('regTermsCheck')?.checked;
+    if(!termsChecked){toast('Você precisa aceitar os Termos de Uso');return}
+    document.getElementById('regPhone').value = phone;
+    const acceptedTerms = await waitForTermsAcceptance();
+    if(!acceptedTerms) return;
     const btn=document.getElementById('regBtn');
     btn.disabled=true;btn.textContent='Criando...';
     try{
         const cred=await auth.createUserWithEmailAndPassword(email,pw);
         await db.collection('users').doc(cred.user.uid).set({
             name,email:email.toLowerCase(),phone,
+            termsAccepted:true,
+            termsAcceptedAt:firebase.firestore.FieldValue.serverTimestamp(),
             createdAt:firebase.firestore.FieldValue.serverTimestamp()
         });
         // onAuthStateChanged will redirect
