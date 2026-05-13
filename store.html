@@ -190,7 +190,7 @@ async function loadProducts(){
 // ══════════ RENDER STORE ══════════
 function renderStore(){
     const cfg=store.layoutConfig||{};
-    let elements=cfg.elements||['icon','info','categories','products'];
+    let elements=normalizeLayoutElements(cfg.elements||['icon','info','categories','products']);
     if(!elements.includes('products')&&!elements.includes('grid')&&!elements.includes('list')){
         elements.push('products');
     }
@@ -204,6 +204,15 @@ function renderStore(){
     if(search)search.addEventListener('input',()=>renderProductSection());
 }
 
+function normalizeLayoutElements(elements){
+    const list=Array.isArray(elements)?[...elements]:['icon','info','categories','products'];
+    const noBanner=list.filter(id=>id!=='banner');
+    if(!noBanner.includes('icon'))noBanner.unshift('icon');
+    const hasIcon=noBanner.includes('icon');
+    if(!hasIcon)noBanner.unshift('icon');
+    return noBanner;
+}
+
 function refreshStoreView(){
     const searchValue=document.getElementById('storeSearch')?.value||'';
     renderStore();
@@ -214,8 +223,8 @@ function refreshStoreView(){
 
 function renderElement(elId){
     switch(elId){
-        case 'banner': return renderBanner();
-        case 'icon': return renderBanner();
+        case 'banner': return '';
+        case 'icon': return renderIcon();
         case 'info': return renderInfo();
         case 'search': return renderSearch();
         case 'categories': return renderCategories();
@@ -228,10 +237,11 @@ function renderElement(elId){
     }
 }
 
-function renderBanner(){
+function renderIcon(){
     const img=store.imageUrl||store.bannerUrl||'';
     const cfg=store.layoutConfig||{};
-    const pos=cfg.iconPos||'center';
+    const rawPos=cfg.iconPos||'c';
+    const pos=rawPos==='l'?'left':rawPos==='r'?'right':rawPos==='m'?'center':rawPos;
     const iconHtml=img?`<img src="${esc(img)}" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:50%;border:2px solid var(--border)">`
         :`<div style="width:64px;height:64px;border-radius:50%;background:var(--bg-2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--text-3)">${esc((store.name||'L')[0])}</div>`;
     const align=pos==='left'?'flex-start':pos==='right'?'flex-end':'center';
@@ -257,7 +267,7 @@ function renderSearch(){
 
 function renderCategories(){
     const cfg=store.layoutConfig||{};
-    const mode=cfg.catMode||'scroll';
+    const mode=(cfg.catMode==='directory'?'dir':cfg.catMode)||'scroll';
     if(mode==='none')return'';
     if(mode==='cards'){
         return`<div class="el-cats-cards">${categories.map(c=>`<div class="el-cat-card ${selectedCat===c?'active':''}" onclick="filterCat('${esc(c)}')">${esc(c)}</div>`).join('')}</div>`;

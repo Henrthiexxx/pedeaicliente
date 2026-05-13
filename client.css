@@ -210,6 +210,19 @@ a{color:var(--store-accent);text-decoration:none}
 
 @media(max-width:480px){.ck-row{flex-direction:column}.el-grid{grid-template-columns:1fr 1fr;gap:8px}}
 
+/* Desktop-first improvements for store page */
+@media (min-width: 1024px){
+  .store-content{max-width:1200px;margin:0 auto;padding:10px 20px 90px}
+  .el-banner{height:260px;border-radius:16px;overflow:hidden;border:1px solid var(--border);margin-top:10px}
+  .el-banner-placeholder{height:120px;border-radius:16px;border:1px solid var(--border);margin-top:10px}
+  .el-cats-cards{grid-template-columns:repeat(5,1fr)}
+  .el-grid{grid-template-columns:repeat(4,1fr);gap:14px}
+  .el-mini-grid{grid-template-columns:repeat(6,1fr)}
+  .el-list-group{max-width:920px}
+  .el-featured{gap:12px}
+  .el-feat-card{width:180px}
+}
+
 /* Category cards mode (lanchonete) */
 .el-cats-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px;border-bottom:1px solid var(--border)}
 .el-cat-card{background:var(--bg-1);border:1px solid var(--border);border-radius:var(--rs);padding:12px 8px;text-align:center;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;box-shadow:var(--sh-sm)}

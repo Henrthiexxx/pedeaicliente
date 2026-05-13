@@ -339,7 +339,7 @@ async function loadStores() {
             ? await DataCache.getStores()
             : (await db.collection('stores').get())
                 .docs.map(doc => ({ id: doc.id, ...doc.data() }))
-                .filter(s => s.active !== false)
+                .filter(s => s.status !== 'blocked')
                 .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     } catch (err) {
         console.error('Error loading stores:', err);
@@ -362,12 +362,22 @@ async function loadAddresses() {
 
 async function loadProducts(storeId) {
     try {
-        products = typeof DataCache !== 'undefined'
-            ? await DataCache.getProducts(storeId)
-            : (await db.collection('products').where('storeId', '==', storeId).get())
-                .docs.map(doc => ({ id: doc.id, ...doc.data() }))
-                .filter(p => p.active !== false)
+        if (typeof DataCache !== 'undefined') {
+            products = await DataCache.getProducts(storeId);
+        } else {
+            const topLevel = await db.collection('products').where('storeId', '==', storeId).get();
+            let list = topLevel.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            // Compatibilidade: parte do admin ainda salva produtos em subcoleção da loja.
+            if (list.length === 0) {
+                const nested = await db.collection('stores').doc(storeId).collection('products').get();
+                list = nested.docs.map(doc => ({ id: doc.id, storeId, ...doc.data() }));
+            }
+
+            products = list
+                .filter(p => p.active !== false && p.available !== false)
                 .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        }
 
         const cats = new Set(products.map(p => p.category).filter(Boolean));
         categories = ['all', ...cats];
