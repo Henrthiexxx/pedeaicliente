@@ -298,7 +298,8 @@ function renderBanner(){
         store.rating?`★ ${store.rating.toFixed(1)}`:''
     ].filter(Boolean).join(' · ');
 
-    const bgEl=bannerSrc?`<img src="${esc(bannerSrc)}" alt="" class="bn-bg-img">`:'';
+    const fit=cfg.bannerFit||'cover';
+    const bgEl=bannerSrc?`<img src="${esc(bannerSrc)}" alt="" class="bn-bg-img" style="object-fit:${fit}">`:'';
     const logoContent=logoSrc
         ?`<img src="${esc(logoSrc)}" alt="">`
         :`<span class="bn-logo-letter">${name[0]||'L'}</span>`;
