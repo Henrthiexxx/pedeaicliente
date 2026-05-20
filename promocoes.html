@@ -450,10 +450,12 @@ body {
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script>
 const FC={apiKey:"AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",authDomain:"pedrad-814d0.firebaseapp.com",projectId:"pedrad-814d0",storageBucket:"pedrad-814d0.appspot.com",messagingSenderId:"293587190550",appId:"1:293587190550:web:80c9399f82847c80e20637"};
 if(!firebase.apps.length)firebase.initializeApp(FC);
+const auth=firebase.auth();
 const db=firebase.firestore();
 
 function esc(s){const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML}
@@ -608,17 +610,23 @@ async function loadOffers(){
   render();
 }
 
-loadOffers().catch(err=>{
-  console.error(err);
-  document.getElementById('ofGrid').innerHTML=`<div class="of-empty">
-    <div class="of-empty-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-      </svg>
-    </div>
-    <div class="of-empty-title">Erro ao carregar</div>
-    <div class="of-empty-sub">Não foi possível carregar as promoções.<br>Verifique sua conexão.</div>
-  </div>`;
+auth.onAuthStateChanged(user=>{
+  if(!user){
+    location.replace('index.html');
+    return;
+  }
+  loadOffers().catch(err=>{
+    console.error(err);
+    document.getElementById('ofGrid').innerHTML=`<div class="of-empty">
+      <div class="of-empty-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <div class="of-empty-title">Erro ao carregar</div>
+      <div class="of-empty-sub">Não foi possível carregar as promoções.<br>Verifique sua conexão.</div>
+    </div>`;
+  });
 });
 </script>
 <script src="safe-area.js" defer></script>

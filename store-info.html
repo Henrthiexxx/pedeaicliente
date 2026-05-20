@@ -314,6 +314,7 @@
   <div class="toast" id="toast"></div>
 
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
   <script>
     const firebaseConfig = {
@@ -325,6 +326,7 @@
       appId:"1:293587190550:web:80c9399f82847c80e20637"
     };
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
     const db = firebase.firestore();
 
     const storeId = new URLSearchParams(location.search).get('id');
@@ -562,7 +564,13 @@
       }
     }
 
-    (async()=>{ await loadStoreInfo(); await loadReviews(); })();
+    auth.onAuthStateChanged((user) => {
+      if (!user) {
+        location.replace('index.html');
+        return;
+      }
+      (async()=>{ await loadStoreInfo(); await loadReviews(); })();
+    });
   </script>
 <script src="safe-area.js" defer></script>
 <script src="swipe-back.js" defer></script>

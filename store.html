@@ -700,7 +700,11 @@ function goCheckout(){
 }
 
 // ══════════ INIT ══════════
-(async()=>{
+auth.onAuthStateChanged(async (user)=>{
+    if(!user){
+        location.replace('index.html');
+        return;
+    }
     if(!storeId){document.getElementById('storeContent').innerHTML='<div class="loading-state">Loja não informada</div>';return}
     if(!await loadStore())return;
     await loadProducts();
@@ -717,7 +721,7 @@ function goCheckout(){
     }
 
     setInterval(()=>{ if(store) refreshStoreView(); }, 60000);
-})();
+});
 </script>
 <script src="safe-area.js" defer></script>
 <script src="swipe-back.js" defer></script>

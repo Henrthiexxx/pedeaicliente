@@ -790,11 +790,13 @@ body {
 </nav>
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="modules/welcome-popup.js"></script>
 <script>
 const FC={apiKey:"AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",authDomain:"pedrad-814d0.firebaseapp.com",projectId:"pedrad-814d0",storageBucket:"pedrad-814d0.appspot.com",messagingSenderId:"293587190550",appId:"1:293587190550:web:80c9399f82847c80e20637"};
 if(!firebase.apps.length)firebase.initializeApp(FC);
+const auth=firebase.auth();
 const db=firebase.firestore();
 
 let stores=[],catFilter='all';
@@ -1025,7 +1027,13 @@ function bnResetTimer(){clearInterval(bnTimer);bnTimer=setInterval(bnNext,10000)
 
 document.addEventListener('visibilitychange',()=>{document.hidden?clearInterval(bnTimer):bnResetTimer();});
 
-loadStores().then(()=>{ if(typeof WelcomePopup!=='undefined') WelcomePopup.check(); });
+auth.onAuthStateChanged(user=>{
+  if(!user){
+    location.replace('index.html');
+    return;
+  }
+  loadStores().then(()=>{ if(typeof WelcomePopup!=='undefined') WelcomePopup.check(); });
+});
 </script>
 <script src="modules/search.js"></script>
 <script src="safe-area.js" defer></script>
