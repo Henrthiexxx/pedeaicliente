@@ -252,7 +252,7 @@ function renderIcon(){
 function renderBanner(){
     const cfg=store.layoutConfig||{};
     const bPos=cfg.bannerPos||'bl';
-    const bannerSrc=store.bannerUrl||store.coverUrl||store.bannerImageUrl||store.imageUrl||'';
+    const bannerSrc=store.bannerUrl||store.coverUrl||store.bannerImageUrl||'';
     const logoSrc=store.imageUrl||'';
     const name=esc(store.name||'');
     const meta=[store.deliveryTime?esc(store.deliveryTime):'',store.rating?`★ ${store.rating.toFixed(1)}`:''].filter(Boolean).join(' · ');
