@@ -6,7 +6,7 @@
     document.body.classList.add('page-leave');
     setTimeout(function () {
       location.href = href;
-    }, 180);
+    }, 110);
   };
 
   document.addEventListener('click', function (event) {

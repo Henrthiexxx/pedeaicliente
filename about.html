@@ -4,30 +4,31 @@
     <script>(function(){var t=localStorage.getItem("theme")||"dark";document.documentElement.setAttribute("data-theme",t);})()</script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#080808">
   <title>Sobre - Pedra Delivery</title>
 
   <style>
-    :root,[data-theme="dark"]{--bg:#09090b;--bg-card:#0f0f12;--bg-input:#18181b;--text:#fafafa;--text-muted:#71717a;--border:#27272a;--primary:#fff;--accent:#a78bfa;--danger:#f87171;--success:#4ade80;--warning:#fbbf24;--radius:12px;}[data-theme="light"]{--bg:#f4f4f5;--bg-card:#fff;--bg-input:#f0f0f2;--text:#18181b;--text-muted:#a1a1aa;--border:#e4e4e7;--primary:#18181b;--accent:#7c3aed;--danger:#dc2626;--success:#16a34a;--warning:#d97706;}
+    :root,[data-theme="dark"]{--bg:#080808;--bg-card:#0e0e11;--bg-input:#121216;--text:#d8d8e0;--text-muted:#505060;--border:#161619;--primary:#d8d8e0;--accent:#22c55e;--danger:#f87171;--success:#22c55e;--warning:#fbbf24;--radius:12px;}[data-theme="light"]{--bg:#f4f4f5;--bg-card:#fff;--bg-input:#f0f0f2;--text:#18181b;--text-muted:#a1a1aa;--border:#e4e4e7;--primary:#18181b;--accent:#059669;--danger:#dc2626;--success:#16a34a;--warning:#d97706;}
     *{box-sizing:border-box}
-    body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;}
-    .page{max-width:920px;margin:0 auto;min-height:100vh;padding:92px 14px 22px;}
+    @keyframes appIn{from{opacity:0;transform:scale(1.025)}to{opacity:1;transform:scale(1)}}
+    body{margin:0;min-height:100vh;background:radial-gradient(ellipse 110% 32% at 50% 0%,#0d2018 0%,transparent 68%),radial-gradient(ellipse 80% 20% at 50% 100%,#090d0a 0%,transparent 60%),#080808;color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;animation:appIn .21s cubic-bezier(.16,1,.3,1) both;margin:0 auto;min-height:100vh;padding:80px 14px 22px;}
     .header{
-      position:fixed;left:0;right:0;top:0;height:64px;background:rgba(0,0,0,.78);
-      border-bottom:1px solid var(--border);backdrop-filter:blur(12px);
+      position:fixed;left:0;right:0;top:0;height:60px;background:rgba(8,8,8,.92);
+      border-bottom:1px solid rgba(255,255,255,.04);backdrop-filter:blur(18px) saturate(150%);-webkit-backdrop-filter:blur(18px) saturate(150%);
       display:flex;align-items:center;gap:12px;padding:0 14px;z-index:9999;
     }
     .back-btn{
-      width:44px;height:44px;border-radius:14px;background:var(--bg-input);
-      border:1px solid var(--border);color:var(--text);cursor:pointer;
-      display:flex;align-items:center;justify-content:center;font-size:1.05rem;
-      transition:.15s; user-select:none;
+      width:36px;height:36px;border-radius:50%;background:#111116;
+      border:none;color:#8888a0;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;
+      transition:.15s; user-select:none;flex-shrink:0;
     }
-    .back-btn:hover{border-color:var(--primary);transform:translateY(-1px)}
-    .back-btn:active{transform:translateY(0)}
+    .back-btn:hover{background:#1c1c24;color:#f0f0f2}
+    .back-btn svg{width:18px;height:18px}
     .title{
       font-size:.95rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;
-      opacity:.92;flex:1;text-align:center;pointer-events:none;
+      opacity:.92;flex:1;text-align:center;pointer-events:none;color:var(--text);
     }
 
     .card{
@@ -41,9 +42,9 @@
     .logo{
       width:56px;height:56px;border-radius:18px;background:var(--bg-input);
       border:1px solid var(--border);
-      display:flex;align-items:center;justify-content:center;
-      font-weight:900;letter-spacing:1px;color:var(--primary);
+      overflow:hidden;flex-shrink:0;
     }
+    .logo img{width:100%;height:100%;object-fit:cover;border-radius:18px;}
     .brand h1{margin:0;font-size:1.1rem}
     .brand p{margin:6px 0 0;color:var(--text-muted);font-size:.85rem;line-height:1.35}
 
@@ -106,15 +107,17 @@
 
 <body>
   <div class="header">
-    <button class="back-btn" id="backBtn" type="button" aria-label="Voltar">←</button>
+    <button class="back-btn" id="backBtn" type="button" aria-label="Voltar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
     <div class="title">Sobre o app</div>
-    <div style="width:44px;height:44px;"></div>
+    <div style="width:36px;height:36px;"></div>
   </div>
 
   <main class="page">
     <section class="card">
       <div class="brand">
-        <div class="logo">PD</div>
+        <div class="logo"><img src="icon-192.png" alt="Pedra Delivery"></div>
         <div style="min-width:0">
           <h1>Pedra Delivery</h1>
           <p>Aplicativo de delivery com foco em velocidade, simplicidade e operação local.</p>

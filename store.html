@@ -38,8 +38,16 @@
 	.bn-sub{font-size:.78rem;opacity:.92;margin-top:4px}
 	.bn-below{height:140px}
 
+	/* ── Categories — infinite marquee (scroll mode) ────────── */
+	.el-cats-marquee{position:relative;overflow:hidden;border-bottom:1px solid var(--border);padding:10px 0;-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+	.el-cats-track{display:inline-flex;gap:6px;padding:0 16px;width:max-content;animation:marqueeCats 32s linear infinite;will-change:transform}
+	.el-cats-marquee:hover .el-cats-track,.el-cats-marquee:active .el-cats-track,.el-cats-marquee:focus-within .el-cats-track{animation-play-state:paused}
+	@keyframes marqueeCats{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+	.el-dir-item.active{background:rgba(34,197,94,.06)}
+	.el-dir-item.active span:first-child{color:var(--store-accent);font-weight:700}
+
 	body{background:radial-gradient(ellipse 110% 32% at 50% 0%,#0d2018 0%,transparent 68%),#080808!important}
-	body.page-enter{animation:storeFadeIn .28s ease both;transform:none!important}
+	body.page-enter{animation:storeFadeIn .21s cubic-bezier(.16,1,.3,1) both;transform:none!important}
 	body.modal-open{overflow:hidden}
 	@keyframes storeFadeIn{from{opacity:0}to{opacity:1}}
 	#productModal{position:fixed!important;inset:0!important;z-index:10000!important}
@@ -137,6 +145,8 @@ const storeId=params.get('id');
 const initialProductId=params.get('productId');
 
 let store=null, products=[], categories=[], cart=[], selectedCat='all';
+const PRODUCT_CHUNK_SIZE=24;
+let productsLazyObserver=null;
 
 function esc(s){const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML}
 function money(v){return(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
@@ -326,16 +336,25 @@ function renderCategories(){
     const cfg=store.layoutConfig||{};
     const mode=(cfg.catMode==='directory'?'dir':cfg.catMode)||'scroll';
     if(mode==='none')return'';
+
+    const allActive=selectedCat==='all'?'active':'';
+
     if(mode==='cards'){
-        return`<div class="el-cats-cards">${categories.map(c=>`<div class="el-cat-card ${selectedCat===c?'active':''}" onclick="filterCat('${esc(c)}')">${esc(c)}</div>`).join('')}</div>`;
+        const all=`<div class="el-cat-card ${allActive}" onclick="filterCat('all')">Todas</div>`;
+        const rest=categories.map(c=>`<div class="el-cat-card ${selectedCat===c?'active':''}" onclick="filterCat('${esc(c)}')">${esc(c)}</div>`).join('');
+        return`<div class="el-cats-cards" id="catsBar">${all}${rest}</div>`;
     }
-    if(mode==='directory'){
-        return`<div class="el-dir" id="catsBar">${categories.map(c=>`<div class="el-dir-item" onclick="filterCat('${esc(c)}')"><span>${esc(c)}</span><span class="el-dir-arrow">›</span></div>`).join('')}</div>`;
+    if(mode==='dir'){
+        const all=`<div class="el-dir-item ${allActive}" onclick="filterCat('all')"><span>Todas</span><span class="el-dir-arrow">›</span></div>`;
+        const rest=categories.map(c=>`<div class="el-dir-item ${selectedCat===c?'active':''}" onclick="filterCat('${esc(c)}')"><span>${esc(c)}</span><span class="el-dir-arrow">›</span></div>`).join('');
+        return`<div class="el-dir" id="catsBar">${all}${rest}</div>`;
     }
-    return`<div class="el-cats" id="catsBar">
-        <button class="el-cat ${selectedCat==='all'?'active':''}" onclick="filterCat('all')">Todos</button>
-        ${categories.map(c=>`<button class="el-cat ${selectedCat===c?'active':''}" onclick="filterCat('${esc(c)}')">${esc(c)}</button>`).join('')}
-    </div>`;
+
+    // scroll (default) — infinite marquee sliding left
+    const all=`<button class="el-cat ${allActive}" onclick="filterCat('all')">Todas</button>`;
+    const rest=categories.map(c=>`<button class="el-cat ${selectedCat===c?'active':''}" onclick="filterCat('${esc(c)}')">${esc(c)}</button>`).join('');
+    const sequence=all+rest;
+    return`<div class="el-cats-marquee" id="catsBar"><div class="el-cats-track">${sequence}${sequence}</div></div>`;
 }
 
 function filterCat(c){
@@ -363,7 +382,14 @@ function renderProducts(mode){
     return`<div id="productSection" data-mode="${m}"></div>`;
 }
 
-function renderProductSection(){
+function disconnectProductsLazyObserver(){
+    if(productsLazyObserver){
+        productsLazyObserver.disconnect();
+        productsLazyObserver=null;
+    }
+}
+
+function renderProductSection(keepVisibleCount=false){
     const section=document.getElementById('productSection');
     if(!section)return;
     const mode=section.dataset.mode||'list';
@@ -372,20 +398,46 @@ function renderProductSection(){
     if(selectedCat!=='all')list=list.filter(p=>(p.category||'')===selectedCat);
     if(q)list=list.filter(p=>(p.name||'').toLowerCase().includes(q)||(p.description||'').toLowerCase().includes(q));
 
-    if(!list.length){section.innerHTML='<div class="products-empty">Nenhum produto encontrado</div>';return}
+    disconnectProductsLazyObserver();
+    if(!list.length){
+        section.innerHTML='<div class="products-empty">Nenhum produto encontrado</div>';
+        section.dataset.visibleCount='0';
+        return;
+    }
+
+    const currentVisible=Number(section.dataset.visibleCount||0);
+    const targetVisible=keepVisibleCount
+        ? Math.max(PRODUCT_CHUNK_SIZE,currentVisible||PRODUCT_CHUNK_SIZE)
+        : PRODUCT_CHUNK_SIZE;
+    const visible=Math.min(targetVisible,list.length);
+    const visibleList=list.slice(0,visible);
 
     if(mode==='mini'){
-        section.innerHTML=`<div class="el-mini-grid">${list.map(p=>renderMiniCard(p)).join('')}</div>`;
+        section.innerHTML=`<div class="el-mini-grid">${visibleList.map(p=>renderMiniCard(p)).join('')}</div>`;
     }else if(mode==='grid'){
-        section.innerHTML=`<div class="el-grid">${list.map(p=>renderGridCard(p)).join('')}</div>`;
+        section.innerHTML=`<div class="el-grid">${visibleList.map(p=>renderGridCard(p)).join('')}</div>`;
     }else{
         const groups={};
-        list.forEach(p=>{const c=p.category||'Outros';if(!groups[c])groups[c]=[];groups[c].push(p)});
+        visibleList.forEach(p=>{const c=p.category||'Outros';if(!groups[c])groups[c]=[];groups[c].push(p)});
         let html='';
         for(const[cat,items]of Object.entries(groups)){
             html+=`<div class="el-list-group"><div class="el-list-cat">${esc(cat)}</div>${items.map(p=>renderListCard(p)).join('')}</div>`;
         }
         section.innerHTML=html;
+    }
+    section.dataset.visibleCount=String(visible);
+
+    if(visible<list.length){
+        section.insertAdjacentHTML('beforeend','<div id="productsLazySentinel" style="height:1px"></div><div class="products-empty" style="padding-top:8px">Carregando mais produtos...</div>');
+        const sentinel=document.getElementById('productsLazySentinel');
+        productsLazyObserver=new IntersectionObserver((entries)=>{
+            const hit=entries.some(e=>e.isIntersecting);
+            if(!hit)return;
+            disconnectProductsLazyObserver();
+            section.dataset.visibleCount=String(Math.min(visible+PRODUCT_CHUNK_SIZE,list.length));
+            renderProductSection(true);
+        },{root:null,rootMargin:'220px 0px'});
+        if(sentinel)productsLazyObserver.observe(sentinel);
     }
 }
 
@@ -414,7 +466,7 @@ function quickAdd(productId){
     const existing=cart.find(c=>c.id===p.id&&!c.addons.length);
     if(existing){existing.qty++}
     else{cart.push({id:p.id,name:p.name,price:productPrice(p),qty:1,addons:[],observation:'',productId:p.id,category:p.category||'',storeId:store.id,storeName:store.name||''})}
-    updateCartBadge();renderProductSection();toast(p.name+' adicionado');
+    updateCartBadge();renderProductSection(true);toast(p.name+' adicionado');
 }
 
 function renderListCard(p){
@@ -574,7 +626,7 @@ function addFromModal(productId){
         productId:p.id,category:p.category||'',storeId:store.id,storeName:store.name||''});
     closeProductModal();
     updateCartBadge();
-    renderProductSection();
+    renderProductSection(true);
     toast('Adicionado ao pedido');
     pmQtyVal=1;
 }
@@ -634,7 +686,7 @@ function changeQty(i,delta){
     updateCartBadge();renderCart();
 }
 
-function removeCartItem(i){cart.splice(i,1);updateCartBadge();renderCart();renderProductSection()}
+function removeCartItem(i){cart.splice(i,1);updateCartBadge();renderCart();renderProductSection(true)}
 
 function goCheckout(){
     if(!cart.length){toast('Carrinho vazio');return}

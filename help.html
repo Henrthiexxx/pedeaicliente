@@ -4,45 +4,41 @@
     <script>(function(){var t=localStorage.getItem("theme")||"dark";document.documentElement.setAttribute("data-theme",t);})()</script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#080808">
   <title>Ajuda e Suporte - Pedra Delivery</title>
 
- 
-
   <style>
-:root,[data-theme="dark"]{--bg:#09090b;--bg-card:#0f0f12;--bg-input:#18181b;--text:#fafafa;--text-muted:#71717a;--border:#27272a;--primary:#fff;--accent:#a78bfa;--danger:#f87171;--success:#4ade80;--warning:#fbbf24;--radius:12px;}[data-theme="light"]{--bg:#f4f4f5;--bg-card:#fff;--bg-input:#f0f0f2;--text:#18181b;--text-muted:#a1a1aa;--border:#e4e4e7;--primary:#18181b;--accent:#7c3aed;--danger:#dc2626;--success:#16a34a;--warning:#d97706;}
-*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui}
-
-    .help-page{display:block !important;}
-.help-header{display:flex !important;}
-
-    body{margin:0;padding:0;min-height:100vh;background:var(--bg);color:var(--text);}
-    .page{max-width:920px;margin:0 auto;min-height:100vh;padding-bottom:22px;}
+:root,[data-theme="dark"]{--bg:#080808;--bg-card:#0e0e11;--bg-input:#121216;--text:#d8d8e0;--text-muted:#505060;--border:#161619;--primary:#d8d8e0;--accent:#22c55e;--danger:#f87171;--success:#22c55e;--warning:#fbbf24;--radius:12px;}[data-theme="light"]{--bg:#f4f4f5;--bg-card:#fff;--bg-input:#f0f0f2;--text:#18181b;--text-muted:#a1a1aa;--border:#e4e4e7;--primary:#18181b;--accent:#059669;--danger:#dc2626;--success:#16a34a;--warning:#d97706;}
+*{box-sizing:border-box}
+@keyframes appIn{from{opacity:0;transform:scale(1.025)}to{opacity:1;transform:scale(1)}}
+body{margin:0;padding:0;min-height:100vh;background:radial-gradient(ellipse 110% 32% at 50% 0%,#0d2018 0%,transparent 68%),radial-gradient(ellipse 80% 20% at 50% 100%,#090d0a 0%,transparent 60%),#080808;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;animation:appIn .21s cubic-bezier(.16,1,.3,1) both;margin:0 auto;min-height:100vh;padding-bottom:22px;}
 
     /* Header */
     .header{
-      position:fixed;top:0;left:0;right:0;height:64px;
-      background:var(--bg);border-bottom:1px solid var(--border);
+      position:fixed;top:0;left:0;right:0;height:60px;
+      background:rgba(8,8,8,.92);border-bottom:1px solid rgba(255,255,255,.04);
+      backdrop-filter:blur(18px) saturate(150%);-webkit-backdrop-filter:blur(18px) saturate(150%);
       display:flex;align-items:center;justify-content:space-between;
-      padding:0 16px;z-index:9999;backdrop-filter:blur(10px);
+      padding:0 16px;z-index:9999;
     }
-    .h-left,.h-right{display:flex;align-items:center;gap:10px;min-width:120px;}
+    .h-left,.h-right{display:flex;align-items:center;gap:10px;min-width:90px;}
     .h-right{justify-content:flex-end;}
     .title{
       flex:1;text-align:center;pointer-events:none;
-      font-size:.95rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;opacity:.92;
+      font-size:.95rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;opacity:.92;color:var(--text);
     }
     .icon-btn{
-      width:44px;height:44px;border-radius:12px;
-      background:var(--bg-input);border:1px solid var(--border);
-      color:var(--text);cursor:pointer;transition:.15s;
+      width:36px;height:36px;border-radius:50%;
+      background:#111116;border:none;
+      color:#8888a0;cursor:pointer;transition:.15s;
       display:flex;align-items:center;justify-content:center;
-      user-select:none;
+      user-select:none;font-size:.78rem;font-weight:700;
     }
-    .icon-btn:hover{border-color:var(--primary);transform:translateY(-1px);}
-    .icon-btn:active{transform:translateY(0);}
+    .icon-btn:hover{background:#1c1c24;color:#f0f0f2}
+    .icon-btn svg{width:18px;height:18px;}
 
     /* Content */
-    .content{padding-top:78px;padding-left:12px;padding-right:12px;}
+    .content{padding-top:70px;padding-left:12px;padding-right:12px;}
     .card{
       background:var(--bg-card);border:1px solid var(--border);
       border-radius:18px;box-shadow:0 10px 28px rgba(0,0,0,.12);
@@ -55,10 +51,9 @@
     .hero-badge{
       width:48px;height:48px;border-radius:16px;
       background:var(--bg-input);border:1px solid var(--border);
-      display:flex;align-items:center;justify-content:center;
-      font-weight:900;letter-spacing:1px;color:var(--text-muted);
-      flex:0 0 auto;
+      overflow:hidden;flex:0 0 auto;
     }
+    .hero-badge img{width:100%;height:100%;object-fit:cover;}
     .hero-title{font-weight:900;font-size:1.05rem;margin:0 0 6px;}
     .hero-sub{color:var(--text-muted);font-size:.86rem;line-height:1.35rem;margin:0;}
 
@@ -164,7 +159,9 @@
 <body>
   <div class="header">
     <div class="h-left">
-      <button class="icon-btn" id="backBtn" type="button" aria-label="Voltar">←</button>
+      <button class="icon-btn" id="backBtn" type="button" aria-label="Voltar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
     </div>
     <div class="title">Ajuda</div>
     <div class="h-right">
@@ -177,7 +174,7 @@
 
       <div class="card">
         <div class="hero">
-          <div class="hero-badge">HLP</div>
+          <div class="hero-badge"><img src="icon-192.png" alt="Pedra"></div>
           <div style="flex:1;min-width:0;">
             <h1 class="hero-title">Central de Ajuda</h1>
             <p class="hero-sub">Suporte rápido, dúvidas comuns e atalhos úteis. Tudo no estilo do app (sem popups do navegador).</p>
