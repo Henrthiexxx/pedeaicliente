@@ -14,6 +14,30 @@
 	.hdr-btn.icon-svg{display:inline-flex;align-items:center;justify-content:center;padding:0}
 	.hdr-btn.icon-svg svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 	.store-header{gap:6px}
+
+	/* ── Store icon (icon mode) ─────────────────────────────── */
+	.el-icon-row{padding:16px;display:flex}
+	.el-icon-img{width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid var(--border);display:block}
+	.el-icon-placeholder{background:var(--bg-2);display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:700;color:var(--text-2)}
+
+	/* ── Store banner (banner mode) ─────────────────────────── */
+	.bn{position:relative;height:180px;background:linear-gradient(135deg,var(--store-accent,#22c55e),var(--bg-3));overflow:hidden}
+	.bn-bg{position:absolute;inset:0;z-index:0}
+	.bn-bg-img{width:100%;height:100%;object-fit:cover;display:block}
+	.bn-gradient{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.10),rgba(0,0,0,.58));pointer-events:none;z-index:1}
+	.bn-logo{position:absolute;width:64px;height:64px;border-radius:50%;background:var(--bg-1);border:3px solid rgba(255,255,255,.9);overflow:hidden;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.45);z-index:2}
+	.bn-logo img{width:100%;height:100%;object-fit:cover;display:block}
+	.bn-logo-letter{font-size:1.5rem;font-weight:800;color:var(--text-0)}
+	.bn-logo-left{left:16px;bottom:14px}
+	.bn-logo-center{left:50%;bottom:14px;transform:translateX(-50%)}
+	.bn-logo-right{right:16px;bottom:14px}
+	.bn-copy{position:absolute;bottom:18px;z-index:2;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.6)}
+	.bn-copy-left{left:96px;right:16px}
+	.bn-copy-right{left:16px;right:96px}
+	.bn-title{font-size:1.05rem;font-weight:800;line-height:1.2}
+	.bn-sub{font-size:.78rem;opacity:.92;margin-top:4px}
+	.bn-below{height:140px}
+
 	body{background:radial-gradient(ellipse 110% 32% at 50% 0%,#0d2018 0%,transparent 68%),#080808!important}
 	body.page-enter{animation:storeFadeIn .28s ease both;transform:none!important}
 	body.modal-open{overflow:hidden}
@@ -240,13 +264,17 @@ function renderElement(elId){
 function renderIcon(){
     const cfg=store.layoutConfig||{};
     if(cfg.mediaMode==='banner') return renderBanner();
-    const img=store.imageUrl||store.bannerUrl||'';
-    const rawPos=cfg.iconPos||'c';
-    const pos=rawPos==='l'?'left':rawPos==='r'?'right':rawPos==='m'?'center':rawPos;
-    const iconHtml=img?`<img src="${esc(img)}" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:50%;border:2px solid var(--border)">`
-        :`<div style="width:64px;height:64px;border-radius:50%;background:var(--bg-2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--text-3)">${esc((store.name||'L')[0])}</div>`;
-    const align=pos==='left'?'flex-start':pos==='right'?'flex-end':'center';
-    return`<div style="padding:16px;display:flex;justify-content:${align}">${iconHtml}</div>`;
+    return renderStandaloneIcon(cfg.iconPos||'c');
+}
+
+function renderStandaloneIcon(rawPos){
+    const img=store.imageUrl||'';
+    const letter=esc((store.name||'L')[0]);
+    const pos=rawPos==='l'?'flex-start':rawPos==='r'?'flex-end':'center';
+    const iconHtml=img
+        ?`<img src="${esc(img)}" alt="" class="el-icon-img">`
+        :`<div class="el-icon-img el-icon-placeholder">${letter}</div>`;
+    return`<div class="el-icon-row" style="justify-content:${pos}">${iconHtml}</div>`;
 }
 
 function renderBanner(){
@@ -255,27 +283,26 @@ function renderBanner(){
     const bannerSrc=store.bannerUrl||store.coverUrl||store.bannerImageUrl||'';
     const logoSrc=store.imageUrl||'';
     const name=esc(store.name||'');
-    const meta=[store.deliveryTime?esc(store.deliveryTime):'',store.rating?`★ ${store.rating.toFixed(1)}`:''].filter(Boolean).join(' · ');
-    const bgStyle=bannerSrc?`background-image:url(${JSON.stringify(bannerSrc)});background-size:cover;background-position:center`:`background:linear-gradient(135deg,var(--store-accent),var(--bg-3))`;
-    const logoCircle=`<div style="width:56px;height:56px;border-radius:50%;background:var(--bg-1);border:2.5px solid rgba(255,255,255,.85);overflow:hidden;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.4);flex-shrink:0">${logoSrc?`<img src="${esc(logoSrc)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:`<span style="font-size:1.2rem;font-weight:800;color:#fff">${name[0]||'L'}</span>`}</div>`;
-    const gradient=`<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.06),rgba(0,0,0,.52))"></div>`;
+    const meta=[
+        store.deliveryTime?esc(store.deliveryTime):'',
+        store.rating?`★ ${store.rating.toFixed(1)}`:''
+    ].filter(Boolean).join(' · ');
+
+    const bgEl=bannerSrc?`<img src="${esc(bannerSrc)}" alt="" class="bn-bg-img">`:'';
+    const logoContent=logoSrc
+        ?`<img src="${esc(logoSrc)}" alt="">`
+        :`<span class="bn-logo-letter">${name[0]||'L'}</span>`;
 
     if(bPos==='below'){
-        const rawPos=cfg.iconPos||'c';
-        const align=rawPos==='l'?'flex-start':rawPos==='r'?'flex-end':'center';
-        const standaloneIcon=logoSrc?`<img src="${esc(logoSrc)}" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:50%;border:2px solid var(--border)">`:`<div style="width:64px;height:64px;border-radius:50%;background:var(--bg-2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--text-3)">${name[0]||'L'}</div>`;
-        return`<div class="el-banner" style="${bgStyle};position:relative">${gradient}</div><div style="padding:12px 16px 0;display:flex;justify-content:${align}">${standaloneIcon}</div>`;
+        return`<div class="bn bn-below"><div class="bn-bg">${bgEl}</div><div class="bn-gradient"></div></div>${renderStandaloneIcon(cfg.iconPos||'c')}`;
     }
 
-    let overlay='';
-    if(bPos==='bc'){
-        overlay=`${gradient}<div style="position:absolute;left:50%;bottom:14px;transform:translateX(-50%)">${logoCircle}</div>`;
-    } else if(bPos==='br'){
-        overlay=`${gradient}<div style="position:absolute;right:16px;bottom:14px">${logoCircle}</div><div style="position:absolute;left:16px;right:82px;bottom:18px;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.5)"><div style="font-size:1rem;font-weight:800;line-height:1.2">${name}</div>${meta?`<div style="font-size:.78rem;opacity:.88;margin-top:3px">${meta}</div>`:''}</div>`;
-    } else {
-        overlay=`${gradient}<div style="position:absolute;left:16px;bottom:14px">${logoCircle}</div><div style="position:absolute;left:82px;right:16px;bottom:18px;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.5)"><div style="font-size:1rem;font-weight:800;line-height:1.2">${name}</div>${meta?`<div style="font-size:.78rem;opacity:.88;margin-top:3px">${meta}</div>`:''}</div>`;
-    }
-    return`<div class="el-banner" style="${bgStyle};position:relative">${overlay}</div>`;
+    let logoCls='bn-logo-left',copyCls='bn-copy-left',showCopy=true;
+    if(bPos==='bc'){logoCls='bn-logo-center';showCopy=false}
+    else if(bPos==='br'){logoCls='bn-logo-right';copyCls='bn-copy-right'}
+
+    const copy=showCopy?`<div class="bn-copy ${copyCls}"><div class="bn-title">${name}</div>${meta?`<div class="bn-sub">${meta}</div>`:''}</div>`:'';
+    return`<div class="bn"><div class="bn-bg">${bgEl}</div><div class="bn-gradient"></div><div class="bn-logo ${logoCls}">${logoContent}</div>${copy}</div>`;
 }
 
 function renderInfo(){
