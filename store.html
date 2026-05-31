@@ -735,6 +735,9 @@ auth.onAuthStateChanged(async (user)=>{
     if(initialProductId){
         setTimeout(()=>openProduct(initialProductId), 80);
     }
+    if(params.get('openCart')==='1'&&cart.length){
+        setTimeout(()=>openCart(), 120);
+    }
 
     setInterval(()=>{ if(store) refreshStoreView(); }, 60000);
 });

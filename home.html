@@ -233,8 +233,7 @@ body {
    ADDRESS BAR (compacta)
 ════════════════════════════════ */
 .addr-bar-wrap {
-  padding: 0 16px;
-  margin: 2px 0 2px;
+  margin: 0 0 2px;
 }
 
 .addr-bar {
@@ -242,29 +241,20 @@ body {
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 9px 12px;
-  background: linear-gradient(180deg, #0e1512 0%, #0b0e0c 100%);
-  border: 1px solid rgba(34,197,94,.2);
-  border-radius: 13px;
+  padding: 10px 16px;
+  background: linear-gradient(180deg, rgba(34,197,94,.05) 0%, transparent 100%);
+  border: none;
+  border-top: 1px solid rgba(34,197,94,.14);
+  border-bottom: 1px solid rgba(34,197,94,.14);
+  border-radius: 0;
   cursor: pointer;
   font-family: inherit;
   text-align: left;
-  box-shadow:
-    0 0 0 1px rgba(34,197,94,.04),
-    0 6px 18px rgba(0,0,0,.4),
-    inset 0 1px 0 rgba(255,255,255,.03);
-  transition: border-color .16s, box-shadow .16s, transform .12s;
+  transition: background .16s;
 }
 
-.addr-bar:hover {
-  border-color: rgba(34,197,94,.34);
-  box-shadow:
-    0 0 0 1px rgba(34,197,94,.08),
-    0 8px 22px rgba(0,0,0,.46),
-    inset 0 1px 0 rgba(255,255,255,.04);
-}
-
-.addr-bar:active { transform: translateY(1px); }
+.addr-bar:hover { background: linear-gradient(180deg, rgba(34,197,94,.09) 0%, transparent 100%); }
+.addr-bar:active { background: rgba(34,197,94,.06); }
 
 .addr-bar-pin {
   flex-shrink: 0;
@@ -458,6 +448,28 @@ body {
   position: relative;
   z-index: 1;
 }
+
+.repeat-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: rgba(8,8,8,.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  color: #8a8a98;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.repeat-close:hover { background: rgba(8,8,8,.7); color: #f0f0f2; }
+.repeat-close svg { width: 14px; height: 14px; }
 
 .repeat-info {
   min-width: 0;
@@ -1510,6 +1522,7 @@ function goAddAddress(){navigateTo('address.html')}
      em um toque a partir da tela inicial
 ══════════════════════════════════════════ */
 let lastOrder=null;
+const REPEAT_DISMISS_KEY='pedrad_repeat_dismissed';
 
 function tsDate(v){return v?.toDate?.()||new Date(v||0)}
 function isPromoActive(p){
@@ -1543,7 +1556,17 @@ async function loadLastOrder(){
     .find(o=>o.status==='delivered'&&Array.isArray(o.items)&&o.items.length&&o.storeId);
   if(!done)return; // só exibe para quem tem ao menos um pedido concluído
   lastOrder=done;
+  // se o usuário dispensou exatamente este pedido, mantém oculto até surgir um novo
+  let dismissed=null;try{dismissed=localStorage.getItem(REPEAT_DISMISS_KEY)}catch(_){}
+  if(dismissed===done.id)return;
   renderRepeatOrder();
+}
+
+function dismissRepeatOrder(e){
+  if(e){e.stopPropagation();e.preventDefault();}
+  if(lastOrder){try{localStorage.setItem(REPEAT_DISMISS_KEY,lastOrder.id)}catch(_){}}
+  const wrap=document.getElementById('repeatOrderWrap');
+  if(wrap)wrap.style.display='none';
 }
 
 function renderRepeatOrder(){
@@ -1559,6 +1582,9 @@ function renderRepeatOrder(){
   wrap.innerHTML=`
     <div class="repeat-card">
       ${bgLayer}
+      <button class="repeat-close" type="button" onclick="dismissRepeatOrder(event)" aria-label="Dispensar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
       <div class="repeat-content">
         <div class="repeat-info">
           <div class="repeat-eyebrow">Seu último pedido</div>
@@ -1640,7 +1666,7 @@ async function repeatOrder(){
       toast('Itens adicionados ao carrinho');
     }
 
-    setTimeout(()=>navigateTo('store.html?id='+lastOrder.storeId),700);
+    setTimeout(()=>navigateTo('store.html?id='+lastOrder.storeId+'&openCart=1'),700);
   }catch(e){
     console.error('Repetir pedido falhou',e);
     toast('Não foi possível repetir o pedido');
