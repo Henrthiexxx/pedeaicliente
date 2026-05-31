@@ -217,8 +217,20 @@ async function loadStore(){
 async function loadProducts(){
     const snap=await db.collection('products').where('storeId','==',storeId).get();
     products=snap.docs.map(d=>({id:d.id,...d.data()})).filter(p=>p.active!==false);
-    products.sort((a,b)=>(a.name||'').localeCompare(b.name||'','pt-BR'));
-    categories=[...new Set(products.map(p=>p.category).filter(Boolean))].sort();
+    const cfg=store.layoutConfig||{};
+    const savedOrder=Array.isArray(cfg.categoryOrder)?cfg.categoryOrder:[];
+    const found=[...new Set(products.map(p=>p.category).filter(Boolean))]
+        .sort((a,b)=>a.localeCompare(b,'pt-BR'));
+    // Respect the order the store defined in Layout da Loja; append the rest alphabetically.
+    categories=[];
+    savedOrder.forEach(c=>{if(found.includes(c)&&!categories.includes(c))categories.push(c)});
+    found.forEach(c=>{if(!categories.includes(c))categories.push(c)});
+    const catIndex={};categories.forEach((c,i)=>catIndex[c]=i);
+    products.sort((a,b)=>{
+        const ai=catIndex[a.category]??999,bi=catIndex[b.category]??999;
+        if(ai!==bi)return ai-bi;
+        return (a.name||'').localeCompare(b.name||'','pt-BR');
+    });
 }
 
 // ══════════ RENDER STORE ══════════
@@ -420,8 +432,12 @@ function renderProductSection(keepVisibleCount=false){
     }else{
         const groups={};
         visibleList.forEach(p=>{const c=p.category||'Outros';if(!groups[c])groups[c]=[];groups[c].push(p)});
+        const ordering=[];
+        categories.forEach(c=>{if(groups[c])ordering.push(c)});
+        Object.keys(groups).forEach(c=>{if(!ordering.includes(c))ordering.push(c)});
         let html='';
-        for(const[cat,items]of Object.entries(groups)){
+        for(const cat of ordering){
+            const items=groups[cat];
             html+=`<div class="el-list-group"><div class="el-list-cat">${esc(cat)}</div>${items.map(p=>renderListCard(p)).join('')}</div>`;
         }
         section.innerHTML=html;
