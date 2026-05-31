@@ -90,22 +90,22 @@
 
     var w = document.createElement('div');
     w.id = 'globalSearchWrapper';
-    w.style.cssText = 'margin-bottom:16px;position:relative;z-index:60;';
+    w.style.cssText = 'margin:0 0 14px;padding:0 16px;position:relative;z-index:60;';
     w.innerHTML =
       '<div style="position:relative;">' +
         '<input type="text" id="globalSearchInput" placeholder="Buscar lojas e produtos..." autocomplete="off" style="' +
-          'width:100%;padding:14px 16px 14px 42px;background:var(--bg-input,#171717);border:1px solid var(--border,#262626);' +
-          'border-radius:12px;color:var(--text,#fff);font-size:0.95rem;transition:border-color 0.2s;outline:none;">' +
-        '<span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted,#737373);pointer-events:none;display:flex;align-items:center;justify-content:center;width:16px;height:16px;">' +
+          'width:100%;padding:9px 14px 9px 28px;background:transparent;border:none;' +
+          'border-bottom:1px solid rgba(34,197,94,.4);border-radius:0;color:var(--text,#fff);font-size:0.9rem;transition:border-color 0.2s;outline:none;">' +
+        '<span style="position:absolute;left:2px;top:50%;transform:translateY(-50%);color:rgba(34,197,94,.7);pointer-events:none;display:flex;align-items:center;justify-content:center;width:16px;height:16px;">' +
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
             '<circle cx="11" cy="11" r="7.5"></circle>' +
             '<path d="M20 20l-3.5-3.5"></path>' +
           '</svg>' +
         '</span>' +
         '<button id="globalSearchClear" type="button" style="' +
-          'display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);background:var(--bg-card,#0a0a0a);' +
-          'border:1px solid var(--border,#262626);border-radius:50%;width:28px;height:28px;color:var(--text-muted,#737373);' +
-          'font-size:1rem;cursor:pointer;line-height:1;">×</button>' +
+          'display:none;position:absolute;right:0;top:50%;transform:translateY(-50%);background:transparent;' +
+          'border:none;width:24px;height:24px;color:var(--text-muted,#737373);' +
+          'font-size:1.1rem;cursor:pointer;line-height:1;">×</button>' +
       '</div>' +
       '<div id="globalSearchResults" style="' +
         'display:none;background:var(--bg-card,#0a0a0a);border:1px solid var(--border,#262626);border-radius:12px;' +
@@ -123,14 +123,14 @@
     if (!input || !resultsEl) return;
 
     input.addEventListener('focus', function () {
-      input.style.borderColor = '#fff';
+      input.style.borderBottomColor = 'rgba(34,197,94,.95)';
       var val = input.value.trim();
       if (val) performSearch(val);
       else showAbsoluteResults();
     });
 
     input.addEventListener('blur', function () {
-      input.style.borderColor = '';
+      input.style.borderBottomColor = '';
     });
 
     input.addEventListener('input', function () {

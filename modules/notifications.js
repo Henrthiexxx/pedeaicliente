@@ -4,21 +4,33 @@ const NotificationsModule = {
     hasPermission: false,
     
     init() {
-        this.requestPermission();
+        this.syncPermissionState();
     },
-    
-    async requestPermission() {
+
+    syncPermissionState() {
         if (!('Notification' in window)) {
             console.log('Browser não suporta notificações');
+            this.hasPermission = false;
             return;
         }
-        
+
+        this.hasPermission = Notification.permission === 'granted';
+    },
+
+    async requestPermissionByUserAction() {
+        if (!('Notification' in window)) return 'denied';
         if (Notification.permission === 'granted') {
             this.hasPermission = true;
-        } else if (Notification.permission !== 'denied') {
-            const permission = await Notification.requestPermission();
-            this.hasPermission = permission === 'granted';
+            return 'granted';
         }
+        if (Notification.permission === 'denied') {
+            this.hasPermission = false;
+            return 'denied';
+        }
+
+        const permission = await Notification.requestPermission();
+        this.hasPermission = permission === 'granted';
+        return permission;
     },
     
     send(title, body, icon = '🛵') {
