@@ -230,6 +230,350 @@ body {
 }
 
 /* ════════════════════════════════
+   ADDRESS BAR (compacta)
+════════════════════════════════ */
+.addr-bar-wrap {
+  padding: 0 16px;
+  margin: 2px 0 2px;
+}
+
+.addr-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  background: linear-gradient(180deg, #0e1512 0%, #0b0e0c 100%);
+  border: 1px solid rgba(34,197,94,.2);
+  border-radius: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  box-shadow:
+    0 0 0 1px rgba(34,197,94,.04),
+    0 6px 18px rgba(0,0,0,.4),
+    inset 0 1px 0 rgba(255,255,255,.03);
+  transition: border-color .16s, box-shadow .16s, transform .12s;
+}
+
+.addr-bar:hover {
+  border-color: rgba(34,197,94,.34);
+  box-shadow:
+    0 0 0 1px rgba(34,197,94,.08),
+    0 8px 22px rgba(0,0,0,.46),
+    inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.addr-bar:active { transform: translateY(1px); }
+
+.addr-bar-pin {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--g-dim);
+  color: var(--g);
+  box-shadow: inset 0 0 10px rgba(34,197,94,.18);
+}
+.addr-bar-pin svg { width: 14px; height: 14px; }
+
+.addr-bar-text {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: .8rem;
+  line-height: 1.2;
+}
+
+.addr-bar-label { font-weight: 700; color: #f0f0f2; letter-spacing: -.01em; }
+.addr-bar-sep { color: #3a3a44; margin: 0 6px; }
+.addr-bar-line { color: #7a7a88; }
+
+.addr-bar-chev {
+  flex-shrink: 0;
+  color: var(--g);
+  opacity: .85;
+  display: flex;
+  align-items: center;
+}
+.addr-bar-chev svg { width: 15px; height: 15px; }
+
+/* ── Bottom sheet ── */
+.addr-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 650;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0,0,0,.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.addr-sheet-overlay.show { display: flex; animation: addrFade .2s ease; }
+@keyframes addrFade { from { opacity: 0; } to { opacity: 1; } }
+
+.addr-sheet {
+  width: 100%;
+  max-width: 520px;
+  background:
+    radial-gradient(ellipse 120% 42% at 50% 0%, #0d2018 0%, transparent 60%),
+    #0b0b0e;
+  border: 1px solid rgba(34,197,94,.14);
+  border-bottom: none;
+  border-radius: 22px 22px 0 0;
+  padding: 10px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -20px 50px rgba(0,0,0,.6);
+  animation: addrSlide .28s cubic-bezier(.16,1,.3,1);
+}
+@keyframes addrSlide { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+.addr-sheet-handle {
+  width: 38px;
+  height: 4px;
+  border-radius: 999px;
+  background: #26262e;
+  margin: 4px auto 14px;
+}
+
+.addr-sheet-title {
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #44444e;
+  margin-bottom: 12px;
+  padding: 0 2px;
+}
+
+.addr-sheet-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 50vh;
+  overflow-y: auto;
+  margin-bottom: 12px;
+}
+
+.addr-opt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid #18181e;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.addr-opt:hover { border-color: #23232c; }
+.addr-opt.selected { border-color: rgba(34,197,94,.4); background: rgba(34,197,94,.06); }
+
+.addr-opt-pin {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--g-dim);
+  color: var(--g);
+}
+.addr-opt-pin svg { width: 16px; height: 16px; }
+
+.addr-opt-body { flex: 1; min-width: 0; }
+.addr-opt-label { font-size: .86rem; font-weight: 700; color: #e8e8ee; }
+.addr-opt-line {
+  font-size: .73rem;
+  color: #6a6a78;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+
+.addr-opt-check { flex-shrink: 0; color: var(--g); display: none; align-items: center; }
+.addr-opt.selected .addr-opt-check { display: flex; }
+.addr-opt-check svg { width: 18px; height: 18px; }
+
+.addr-sheet-add {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px;
+  background: transparent;
+  border: 1px dashed rgba(34,197,94,.3);
+  border-radius: 14px;
+  color: var(--g);
+  font-size: .84rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+.addr-sheet-add:hover { background: rgba(34,197,94,.06); border-color: rgba(34,197,94,.5); }
+.addr-sheet-add svg { width: 16px; height: 16px; }
+
+/* ════════════════════════════════
+   REPETIR PEDIDO
+════════════════════════════════ */
+.repeat-wrap {
+  padding: 16px 16px 0;
+}
+
+.repeat-card {
+  position: relative;
+  border-radius: 18px;
+  background:
+    radial-gradient(120% 120% at 100% 0%, rgba(34,197,94,.09) 0%, transparent 55%),
+    linear-gradient(180deg, #0e1512 0%, #0b0e0c 100%);
+  border: 1px solid rgba(34,197,94,.18);
+  box-shadow:
+    0 0 0 1px rgba(34,197,94,.05),
+    0 12px 32px rgba(0,0,0,.5),
+    inset 0 1px 0 rgba(255,255,255,.03);
+  padding: 13px 14px 12px;
+  overflow: hidden;
+}
+
+.repeat-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: right center;
+  background-repeat: no-repeat;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.repeat-content {
+  position: relative;
+  z-index: 1;
+}
+
+.repeat-info {
+  min-width: 0;
+  max-width: 72%;
+}
+
+.repeat-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: .6rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--g);
+  margin-bottom: 5px;
+}
+
+.repeat-eyebrow::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--g);
+  box-shadow: 0 0 8px rgba(34,197,94,.85);
+}
+
+.repeat-store {
+  font-size: .98rem;
+  font-weight: 800;
+  color: #f0f0f2;
+  letter-spacing: -.03em;
+  line-height: 1.15;
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.repeat-summary {
+  font-size: .73rem;
+  color: rgba(160,160,180,.62);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.repeat-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 11px;
+}
+
+@keyframes repeatGlow {
+  0%, 100% { box-shadow: 0 6px 0 #0e8038, 0 10px 24px rgba(34,197,94,.4), inset 0 1px 0 rgba(255,255,255,.25); }
+  50%      { box-shadow: 0 6px 0 #0e8038, 0 14px 34px rgba(34,197,94,.6), inset 0 1px 0 rgba(255,255,255,.25); }
+}
+
+.repeat-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 13px 26px;
+  background: linear-gradient(180deg, #2edb6b 0%, #1db857 100%);
+  color: #041a0c;
+  font-size: .86rem;
+  font-weight: 800;
+  font-family: inherit;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  letter-spacing: -.01em;
+  transform: translateY(-2px);
+  transition: transform .14s, box-shadow .14s;
+  animation: repeatGlow 2.6s ease-in-out infinite;
+}
+
+.repeat-btn-primary:hover {
+  animation: none;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 0 #0e8038, 0 16px 36px rgba(34,197,94,.52), inset 0 1px 0 rgba(255,255,255,.28);
+}
+
+.repeat-btn-primary:active {
+  animation: none;
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #0e8038, 0 4px 12px rgba(34,197,94,.28), inset 0 1px 0 rgba(255,255,255,.15);
+}
+
+.repeat-btn-primary:disabled { opacity: .65; cursor: default; animation: none; }
+
+.repeat-btn-primary svg { width: 15px; height: 15px; }
+
+.repeat-btn-secondary {
+  flex-shrink: 0;
+  padding: 13px 22px;
+  background: #121216;
+  color: #b0b0c0;
+  font-size: .82rem;
+  font-weight: 700;
+  font-family: inherit;
+  border: 1px solid #20202a;
+  border-radius: 14px;
+  cursor: pointer;
+  letter-spacing: -.01em;
+  transition: border-color .15s, color .15s, background .15s;
+}
+
+.repeat-btn-secondary:hover { border-color: #2a2a36; color: #f0f0f2; background: #16161c; }
+.repeat-btn-secondary:active { background: #0e0e12; }
+
+/* ════════════════════════════════
    FEATURED BANNER
 ════════════════════════════════ */
 .banner-wrap {
@@ -703,8 +1047,28 @@ body {
 </div>
 
 <div id="storeSelection">
+  <!-- ══════════ ADDRESS BAR ══════════ -->
+  <div class="addr-bar-wrap" id="addrBarWrap" style="display:none">
+    <button class="addr-bar" id="addrBar" type="button" onclick="openAddrSheet()" aria-label="Selecionar endereço de entrega">
+      <span class="addr-bar-pin">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      </span>
+      <span class="addr-bar-text">
+        <span class="addr-bar-label" id="addrBarLabel">Endereço</span>
+        <span class="addr-bar-sep" id="addrBarSep">•</span>
+        <span class="addr-bar-line" id="addrBarLine">Selecionar endereço de entrega</span>
+      </span>
+      <span class="addr-bar-chev">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </span>
+    </button>
+  </div>
+
   <!-- ══════════ CATEGORIES ══════════ -->
   <div class="cat-bar" id="catFilter"></div>
+
+  <!-- ══════════ REPETIR PEDIDO ══════════ -->
+  <div class="repeat-wrap" id="repeatOrderWrap" style="display:none"></div>
 
   <!-- ══════════ FEATURED BANNER ══════════ -->
   <div class="banner-wrap">
@@ -750,6 +1114,19 @@ body {
     <div class="closed-title" id="closedStoreTitle">Loja fora do horário</div>
     <div class="closed-text" id="closedStoreText">Esta loja está cadastrada, mas está fechada no momento.</div>
     <button class="btn" type="button" onclick="hideClosedStorePopup()">Entendi</button>
+  </div>
+</div>
+
+<!-- ══════════ ADDRESS SELECTOR (bottom sheet) ══════════ -->
+<div class="addr-sheet-overlay" id="addrSheetOverlay" onclick="closeAddrSheet(event)">
+  <div class="addr-sheet" role="dialog" aria-modal="true" aria-label="Endereços de entrega">
+    <div class="addr-sheet-handle"></div>
+    <div class="addr-sheet-title">Entregar em</div>
+    <div class="addr-sheet-list" id="addrSheetList"></div>
+    <button class="addr-sheet-add" type="button" onclick="goAddAddress()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Adicionar novo endereço
+    </button>
   </div>
 </div>
 
@@ -1027,12 +1404,257 @@ function bnResetTimer(){clearInterval(bnTimer);bnTimer=setInterval(bnNext,10000)
 
 document.addEventListener('visibilitychange',()=>{document.hidden?clearInterval(bnTimer):bnResetTimer();});
 
+/* ══════════════════════════════════════════
+   BARRA DE ENDEREÇO COMPACTA
+   — Troca rápida do local de entrega sem
+     sair da tela inicial (dropdown bottom sheet)
+══════════════════════════════════════════ */
+let userAddresses=[], selectedAddrId=null;
+const SEL_ADDR_KEY='pedrad_selected_address';
+function addrCacheKey(uid){return 'cache_addresses_v1_'+uid}
+
+function addrSummary(a){
+  if(!a)return '';
+  let s=a.street||'';
+  if(a.number)s+=(s?', ':'')+a.number;
+  if(!s)s=a.neighborhood||'';
+  return s;
+}
+function addrFull(a){
+  const s=addrSummary(a);
+  if(a&&a.neighborhood&&a.neighborhood!==s)return s?`${s} • ${a.neighborhood}`:a.neighborhood;
+  return s;
+}
+function pickSelectedAddr(){
+  let stored=null;try{stored=localStorage.getItem(SEL_ADDR_KEY)}catch(_){}
+  if(stored&&userAddresses.some(a=>a.id===stored))return stored;
+  return userAddresses[0]?.id||null;
+}
+
+function renderAddrBar(){
+  const wrap=document.getElementById('addrBarWrap');
+  if(!wrap)return;
+  const labelEl=document.getElementById('addrBarLabel');
+  const sepEl=document.getElementById('addrBarSep');
+  const lineEl=document.getElementById('addrBarLine');
+  if(!userAddresses.length){
+    labelEl.textContent='Endereço';
+    sepEl.style.display='none';
+    lineEl.textContent='Adicionar endereço de entrega';
+    wrap.style.display='';
+    return;
+  }
+  const a=userAddresses.find(x=>x.id===selectedAddrId)||userAddresses[0];
+  labelEl.textContent=a.label||'Endereço';
+  sepEl.style.display='';
+  lineEl.textContent=addrSummary(a)||'—';
+  wrap.style.display='';
+}
+
+async function loadAddresses(){
+  const uid=auth.currentUser?.uid;
+  if(!uid)return;
+  try{ // render instantâneo via cache compartilhado com o checkout
+    const c=JSON.parse(localStorage.getItem(addrCacheKey(uid))||'null');
+    if(c&&Array.isArray(c.data)){userAddresses=c.data;selectedAddrId=pickSelectedAddr();renderAddrBar();}
+  }catch(_){}
+  try{
+    const snap=await db.collection('users').doc(uid).collection('addresses').get();
+    userAddresses=snap.docs.map(d=>({id:d.id,...d.data()}));
+    try{localStorage.setItem(addrCacheKey(uid),JSON.stringify({ts:Date.now(),data:userAddresses}));}catch(_){}
+    selectedAddrId=pickSelectedAddr();
+    renderAddrBar();
+  }catch(e){console.warn('Endereços: consulta falhou',e);}
+}
+
+function renderAddrSheet(){
+  const list=document.getElementById('addrSheetList');
+  if(!list)return;
+  const pin='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+  const check='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  list.innerHTML=userAddresses.map(a=>{
+    const sel=a.id===selectedAddrId?'selected':'';
+    return`<div class="addr-opt ${sel}" onclick="selectAddr('${esc(a.id)}')">
+      <span class="addr-opt-pin">${pin}</span>
+      <span class="addr-opt-body">
+        <span class="addr-opt-label">${esc(a.label||'Endereço')}</span>
+        <span class="addr-opt-line">${esc(addrFull(a)||'—')}</span>
+      </span>
+      <span class="addr-opt-check">${check}</span>
+    </div>`;
+  }).join('');
+}
+
+function openAddrSheet(){
+  if(!userAddresses.length){goAddAddress();return;}
+  renderAddrSheet();
+  document.getElementById('addrSheetOverlay').classList.add('show');
+}
+function closeAddrSheet(e){
+  if(e&&e.target&&e.target.id!=='addrSheetOverlay')return;
+  document.getElementById('addrSheetOverlay').classList.remove('show');
+}
+function selectAddr(id){
+  selectedAddrId=id;
+  try{localStorage.setItem(SEL_ADDR_KEY,id);}catch(_){}
+  renderAddrBar();
+  const a=userAddresses.find(x=>x.id===id);
+  closeAddrSheet();
+  toast('Entregar em '+(a?.label||'endereço'));
+}
+function goAddAddress(){navigateTo('address.html')}
+
+/* ══════════════════════════════════════════
+   REPETIR PEDIDO
+   — Card do último pedido concluído, recompra
+     em um toque a partir da tela inicial
+══════════════════════════════════════════ */
+let lastOrder=null;
+
+function tsDate(v){return v?.toDate?.()||new Date(v||0)}
+function isPromoActive(p){
+  if(p.promo!==true&&p.promotional!==true&&p.onSale!==true)return false;
+  if(p.promotionStatus==='inactive')return false;
+  const now=Date.now(),start=tsDate(p.promotionStartsAt).getTime()||0,end=tsDate(p.promotionEndsAt).getTime()||0;
+  return(!start||start<=now)&&(!end||end>=now);
+}
+function productPrice(p){
+  const promo=Number(p.promoPrice||p.discountPrice||p.salePrice||0);
+  const price=Number(p.price||0);
+  return isPromoActive(p)&&promo>0&&promo<price?promo:price;
+}
+
+function repeatSummary(items){
+  return (items||[]).map(i=>`${i.qty||1}x ${i.name||''}`.trim()).filter(Boolean).join(' • ');
+}
+
+async function loadLastOrder(){
+  const uid=auth.currentUser?.uid;
+  if(!uid)return;
+  let snap;
+  try{
+    snap=await db.collection('orders')
+      .where('userId','==',uid)
+      .orderBy('createdAt','desc')
+      .limit(20).get();
+  }catch(e){console.warn('Repetir pedido: consulta falhou',e);return;}
+  const done=snap.docs
+    .map(d=>({id:d.id,...d.data()}))
+    .find(o=>o.status==='delivered'&&Array.isArray(o.items)&&o.items.length&&o.storeId);
+  if(!done)return; // só exibe para quem tem ao menos um pedido concluído
+  lastOrder=done;
+  renderRepeatOrder();
+}
+
+function renderRepeatOrder(){
+  if(!lastOrder)return;
+  const wrap=document.getElementById('repeatOrderWrap');
+  if(!wrap)return;
+  const store=stores.find(s=>s.id===lastOrder.storeId);
+  const img=store?.imageUrl||'';
+  const name=lastOrder.storeName||store?.name||'Seu pedido';
+  const summary=repeatSummary(lastOrder.items);
+  const bgGrad='linear-gradient(90deg,#0b0e0c 0%,#0b0e0c 30%,rgba(11,14,12,.55) 62%,rgba(11,14,12,.10) 100%)';
+  const bgLayer=img?`<div class="repeat-bg" style="background-image:${bgGrad},url('${esc(img)}')"></div>`:'';
+  wrap.innerHTML=`
+    <div class="repeat-card">
+      ${bgLayer}
+      <div class="repeat-content">
+        <div class="repeat-info">
+          <div class="repeat-eyebrow">Seu último pedido</div>
+          <div class="repeat-store">${esc(name)}</div>
+          <div class="repeat-summary">${esc(summary)}</div>
+        </div>
+        <div class="repeat-actions">
+          <button class="repeat-btn-primary" id="repeatBtn" onclick="repeatOrder()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Repetir Pedido
+          </button>
+          <button class="repeat-btn-secondary" onclick="viewLastOrder()">Ver Detalhes</button>
+        </div>
+      </div>
+    </div>`;
+  wrap.style.display='';
+}
+
+function viewLastOrder(){navigateTo('orders.html')}
+
+async function repeatOrder(){
+  if(!lastOrder)return;
+  const btn=document.getElementById('repeatBtn');
+  if(btn)btn.disabled=true;
+  try{
+    const snap=await db.collection('products').where('storeId','==',lastOrder.storeId).get();
+    const byId={};
+    snap.docs.map(d=>({id:d.id,...d.data()}))
+      .filter(p=>p.active!==false)
+      .forEach(p=>{byId[p.id]=p});
+
+    const cart=[];let missing=0;
+    lastOrder.items.forEach(it=>{
+      const pid=it.productId||it.id;
+      const p=byId[pid];
+      if(!p){missing++;return;} // item saiu do cardápio
+      cart.push({
+        id:p.id,
+        name:p.name,
+        price:productPrice(p),
+        qty:it.qty||1,
+        addons:Array.isArray(it.addons)?it.addons:[],
+        observation:it.observation||'',
+        productId:p.id,
+        category:p.category||'',
+        storeId:lastOrder.storeId,
+        storeName:lastOrder.storeName||''
+      });
+    });
+
+    if(!cart.length){
+      toast('Os itens deste pedido não estão mais disponíveis');
+      if(btn)btn.disabled=false;
+      return;
+    }
+
+    const store=stores.find(s=>s.id===lastOrder.storeId);
+    const storeInfo={
+      id:lastOrder.storeId,
+      name:lastOrder.storeName||store?.name||'',
+      category:store?.category||lastOrder.storeCategory||'',
+      deliveryType:store?.deliveryType||'app',
+      phone:store?.phone||'',
+      address:store?.address||''
+    };
+    const cartJson=JSON.stringify(cart);
+    sessionStorage.setItem('pedrad_cart',cartJson);
+    localStorage.setItem('pedrad_cart',cartJson);
+    sessionStorage.setItem('pedrad_store',JSON.stringify(storeInfo));
+    localStorage.setItem('checkoutStoreId',lastOrder.storeId);
+    localStorage.setItem('cache_store_'+lastOrder.storeId,JSON.stringify({ts:Date.now(),data:storeInfo}));
+
+    const open=store?store.isOpenNow:true;
+    if(missing>0){
+      toast(`${missing} item(ns) indisponível(eis) — adicionamos o restante ao carrinho`);
+    }else if(!open){
+      toast('Loja fechada — o pedido será enviado quando ela abrir');
+    }else{
+      toast('Itens adicionados ao carrinho');
+    }
+
+    setTimeout(()=>navigateTo('store.html?id='+lastOrder.storeId),700);
+  }catch(e){
+    console.error('Repetir pedido falhou',e);
+    toast('Não foi possível repetir o pedido');
+    if(btn)btn.disabled=false;
+  }
+}
+
 auth.onAuthStateChanged(user=>{
   if(!user){
     location.replace('index.html');
     return;
   }
-  loadStores().then(()=>{ if(typeof WelcomePopup!=='undefined') WelcomePopup.check(); });
+  loadStores().then(()=>{ if(typeof WelcomePopup!=='undefined') WelcomePopup.check(); loadLastOrder(); });
+  loadAddresses();
 });
 </script>
 <script src="modules/search.js"></script>

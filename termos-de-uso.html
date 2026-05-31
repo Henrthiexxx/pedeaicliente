@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#080808" />
+  <title>Termos de Uso | Pedra Delivery</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg: #080808;
+      --surface: #0e0e11;
+      --border: #161619;
+      --text-0: #d8d8e0;
+      --text-1: #8888a0;
+      --text-2: #505060;
+      --green: #22c55e;
+      --warn: #fbbf24;
+      --danger: #f87171;
+      --r: 16px;
+      --rs: 12px;
+      --font: 'DM Sans', -apple-system, system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); }
+
+    body {
+      background: radial-gradient(ellipse 110% 32% at 50% 0%, #0d2018 0%, transparent 68%),
+                  radial-gradient(ellipse 80% 20% at 50% 100%, #090d0a 0%, transparent 60%),
+                  var(--bg);
+      color: var(--text-0);
+      min-height: 100dvh;
+      padding: 24px;
+    }
+
+    .container { width: 100%; max-width: 760px; margin: 0 auto; }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      margin-bottom: 18px;
+    }
+
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .brand-mark img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .brand-text { font-size: 1.05rem; font-weight: 700; letter-spacing: -.03em; color: #f0f0f2; }
+    .brand-text span { color: var(--green); }
+
+    .header { text-align: center; margin-bottom: 16px; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .64rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--green);
+      background: rgba(34, 197, 94, .10);
+      border: 1px solid rgba(34, 197, 94, .24);
+      border-radius: 999px;
+      padding: 5px 12px;
+      margin-bottom: 12px;
+    }
+
+    .badge::before { content: ''; width: 5px; height: 5px; background: var(--green); border-radius: 50%; }
+
+    h1 { font-size: 26px; font-weight: 800; letter-spacing: -.03em; margin-bottom: 8px; }
+    .subtitle { color: var(--text-1); font-size: 14px; }
+
+    .notice {
+      border: 1px solid rgba(248, 113, 113, .35);
+      background: rgba(248, 113, 113, .10);
+      border-radius: var(--rs);
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .notice h2 {
+      color: #fca5a5;
+      font-size: 13px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .notice ul { margin: 0; padding-left: 18px; color: var(--text-0); font-size: 14px; line-height: 1.5; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 16px;
+      margin-bottom: 10px;
+    }
+
+    .card h3 {
+      font-size: .75rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-2);
+      margin-bottom: 10px;
+    }
+
+    .card p, .card li { color: var(--text-1); font-size: 14px; line-height: 1.55; }
+    .card ul { padding-left: 18px; }
+
+    .footer-note {
+      text-align: center;
+      color: var(--text-2);
+      font-size: 13px;
+      margin-top: 14px;
+    }
+
+    .footer-note a { color: var(--green); text-decoration: none; }
+
+    @media (max-width: 600px) {
+      body { padding: 16px; }
+      h1 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="brand">
+      <div class="brand-mark"><img src="icon-192.png" alt="Pedra Delivery" /></div>
+      <div class="brand-text"><span>Pedra</span> Delivery</div>
+    </div>
+
+    <section class="header">
+      <span class="badge">Documento legal</span>
+      <h1>Termos de Uso</h1>
+      <p class="subtitle">Ultima atualizacao: 30/05/2026</p>
+    </section>
+
+    <section class="notice">
+      <h2>Seguranca da conta</h2>
+      <ul>
+        <li>Use uma senha unica e exclusiva para o Pedra Delivery.</li>
+        <li>Nao reutilize senha de e-mail, banco ou outros aplicativos.</li>
+        <li>Nunca compartilhe sua senha com outras pessoas.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h3>1. Aceite dos termos</h3>
+      <p>Ao criar conta, acessar ou utilizar o Pedra Delivery, voce concorda com estes Termos de Uso e com a politica de privacidade aplicavel.</p>
+    </section>
+
+    <section class="card">
+      <h3>2. Cadastro e responsabilidade</h3>
+      <ul>
+        <li>Voce deve informar dados verdadeiros, completos e atualizados.</li>
+        <li>Voce e responsavel por toda atividade realizada em sua conta.</li>
+        <li>Em caso de uso indevido, altere a senha imediatamente e informe o suporte.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h3>3. Uso do aplicativo</h3>
+      <p>O app permite consultar lojas, realizar pedidos, acompanhar status e acessar historico. O uso deve respeitar a legislacao e estes termos.</p>
+    </section>
+
+    <section class="card">
+      <h3>4. Pedidos, lojas e entregas</h3>
+      <ul>
+        <li>Precos, disponibilidade, tempo de preparo e horario podem variar por loja.</li>
+        <li>A loja e responsavel por cardapio, preparo e qualidade dos itens ofertados.</li>
+        <li>Pedidos podem ser recusados ou cancelados por indisponibilidade, erro operacional ou suspeita de fraude.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h3>5. Pagamentos e taxas</h3>
+      <p>As formas de pagamento e eventuais taxas de entrega sao exibidas no app antes da confirmacao do pedido, conforme configuracao de cada loja e da plataforma.</p>
+    </section>
+
+    <section class="card">
+      <h3>6. Conduta proibida</h3>
+      <ul>
+        <li>Usar dados falsos ou de terceiros sem autorizacao.</li>
+        <li>Praticar fraude, tentativa de invasao ou qualquer acao que comprometa a seguranca do sistema.</li>
+        <li>Publicar conteudo ofensivo, ilegal, discriminatorio ou abusivo.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h3>7. Suspensao e encerramento</h3>
+      <p>A plataforma pode suspender ou encerrar contas em caso de violacao destes termos, indicios de fraude ou exigencia legal.</p>
+    </section>
+
+    <section class="card">
+      <h3>8. Alteracoes dos termos</h3>
+      <p>Os termos podem ser atualizados periodicamente. O uso continuado do app apos a atualizacao representa concordancia com a nova versao.</p>
+    </section>
+
+    <p class="footer-note"><a href="inscricao.html">Voltar para inscricao</a></p>
+  </main>
+</body>
+</html>

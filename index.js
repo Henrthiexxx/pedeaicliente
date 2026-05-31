@@ -137,6 +137,7 @@ auth.onAuthStateChanged(async (user) => {
         localStorage.setItem('auth_uid', user.uid);
         localStorage.setItem('auth_name', user.displayName || '');
         localStorage.setItem('auth_email', user.email || '');
+        await syncUserPhoneCache(user);
 
         await loadUserData();
         showMainApp();
@@ -164,7 +165,7 @@ auth.onAuthStateChanged(async (user) => {
      if (typeof Checker !== 'undefined') {
             await Checker.init();
         }
-        // FCM Push Notifications - pede permissão se ainda não pediu
+        // FCM Push Notifications - inicializa apenas se já houver permissão concedida
         if (typeof setupClientPushNotifications === 'function' && Notification.permission === 'granted') {
             setupClientPushNotifications();
         }
@@ -172,6 +173,7 @@ auth.onAuthStateChanged(async (user) => {
         currentUser = null;
         window.currentUser = null;
         localStorage.removeItem('auth_uid');
+        localStorage.removeItem('userPhone');
         showAuthPage();
     }
 });
@@ -233,6 +235,25 @@ function isValidPhoneRequiredFormat(phone) {
     return /^\(\d{2}\)\s\d\s\d{4}\s\d{4}$/.test(phone);
 }
 
+function normalizePhoneDigits(value) {
+    return String(value || '').replace(/\D/g, '').slice(0, 11);
+}
+
+async function syncUserPhoneCache(user) {
+    if (!user?.uid) return '';
+    try {
+        const doc = await db.collection('users').doc(user.uid).get();
+        const data = doc.exists ? (doc.data() || {}) : {};
+        const phone = normalizePhoneDigits(data.phone || '');
+        if (phone) localStorage.setItem('userPhone', phone);
+        else localStorage.removeItem('userPhone');
+        return phone;
+    } catch (err) {
+        console.error('syncUserPhoneCache error:', err);
+        return localStorage.getItem('userPhone') || '';
+    }
+}
+
 async function handleLogin(e) {
     e.preventDefault();
     const email = document.getElementById('loginEmail')?.value;
@@ -252,13 +273,14 @@ async function handleRegister(e) {
     e.preventDefault();
     const name = document.getElementById('registerName')?.value?.trim();
     const email = document.getElementById('registerEmail')?.value?.trim().toLowerCase();
-    const phone = formatPhoneToRequired(document.getElementById('registerPhone')?.value?.trim());
+    const phoneFormatted = formatPhoneToRequired(document.getElementById('registerPhone')?.value?.trim());
+    const phone = normalizePhoneDigits(phoneFormatted);
     const password = document.getElementById('registerPassword')?.value;
     
     if (!name || !email || !password) return showToast('Preencha todos os campos');
     if (!isValidName(name)) return showToast('Nome não pode conter números');
     if (!isKnownProviderEmail(email)) return showToast('Use um provedor conhecido (gmail, hotmail, outlook...)');
-    if (!isValidPhoneRequiredFormat(phone)) return showToast('Telefone no formato: (01) 2 3456 7890');
+    if (!isValidPhoneRequiredFormat(phoneFormatted)) return showToast('Telefone no formato: (01) 2 3456 7890');
     
     try {
         const { user } = await auth.createUserWithEmailAndPassword(email, password);
@@ -267,6 +289,7 @@ async function handleRegister(e) {
             name, email, phone,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
+        localStorage.setItem('userPhone', phone);
         showToast('Conta criada!');
     } catch (err) {
         showToast(getAuthError(err.code));
@@ -931,6 +954,7 @@ async function submitOrder() {
         userId: currentUser.uid,
         userName: currentUser.displayName || 'Cliente',
         userEmail: currentUser.email,
+        userPhone: localStorage.getItem('userPhone') || '',
         storeId: store.id,
         storeName: store.name,
         items: cart.map(item => ({

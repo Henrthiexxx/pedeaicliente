@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#080808" />
+  <title>Inscrição do Estabelecimento | Pedra Delivery</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg: #080808;
+      --bg-1: #0e0e11;
+      --bg-2: #121216;
+      --bg-3: #191920;
+      --surface: #0e0e11;
+      --surface-2: #121216;
+      --glass: rgba(14, 14, 17, .82);
+      --border: #161619;
+      --border-h: #252530;
+      --text-0: #d8d8e0;
+      --text-1: #8888a0;
+      --text-2: #505060;
+      --text-3: #343440;
+      --store-accent: #22c55e;
+      --g: #22c55e;
+      --g-dim: rgba(34, 197, 94, .10);
+      --g-glow: rgba(34, 197, 94, .18);
+      --green: #22c55e;
+      --red: #f87171;
+      --orange: #fbbf24;
+      --sh-sm: 0 2px 8px rgba(0, 0, 0, .5);
+      --sh-md: 0 6px 18px rgba(0, 0, 0, .6);
+      --sh-lg: 0 16px 48px rgba(0, 0, 0, .7);
+      --r: 16px;
+      --rs: 12px;
+      --rx: 8px;
+      --font: 'DM Sans', -apple-system, system-ui, sans-serif;
+    }
+
+    @keyframes appIn {
+      from { opacity: 0; transform: scale(1.03); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font);
+    }
+
+    body {
+      background: radial-gradient(ellipse 110% 32% at 50% 0%, #0d2018 0%, transparent 68%),
+                  radial-gradient(ellipse 80% 20% at 50% 100%, #090d0a 0%, transparent 60%),
+                  var(--bg);
+      color: var(--text-0);
+      min-height: 100dvh;
+      padding: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      -webkit-tap-highlight-color: transparent;
+      animation: appIn .21s cubic-bezier(.16, 1, .3, 1) both;
+    }
+
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-thumb { background: #2a2a34; border-radius: 2px; }
+
+    .container {
+      width: 100%;
+      max-width: 720px;
+    }
+
+    /* ════════ BRAND HEADER (igual à home) ════════ */
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      justify-content: center;
+      margin-bottom: 22px;
+    }
+
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      overflow: hidden;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .5);
+    }
+
+    .brand-mark img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .brand-text {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -.03em;
+      color: #f0f0f2;
+    }
+
+    .brand-text span {
+      color: var(--g);
+    }
+
+    .header {
+      margin-bottom: 26px;
+      text-align: center;
+    }
+
+    /* Tag verde com bolinha, no estilo do banner-tag da home */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .64rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--g);
+      background: var(--g-dim);
+      border: 1px solid rgba(34, 197, 94, .24);
+      border-radius: 999px;
+      padding: 5px 12px;
+      margin-bottom: 14px;
+    }
+
+    .badge::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      background: var(--g);
+      border-radius: 50%;
+    }
+
+    h1 {
+      font-size: 27px;
+      font-weight: 800;
+      letter-spacing: -.03em;
+      line-height: 1.15;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: var(--text-1);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 20px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .35);
+    }
+
+    .section h2 {
+      font-size: .7rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      color: #44444e;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field:last-child {
+      margin-bottom: 0;
+    }
+
+    .field label {
+      display: block;
+      font-size: 13px;
+      color: var(--text-2);
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #1e1e26;
+      border-radius: var(--rs);
+      background: var(--bg);
+      color: #f0f0f2;
+      font-size: 15px;
+      font-family: inherit;
+      transition: border-color .18s, box-shadow .18s;
+    }
+
+    .field input::placeholder,
+    .field textarea::placeholder {
+      color: #44444e;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      outline: none;
+      border-color: rgba(34, 197, 94, .35);
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, .06);
+    }
+
+    .field textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+      font-size: 13px;
+      color: var(--text-2);
+    }
+
+    .checkbox-row input {
+      accent-color: var(--store-accent);
+      width: auto;
+    }
+
+    .strength-bar {
+      height: 4px;
+      background: var(--bg-3);
+      border-radius: 2px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+
+    .strength-fill {
+      height: 100%;
+      width: 0;
+      background: var(--red);
+      transition: 0.3s;
+    }
+
+    .strength-text {
+      font-size: 12px;
+      color: var(--text-2);
+      margin-top: 4px;
+      min-height: 14px;
+    }
+
+    .security-box {
+      margin-top: 12px;
+      border: 1px solid rgba(248, 113, 113, .28);
+      background: rgba(248, 113, 113, .08);
+      border-radius: var(--rs);
+      padding: 10px 12px;
+    }
+
+    .security-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #fca5a5;
+      margin-bottom: 6px;
+      letter-spacing: .03em;
+      text-transform: uppercase;
+    }
+
+    .security-list {
+      margin: 0;
+      padding-left: 16px;
+      color: var(--text-1);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .form-footer {
+      margin-top: 22px;
+    }
+
+    /* Botão-assinatura 3D verde, igual ao banner-btn da home */
+    button.submit {
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      border: none;
+      background: linear-gradient(180deg, #2edb6b 0%, #1db857 100%);
+      color: #041a0c;
+      font-size: 1rem;
+      font-weight: 800;
+      font-family: inherit;
+      letter-spacing: -.01em;
+      padding: 15px;
+      border-radius: 14px;
+      cursor: pointer;
+      box-shadow:
+        0 6px 0 #0e8038,
+        0 10px 28px rgba(34, 197, 94, .45),
+        inset 0 1px 0 rgba(255, 255, 255, .25);
+      transform: translateY(-2px);
+      transition: transform .14s, box-shadow .14s;
+    }
+
+    button.submit:hover {
+      transform: translateY(-4px);
+      box-shadow:
+        0 8px 0 #0e8038,
+        0 16px 36px rgba(34, 197, 94, .52),
+        inset 0 1px 0 rgba(255, 255, 255, .28);
+    }
+
+    button.submit:active {
+      transform: translateY(2px);
+      box-shadow:
+        0 2px 0 #0e8038,
+        0 4px 12px rgba(34, 197, 94, .28),
+        inset 0 1px 0 rgba(255, 255, 255, .15);
+    }
+
+    button.submit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: translateY(-2px);
+      box-shadow:
+        0 6px 0 #0e8038,
+        inset 0 1px 0 rgba(255, 255, 255, .15);
+    }
+
+    .note {
+      margin-top: 16px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-2);
+    }
+
+    .note a {
+      color: var(--store-accent);
+      text-decoration: none;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 16px;
+      }
+
+      h1 {
+        font-size: 23px;
+      }
+
+      .section {
+        padding: 16px;
+      }
+
+      .row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <div class="brand">
+      <div class="brand-mark"><img src="icon-192.png" alt="Pedra Delivery" /></div>
+      <div class="brand-text"><span>Pedra</span> Delivery</div>
+    </div>
+
+    <section class="header">
+      <span class="badge">Seja um parceiro</span>
+      <h1>Inscreva seu<br>Estabelecimento</h1>
+      <p class="subtitle">
+        Preencha os dados abaixo para começar a vender no Pedra Delivery.
+      </p>
+    </section>
+
+    <form id="signupForm" autocomplete="off" novalidate>
+
+      <div class="section">
+        <h2>Dados do Estabelecimento</h2>
+
+        <div class="field">
+          <label for="storeName">Nome da Loja *</label>
+          <input type="text" id="storeName" required maxlength="80" />
+        </div>
+
+        <div class="field">
+          <label for="category">Categoria *</label>
+          <select id="category" required>
+            <option value="">Selecione...</option>
+            <option value="restaurante">Restaurante</option>
+            <option value="lanchonete">Lanchonete</option>
+            <option value="pizzaria">Pizzaria</option>
+            <option value="hamburgueria">Hamburgueria</option>
+            <option value="acai">Açaí / Sorveteria</option>
+            <option value="bebidas">Bebidas / Conveniência</option>
+            <option value="mercado">Mini Mercado</option>
+            <option value="outros">Outros</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="address">Endereço Completo *</label>
+          <textarea id="address" required maxlength="200" placeholder="Rua, número, bairro, cidade"></textarea>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Responsável</h2>
+
+        <div class="field">
+          <label for="ownerName">Nome do Responsável *</label>
+          <input type="text" id="ownerName" required maxlength="80" />
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="phone">WhatsApp da Loja *</label>
+            <input type="tel" id="phone" placeholder="(00) 00000-0000" required maxlength="16" />
+          </div>
+
+          <div class="field">
+            <label for="adminPhone">WhatsApp do Admin *</label>
+            <input type="tel" id="adminPhone" placeholder="(00) 00000-0000" required maxlength="16" />
+            <div class="checkbox-row">
+              <input type="checkbox" id="sameNumber" />
+              <label for="sameNumber" style="margin:0;cursor:pointer">Mesmo número</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Acesso</h2>
+
+        <div class="field">
+          <label for="email">E-mail *</label>
+          <input type="email" id="email" required maxlength="120" />
+        </div>
+
+        <div class="field">
+          <label for="password">Senha *</label>
+          <input type="password" id="password" required minlength="8" maxlength="64" />
+          <div class="strength-bar"><div class="strength-fill" id="strengthBar"></div></div>
+          <div class="strength-text" id="strengthText"></div>
+        </div>
+
+        <div class="field">
+          <label for="confirmPassword">Confirmar Senha *</label>
+          <input type="password" id="confirmPassword" required minlength="8" maxlength="64" />
+        </div>
+
+        <div class="security-box" role="note" aria-label="Avisos de segurança">
+          <div class="security-title">Segurança da conta</div>
+          <ul class="security-list">
+            <li>Use uma senha unica e exclusiva para o Pedra Delivery.</li>
+            <li>Nao reutilize senha de e-mail, banco, redes sociais ou outros apps.</li>
+            <li>Nunca compartilhe sua senha com funcionarios, parceiros ou terceiros.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="form-footer">
+        <button type="submit" class="submit" id="submitBtn">
+          <span id="submitBtnText">Enviar inscrição</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </button>
+        <p class="note">
+          Ao continuar você concorda com os <a href="termos-de-uso.html" target="_blank" rel="noopener noreferrer">termos de uso</a> do Pedra Delivery.
+        </p>
+      </div>
+    </form>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",
+      authDomain: "pedrad-814d0.firebaseapp.com",
+      projectId: "pedrad-814d0",
+      storageBucket: "pedrad-814d0.appspot.com",
+      messagingSenderId: "293587190550",
+      appId: "1:293587190550:web:80c9399f82847c80e20637"
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Escape para evitar XSS quando dados forem renderizados em outras telas
+    function esc(s){if(typeof s!=="string")return"";var d=document.createElement("div");d.textContent=s;return d.innerHTML;}
+
+    // Máscara de telefone BR
+    function maskPhone(v){
+      v = v.replace(/\D/g,"").slice(0,11);
+      if(v.length>10) return v.replace(/(\d{2})(\d{5})(\d{4}).*/,"($1) $2-$3");
+      if(v.length>6)  return v.replace(/(\d{2})(\d{4})(\d{0,4}).*/,"($1) $2-$3");
+      if(v.length>2)  return v.replace(/(\d{2})(\d{0,5}).*/,"($1) $2");
+      return v;
+    }
+    ["phone","adminPhone"].forEach(id=>{
+      document.getElementById(id).addEventListener("input",e=>{
+        e.target.value = maskPhone(e.target.value);
+      });
+    });
+
+    // "Mesmo número" replica phone -> adminPhone
+    const sameNumber = document.getElementById("sameNumber");
+    const phone = document.getElementById("phone");
+    const adminPhone = document.getElementById("adminPhone");
+    sameNumber.addEventListener("change",()=>{
+      if(sameNumber.checked){
+        adminPhone.value = phone.value;
+        adminPhone.disabled = true;
+      } else {
+        adminPhone.disabled = false;
+      }
+    });
+    phone.addEventListener("input",()=>{
+      if(sameNumber.checked) adminPhone.value = phone.value;
+    });
+
+    // Força de senha
+    const pwd = document.getElementById("password");
+    const bar = document.getElementById("strengthBar");
+    const txt = document.getElementById("strengthText");
+    pwd.addEventListener("input",()=>{
+      const v = pwd.value;
+      let score = 0;
+      if(v.length>=8) score++;
+      if(/[A-Z]/.test(v)) score++;
+      if(/[0-9]/.test(v)) score++;
+      if(/[^A-Za-z0-9]/.test(v)) score++;
+      const pct = [0,25,50,75,100][score];
+      const colors = ["#f87171","#f87171","#fbbf24","#22c55e","#22c55e"];
+      const labels = ["","Fraca","Média","Boa","Forte"];
+      bar.style.width = pct + "%";
+      bar.style.background = colors[score];
+      txt.textContent = v ? labels[score] : "";
+    });
+
+    // Submit
+    document.getElementById("signupForm").addEventListener("submit",async e=>{
+      e.preventDefault();
+      const btn = document.getElementById("submitBtn");
+      const btnText = document.getElementById("submitBtnText");
+
+      const data = {
+        storeName: document.getElementById("storeName").value.trim(),
+        category: document.getElementById("category").value,
+        address: document.getElementById("address").value.trim(),
+        ownerName: document.getElementById("ownerName").value.trim(),
+        phone: phone.value.trim(),
+        adminPhone: adminPhone.value.trim(),
+        email: document.getElementById("email").value.trim().toLowerCase(),
+        password: pwd.value,
+        confirmPassword: document.getElementById("confirmPassword").value
+      };
+
+      // Validações
+      if(!data.storeName || !data.category || !data.address || !data.ownerName){
+        alert("Preencha todos os campos obrigatórios."); return;
+      }
+      if(data.phone.replace(/\D/g,"").length < 10){
+        alert("Telefone da loja inválido."); return;
+      }
+      if(data.adminPhone.replace(/\D/g,"").length < 10){
+        alert("Telefone do admin inválido."); return;
+      }
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)){
+        alert("E-mail inválido."); return;
+      }
+      if(data.password.length < 8){
+        alert("Senha deve ter pelo menos 8 caracteres."); return;
+      }
+      if(data.password !== data.confirmPassword){
+        alert("As senhas não coincidem."); return;
+      }
+
+      btn.disabled = true;
+      btnText.textContent = "Enviando...";
+
+      try {
+        const payload = {
+          storeName: data.storeName,
+          category: data.category,
+          address: data.address,
+          ownerName: data.ownerName,
+          phone: data.phone,
+          adminPhone: data.adminPhone,
+          email: data.email,
+          status: "pending",
+          source: "inscricao.html",
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        await db.collection("storeSignups").add(payload);
+        alert("Inscrição enviada! Aguarde aprovação.");
+        e.target.reset();
+        bar.style.width = "0";
+        txt.textContent = "";
+      } catch(err){
+        alert("Erro: " + (err.message || err));
+      } finally {
+        btn.disabled = false;
+        btnText.textContent = "Enviar inscrição";
+      }
+    });
+  </script>
+</body>
+</html>

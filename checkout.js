@@ -87,6 +87,17 @@ let user = null;
 
 let deliveryMode = 'delivery';
 let selectedAddressId = null;
+
+// Preferência de endereço definida na tela inicial (barra compacta)
+function getStoredAddressId() {
+  try { return localStorage.getItem('pedrad_selected_address') || null; } catch (_) { return null; }
+}
+function ensureSelectedAddress() {
+  if (selectedAddressId && addresses.some(a => a.id === selectedAddressId)) return;
+  const stored = getStoredAddressId();
+  if (stored && addresses.some(a => a.id === stored)) { selectedAddressId = stored; return; }
+  if (addresses.length) selectedAddressId = addresses[0].id;
+}
 let selectedPayment = 'pix';
 
 let deliveryFees = [];
@@ -105,6 +116,23 @@ function getLocalCheckoutUser() {
     email: localStorage.getItem('auth_email') || '',
     phoneNumber: localStorage.getItem('userPhone') || ''
   };
+}
+
+async function enrichCheckoutUserWithFirestorePhone(baseUser) {
+  if (!baseUser?.uid) return baseUser;
+  try {
+    const doc = await db.collection('users').doc(baseUser.uid).get();
+    const data = doc.exists ? (doc.data() || {}) : {};
+    const phone = String(data.phone || '').trim();
+    if (phone) {
+      localStorage.setItem('userPhone', phone);
+      return { ...baseUser, phoneNumber: phone };
+    }
+    return { ...baseUser, phoneNumber: baseUser.phoneNumber || '' };
+  } catch (err) {
+    console.error('enrichCheckoutUserWithFirestorePhone error:', err);
+    return { ...baseUser, phoneNumber: baseUser.phoneNumber || localStorage.getItem('userPhone') || '' };
+  }
 }
 
 // ==================== CACHE HELPERS ====================
@@ -400,7 +428,7 @@ async function initPage() {
   const storeId = getParam('storeId') || localStorage.getItem(LS.storeId) || '';
   const localUser = getLocalCheckoutUser();
 
-  if (localUser) user = localUser;
+  if (localUser) user = await enrichCheckoutUserWithFirestorePhone(localUser);
 
   syncCart(localUser?.uid || null);
   renderCartOptimized(true);
@@ -411,13 +439,14 @@ async function initPage() {
   if (localUser) {
     await loadDeliveryFeesSmart();
     await loadAddressesSmart();
-    if (!selectedAddressId && addresses.length) selectedAddressId = addresses[0].id;
+    ensureSelectedAddress();
     renderAddresses();
     updateTotals();
   }
 
   auth.onAuthStateChanged(async (u) => {
-    user = u || getLocalCheckoutUser();
+    const rawUser = u || getLocalCheckoutUser();
+    user = rawUser ? await enrichCheckoutUserWithFirestorePhone(rawUser) : null;
 
     if (!user) {
       return;
@@ -428,7 +457,7 @@ async function initPage() {
     await loadDeliveryFeesSmart();
     await loadAddressesSmart();
 
-    if (!selectedAddressId && addresses.length) selectedAddressId = addresses[0].id;
+    ensureSelectedAddress();
 
     renderAddresses();
     updateTotals();
@@ -499,7 +528,7 @@ async function loadAddressesSmart(force = false) {
     const snap = await db.collection('users').doc(user.uid).collection('addresses').get();
     addresses = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    if (addresses.length && !selectedAddressId) selectedAddressId = addresses[0].id;
+    ensureSelectedAddress();
 
     writeCache(key, { ts: now(), data: addresses });
   } catch (err) {
@@ -635,6 +664,7 @@ function renderAddresses() {
 
 function selectAddress(id) {
   selectedAddressId = id;
+  try { localStorage.setItem('pedrad_selected_address', id); } catch (_) {}
   renderAddresses();
   updateTotals();
 }
@@ -928,7 +958,7 @@ async function finishOrder() {
       storeCategory: store?.category || cart?.[0]?.storeCategory || '',
       userId: user.uid,
       userName: user.displayName || user.email || '',
-      userPhone: localStorage.getItem('userPhone') || user.phoneNumber || '',
+      userPhone: user.phoneNumber || localStorage.getItem('userPhone') || '',
       items: cart,
       salesChannel,
       orderScope,
