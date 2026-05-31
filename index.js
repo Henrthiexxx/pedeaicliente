@@ -297,7 +297,8 @@ async function handleRegister(e) {
 }
 
 async function handleLogout() {
-    if (!confirm('Deseja sair?')) return;
+    const confirmed = await confirmLogoutPopup();
+    if (!confirmed) return;
     if (typeof AuthManager !== 'undefined') {
         await AuthManager.logout();
     } else {
@@ -305,6 +306,60 @@ async function handleLogout() {
         await auth.signOut();
     }
     cart = [];
+}
+
+function confirmLogoutPopup() {
+    return new Promise((resolve) => {
+        const existing = document.getElementById('logoutConfirmOverlay');
+        if (existing) existing.remove();
+
+        const overlay = document.createElement('div');
+        overlay.id = 'logoutConfirmOverlay';
+        overlay.style.cssText = [
+            'position:fixed',
+            'inset:0',
+            'z-index:99999',
+            'display:flex',
+            'align-items:center',
+            'justify-content:center',
+            'padding:20px',
+            'background:rgba(0,0,0,.65)'
+        ].join(';');
+
+        const box = document.createElement('div');
+        box.style.cssText = [
+            'width:min(420px,100%)',
+            'background:#111216',
+            'border:1px solid rgba(255,255,255,.08)',
+            'border-radius:14px',
+            'padding:16px',
+            'color:#ececf1',
+            'box-shadow:0 10px 40px rgba(0,0,0,.4)'
+        ].join(';');
+
+        box.innerHTML = `
+            <div style="font-size:1rem;font-weight:700;margin-bottom:6px">Sair da conta?</div>
+            <div style="font-size:.86rem;color:#b5b8c6;line-height:1.4;margin-bottom:14px">Você será desconectado e precisará fazer login novamente.</div>
+            <div style="display:flex;gap:8px;justify-content:flex-end">
+                <button type="button" id="logoutConfirmCancel" style="padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:#171921;color:#d9dbe6;font-weight:600;cursor:pointer">Cancelar</button>
+                <button type="button" id="logoutConfirmOk" style="padding:10px 14px;border-radius:10px;border:1px solid #ff4d4f;background:#ff4d4f;color:#fff;font-weight:700;cursor:pointer">Sair</button>
+            </div>
+        `;
+
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+
+        const finish = (value) => {
+            overlay.remove();
+            resolve(value);
+        };
+
+        overlay.addEventListener('click', (ev) => {
+            if (ev.target === overlay) finish(false);
+        });
+        box.querySelector('#logoutConfirmCancel')?.addEventListener('click', () => finish(false));
+        box.querySelector('#logoutConfirmOk')?.addEventListener('click', () => finish(true));
+    });
 }
 
 function getAuthError(code) {
