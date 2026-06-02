@@ -14,7 +14,6 @@
 @keyframes glowPulse { 0%,100% { opacity:.55 } 50% { opacity:.85 } }
 @keyframes drift { 0% { transform:translateY(0) translateX(0); opacity:0 } 10% { opacity:.5 } 90% { opacity:.5 } 100% { transform:translateY(-180px) translateX(14px); opacity:0 } }
 @keyframes floatUp { from { transform:translateY(10px); opacity:0 } to { transform:translateY(0); opacity:1 } }
-@keyframes splashPulse { 0%,100% { transform:scale(1) } 50% { transform:scale(1.03) } }
 
 :root {
   --g:        #22c55e;
@@ -30,11 +29,6 @@
   --hair:     rgba(255,255,255,.06);
 }
 * { box-sizing:border-box }
-
-/* ── Splash: fullscreen icon ── */
-#splash{position:fixed;inset:0;z-index:9999;background:#060606;display:flex;align-items:center;justify-content:center;overflow:hidden;transition:opacity .32s ease}
-#splash.out{opacity:0;pointer-events:none}
-.splash-icon{width:100%;height:100%;object-fit:cover;object-position:center;animation:splashPulse 1.4s ease-in-out infinite}
 
 /* ── Auth page ── */
 body{
@@ -144,13 +138,8 @@ body{
 </head>
 <body>
 
-<!-- Splash: fullscreen icon while checking auth -->
-<div id="splash">
-  <img src="icon-512.png" class="splash-icon" alt="Pedra Delivery">
-</div>
-
 <!-- Ambient background -->
-<div class="amb" id="amb" style="display:none">
+<div class="amb" id="amb">
   <div class="amb-glow"></div>
   <div class="amb-glow b"></div>
   <div class="amb-grain"></div>
@@ -402,20 +391,13 @@ function spawnParticles(){
 
 // ══════════ AUTH GATE ══════════
 auth.onAuthStateChanged(user=>{
-    const splash=document.getElementById('splash');
     if(user){
-        // Logged in → fade out icon, then go to home
-        splash.classList.add('out');
-        setTimeout(()=>location.replace('home.html'),320);
+        // Logged in → go to home
+        location.replace('home.html');
     }else{
-        // Not logged in → fade out icon, show auth
-        splash.classList.add('out');
-        setTimeout(()=>{
-            splash.style.display='none';
-            document.getElementById('amb').style.display='';
-            document.getElementById('authPage').style.display='flex';
-            spawnParticles();
-        },320);
+        // Not logged in → show auth
+        document.getElementById('authPage').style.display='flex';
+        spawnParticles();
     }
 });
 </script>
