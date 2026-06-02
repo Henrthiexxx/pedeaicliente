@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pedrad-v3';
+const CACHE_NAME = 'pedrad-v5';
 const APP_BASE   = new URL('./', self.location.href).href;
 
 const PRECACHE = [
@@ -45,7 +45,10 @@ self.addEventListener('fetch', e => {
       caches.match(e.request).then(cached => {
         if (cached) return cached;
         return fetch(e.request).then(res => {
-          if (res.ok) caches.open(CACHE_NAME).then(c => c.put(e.request, res.clone()));
+          if (res.ok) {
+            const responseToCache = res.clone();
+            caches.open(CACHE_NAME).then(c => c.put(e.request, responseToCache)).catch(() => {});
+          }
           return res;
         });
       })
@@ -74,7 +77,8 @@ self.addEventListener('fetch', e => {
     fetch(e.request)
       .then(res => {
         if (res.ok && res.type === 'basic') {
-          caches.open(CACHE_NAME).then(c => c.put(e.request, res.clone()));
+          const responseToCache = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(e.request, responseToCache)).catch(() => {});
         }
         return res;
       })

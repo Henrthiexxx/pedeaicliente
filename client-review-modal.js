@@ -27,12 +27,12 @@ const ClientReview = {
                         <div class="review-prompt-icon">⭐</div>
                         <div>
                             <div class="review-prompt-title">Avalie seu pedido!</div>
-                            <div class="review-prompt-subtitle">${pending.storeName}</div>
+                            <div class="review-prompt-subtitle">${this.escape(pending.storeName || 'Loja')}</div>
                         </div>
                         <button class="review-prompt-close" onclick="this.parentElement.parentElement.remove()">×</button>
                     </div>
-                    <div class="review-prompt-items">${this.getOrderItems(pending)}</div>
-                    <button class="btn btn-primary btn-block btn-sm" onclick="ClientReview.open('${pending.id}')" style="margin-top:12px;">
+                    <div class="review-prompt-items">${this.escape(this.getOrderItems(pending))}</div>
+                    <button class="btn btn-primary btn-block btn-sm" onclick="ClientReview.open('${this.escapeAttr(pending.id)}')" style="margin-top:12px;">
                         Avaliar Agora
                     </button>
                 </div>
