@@ -197,6 +197,8 @@
     }
   </style>
   <script>function esc(s){if(typeof s!="string")return"";var d=document.createElement("div");d.textContent=s;return d.innerHTML;}</script>
+<link rel="stylesheet" href="client.css">
+<script src="page-transition.js" defer></script>
 </head>
 <body class="page-enter">
 
@@ -529,7 +531,7 @@
           .where('storeId','==',storeId)
           .orderBy('createdAt','desc')
           .limit(20).get();
-        const reviews = snap.docs.map(d=>({id:d.id,...d.data()}));
+        const reviews = snap.docs.map(d=>({id:d.id,...d.data()})).filter(r=>r.status!=='hidden');
         window.__loadedReviews = reviews;
         const el = document.getElementById('reviewsList');
 

@@ -603,7 +603,7 @@ async function loadRanking(){
   const ranking=storeSnap.docs.map(doc=>{
     const store={id:doc.id,...doc.data()};
     const ratings=byStore[store.id]||[];
-    const count=ratings.length||(Number(store.reviewsCount)||0);
+    const count=ratings.length||(Number(store.reviewCount||store.reviewsCount)||0);
     const avg=ratings.length?ratings.reduce((a,b)=>a+b,0)/ratings.length:(Number(store.rating)||0);
     return{store,avg,count};
   }).filter(item=>isVisible(item.store)&&item.avg>0&&item.count>0)

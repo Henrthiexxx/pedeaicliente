@@ -26,7 +26,7 @@
   box-shadow:0 0 6px rgba(74,222,128,.6);opacity:0;animation:floatUp linear infinite}
 @keyframes floatUp{0%{transform:translateY(20px);opacity:0}10%{opacity:.7}90%{opacity:.4}100%{transform:translateY(-120vh);opacity:0}}
 
-.orders-page{padding:74px 16px 120px;max-width:540px;margin:0 auto}
+.orders-page{padding:74px 16px calc(76px + env(safe-area-inset-bottom));max-width:540px;margin:0 auto}
 
 /* ══════════ Hero / cabeçalho ══════════ */
 .orders-hero{display:flex;align-items:center;gap:14px;margin-bottom:22px}
@@ -114,6 +114,40 @@
 .btn-repeat:hover{background:rgba(34,197,94,.24);box-shadow:0 0 22px rgba(34,197,94,.28);transform:translateY(-1px)}
 .btn-repeat:disabled{opacity:.5;cursor:default;transform:none}
 .btn-repeat svg{width:14px;height:14px}
+/* Avaliar pedido (amarelo) */
+.oc-footer{gap:8px}
+.btn-review{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:12px;font-family:inherit;font-size:.78rem;font-weight:700;cursor:pointer;
+  background:linear-gradient(145deg,rgba(251,191,36,.18),rgba(251,191,36,.06));color:#fbbf24;border:1px solid rgba(251,191,36,.32);
+  box-shadow:0 0 16px rgba(251,191,36,.12);transition:all .2s}
+.btn-review:hover{background:rgba(251,191,36,.26);box-shadow:0 0 22px rgba(251,191,36,.3);transform:translateY(-1px)}
+.btn-review svg{width:14px;height:14px}
+
+/* ══════════ Modal de avaliação ══════════ */
+.modal-content{width:100%;max-width:520px;max-height:88vh;overflow-y:auto;
+  background:linear-gradient(160deg,rgba(20,22,25,.97),rgba(10,11,13,.98));
+  border:1px solid rgba(255,255,255,.08);border-radius:24px 24px 0 0;box-shadow:0 -12px 50px rgba(0,0,0,.7);
+  animation:sheetUp .3s ease;padding-bottom:env(safe-area-inset-bottom)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid rgba(255,255,255,.06);position:sticky;top:0;z-index:1;background:rgba(13,14,16,.92);backdrop-filter:blur(10px)}
+.modal-title{font-size:1.05rem;font-weight:700}
+.modal-close{width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:var(--text-1);font-size:1.3rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s}
+.modal-close:hover{border-color:rgba(251,191,36,.45);color:#fbbf24}
+.modal-body{padding:18px 20px 24px}
+.review-store-name{font-size:1.2rem;font-weight:700;color:#4ade80;margin-bottom:4px}
+.review-items{font-size:.78rem;color:var(--text-2);margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.06)}
+.review-section{margin-bottom:22px}
+.review-section h4{font-size:.92rem;font-weight:700;margin-bottom:4px}
+.review-section-desc{font-size:.76rem;color:var(--text-2);margin-bottom:12px}
+.emoji-rating{display:flex;gap:8px;justify-content:space-between;align-items:center}
+.emoji-option{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 6px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:12px;cursor:pointer;transition:all .18s}
+.emoji-option:hover{border-color:rgba(255,255,255,.18)}
+.emoji-option.selected{border-color:rgba(34,197,94,.5);background:rgba(34,197,94,.1);box-shadow:0 0 14px rgba(34,197,94,.14)}
+.emoji-option .emoji{font-size:1.5rem;transition:transform .2s}
+.emoji-option:hover .emoji,.emoji-option.selected .emoji{transform:scale(1.15)}
+.emoji-option .emoji-label{font-size:.58rem;color:var(--text-2);text-transform:uppercase;letter-spacing:.5px}
+.input,.review-comment{width:100%;padding:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;color:var(--text-0);font-family:inherit;font-size:.86rem;resize:none}
+.input:focus,.review-comment:focus{outline:none;border-color:rgba(34,197,94,.45)}
+.btn-primary{background:linear-gradient(145deg,#22c55e,#16a34a);color:#04130a;border-color:transparent;font-weight:700;box-shadow:0 6px 20px rgba(34,197,94,.3)}
+.btn-primary:hover{box-shadow:0 8px 26px rgba(34,197,94,.42)}
 
 /* Empty state */
 .oc-empty{text-align:center;padding:70px 24px}
@@ -162,8 +196,20 @@ const FC={apiKey:"AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",authDomain:"pedrad-81
 if(!firebase.apps.length)firebase.initializeApp(FC);
 const db=firebase.firestore(),auth=firebase.auth();
 
-let orders=[],unsub=null;
+let orders=[],unsub=null,currentUser=null;
 const storeLogos={};
+// alias usado pelo módulo de avaliação (client-review-modal.js)
+function showToast(m){toast(m)}
+
+// A animação de entrada (.page-enter/appIn) usa fill-mode:both e deixa um
+// transform:scale(1) residual no <body>. Isso cria um containing block que
+// quebra o position:fixed do menu inferior e do fundo (o menu passa a rolar
+// junto com a página). Removemos a classe assim que a animação termina.
+(function(){
+    const clear=()=>document.body.classList.remove('page-enter');
+    document.body.addEventListener('animationend',e=>{if(e.target===document.body)clear()},{once:true});
+    setTimeout(clear,400);
+})();
 const ACTIVE=['pending','confirmed','preparing','ready','delivering'];
 
 // label + grupo visual + ícone por status
@@ -184,6 +230,7 @@ const TL_LABELS={pending:'Pedido realizado',confirmed:'Confirmado',preparing:'Em
 const CHECK_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
 const X_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
 const REPEAT_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>';
+const STAR_SVG='<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
 
 function esc(s){const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML}
 function money(v){return(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
@@ -280,10 +327,16 @@ function renderCard(o,activeCount){
     else statusIcon=X_SVG;
     const statusCls=meta.group==='active'?'s-active':meta.group==='cancel'?'s-cancel':'s-done';
 
-    // repetir pedido em todos os pedidos finalizados
-    const footerHtml=!isActive?`<div class="oc-footer">
-        <button class="btn-repeat" id="rep-${o.id}" onclick="event.stopPropagation();repeatOrder('${o.id}')">${REPEAT_SVG}Repetir pedido</button>
-    </div>`:'';
+    // ações dos pedidos finalizados: avaliar (se entregue e não avaliado) + repetir
+    let footerHtml='';
+    if(!isActive){
+        const reviewBtn=(o.status==='delivered'&&!o.reviewed)
+            ?`<button class="btn-review" onclick="event.stopPropagation();ClientReview.open('${o.id}')">${STAR_SVG}Avaliar</button>`:'';
+        footerHtml=`<div class="oc-footer">
+            ${reviewBtn}
+            <button class="btn-repeat" id="rep-${o.id}" onclick="event.stopPropagation();repeatOrder('${o.id}')">${REPEAT_SVG}Repetir pedido</button>
+        </div>`;
+    }
 
     // pedidos em andamento já abrem detalhes quando há poucos
     const startOpen=isActive&&activeCount<=2?'open':'';
@@ -394,11 +447,13 @@ function listen(){
         .onSnapshot(snap=>{
             orders=snap.docs.map(d=>({id:d.id,...d.data()}));
             render();
+            if (window.ClientReview) ClientReview.checkPendingReviews();
             ensureLogos();
         },err=>{console.error(err);toast('Erro ao carregar')});
 }
 
 auth.onAuthStateChanged(user=>{
+    currentUser=user;
     if(user)listen();
     else{document.getElementById('ordersList').innerHTML='<div class="oc-empty"><div class="oc-empty-msg">Faça login para ver seus pedidos</div><button class="btn-repeat" onclick="location.href=\'index.html\'">Entrar</button></div>'}
 });
@@ -422,6 +477,20 @@ window.addEventListener('beforeunload',()=>{if(unsub)unsub()});
     }
 })();
 </script>
+
+<!-- Modal de avaliação (cliente) -->
+<div class="modal" id="reviewModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Avaliar Pedido</h3>
+            <button class="modal-close" onclick="ClientReview.close()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="reviewModalContent"></div>
+        </div>
+    </div>
+</div>
+<script src="client-review-modal.js" defer></script>
 
 <nav class="client-nav">
   <a class="cnav-item" href="home.html">
