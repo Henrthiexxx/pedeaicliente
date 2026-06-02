@@ -118,8 +118,16 @@ function getLocalCheckoutUser() {
   };
 }
 
+function getAuthenticatedCheckoutUser() {
+  const current = auth.currentUser;
+  if (!current?.uid) return null;
+  return current;
+}
+
 async function enrichCheckoutUserWithFirestorePhone(baseUser) {
   if (!baseUser?.uid) return baseUser;
+  const authUser = getAuthenticatedCheckoutUser();
+  if (!authUser || authUser.uid !== baseUser.uid) return baseUser;
   try {
     const doc = await db.collection('users').doc(baseUser.uid).get();
     const data = doc.exists ? (doc.data() || {}) : {};
@@ -427,16 +435,17 @@ window.addEventListener('DOMContentLoaded', () => initPage());
 async function initPage() {
   const storeId = getParam('storeId') || localStorage.getItem(LS.storeId) || '';
   const localUser = getLocalCheckoutUser();
+  const authUser = getAuthenticatedCheckoutUser();
 
-  if (localUser) user = await enrichCheckoutUserWithFirestorePhone(localUser);
+  user = authUser ? await enrichCheckoutUserWithFirestorePhone(authUser) : localUser;
 
-  syncCart(localUser?.uid || null);
+  syncCart(user?.uid || null);
   renderCartOptimized(true);
   updateTotals();
 
   if (storeId) await loadStoreSmart(storeId);
 
-  if (localUser) {
+  if (user) {
     await loadDeliveryFeesSmart();
     await loadAddressesSmart();
     ensureSelectedAddress();
@@ -445,8 +454,7 @@ async function initPage() {
   }
 
   auth.onAuthStateChanged(async (u) => {
-    const rawUser = u || getLocalCheckoutUser();
-    user = rawUser ? await enrichCheckoutUserWithFirestorePhone(rawUser) : null;
+    user = u ? await enrichCheckoutUserWithFirestorePhone(u) : getLocalCheckoutUser();
 
     if (!user) {
       return;
@@ -521,6 +529,15 @@ async function loadAddressesSmart(force = false) {
 
   if (!force && isFresh(cached, TTL_ADDR_MS) && Array.isArray(cached.data)) {
     addresses = cached.data;
+    return;
+  }
+
+  const authUser = getAuthenticatedCheckoutUser();
+  if (!authUser || authUser.uid !== user.uid) {
+    if (Array.isArray(cached?.data)) {
+      addresses = cached.data;
+      ensureSelectedAddress();
+    }
     return;
   }
 
@@ -877,9 +894,9 @@ function recordRecommendationTrail(order, storeData) {
 }
 
 async function finishOrder() {
-  user = user || auth.currentUser || getLocalCheckoutUser();
+  user = getAuthenticatedCheckoutUser() || user || getLocalCheckoutUser();
 
-  if (!user) {
+  if (!getAuthenticatedCheckoutUser()) {
     await UIModal.alert({ title: 'Login', text: 'Faça login para continuar.' });
     return;
   }
