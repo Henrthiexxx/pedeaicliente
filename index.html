@@ -2,64 +2,145 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,viewport-fit=cover">
 <title>Pedra Delivery</title>
-<meta name="theme-color" content="#09090b">
+<meta name="theme-color" content="#060606">
 <link rel="manifest" href="manifest.json">
 <script>(function(){var t=localStorage.getItem('pedrad-theme')||'dark';document.documentElement.setAttribute('data-theme',t)})()</script>
 <link rel="stylesheet" href="client.css">
 <script src="pwa-register.js" defer></script>
 <style>
-/* ── Splash: fullscreen icon 1 ── */
-#splash{
-  position:fixed;inset:0;z-index:9999;
-  background:#080808;
-  display:flex;align-items:center;justify-content:center;
-  overflow:hidden;
-  transition:opacity .32s ease;
+@keyframes appIn { from { opacity:0; transform:scale(1.025) } to { opacity:1; transform:scale(1) } }
+@keyframes glowPulse { 0%,100% { opacity:.55 } 50% { opacity:.85 } }
+@keyframes drift { 0% { transform:translateY(0) translateX(0); opacity:0 } 10% { opacity:.5 } 90% { opacity:.5 } 100% { transform:translateY(-180px) translateX(14px); opacity:0 } }
+@keyframes floatUp { from { transform:translateY(10px); opacity:0 } to { transform:translateY(0); opacity:1 } }
+@keyframes splashPulse { 0%,100% { transform:scale(1) } 50% { transform:scale(1.03) } }
+
+:root {
+  --g:        #22c55e;
+  --neon:     #2dff9e;
+  --neon-soft: rgba(45,255,158,.14);
+  --neon-line: rgba(45,255,158,.28);
+  --ink-0:    #f4f5f4;
+  --ink-1:    #c4c8c6;
+  --ink-2:    #7d847f;
+  --ink-3:    #4a504c;
+  --glass:    rgba(18,20,19,.66);
+  --glass-2:  rgba(22,25,23,.78);
+  --hair:     rgba(255,255,255,.06);
 }
+* { box-sizing:border-box }
+
+/* ── Splash: fullscreen icon ── */
+#splash{position:fixed;inset:0;z-index:9999;background:#060606;display:flex;align-items:center;justify-content:center;overflow:hidden;transition:opacity .32s ease}
 #splash.out{opacity:0;pointer-events:none}
-.splash-icon{
-  width:100%;height:100%;
-  object-fit:cover;
-  object-position:center;
-  animation:splashPulse 1.4s ease-in-out infinite;
-}
-@keyframes splashPulse{
-  0%,100%{transform:scale(1)}
-  50%{transform:scale(1.03)}
-}
+.splash-icon{width:100%;height:100%;object-fit:cover;object-position:center;animation:splashPulse 1.4s ease-in-out infinite}
 
 /* ── Auth page ── */
-.splash{min-height:100dvh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px}
-.splash-title{font-size:1.6rem;font-weight:700;letter-spacing:-.03em}
-.splash-sub{font-size:.82rem;color:var(--text-2)}
-.auth-box{display:none;width:100%;max-width:380px;padding:0 20px}
-.auth-card{background:var(--bg-1);border:1px solid var(--border);border-radius:var(--r);padding:28px;box-shadow:var(--sh-lg)}
-.form-group{margin-bottom:16px}
-.form-label{display:block;font-size:.72rem;color:var(--text-2);margin-bottom:5px;font-weight:500;text-transform:uppercase;letter-spacing:.5px}
-.form-input{width:100%;padding:11px 14px;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text-0);font-family:inherit;font-size:.88rem}
-.form-input:focus{outline:none;border-color:var(--border-h);box-shadow:0 0 0 3px rgba(96,165,250,.08)}
-.form-input::placeholder{color:var(--text-3)}
-.tabs{display:flex;gap:0;margin-bottom:20px;border:1px solid var(--border);border-radius:var(--rs);overflow:hidden}
-.tab{flex:1;padding:10px;text-align:center;font-size:.82rem;font-weight:500;cursor:pointer;background:var(--bg-2);color:var(--text-2);transition:all .15s;font-family:inherit;border:none}
-.tab.active{background:var(--accent);color:var(--accent-t)}
-.auth-hint{text-align:center;color:var(--text-3);font-size:.76rem;margin-top:16px}
-.terms-check{display:flex;align-items:flex-start;gap:8px;margin:10px 0 16px;color:var(--text-2);font-size:.8rem;line-height:1.3}
-.terms-check input{margin-top:2px}
-.terms-backdrop{
-  position:fixed;inset:0;z-index:10000;display:none;
-  background:rgba(0,0,0,.72);align-items:center;justify-content:center;padding:20px;
+body{
+  margin:0;min-height:100dvh;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  color:var(--ink-0);background:#060606;overflow-x:hidden;
 }
-.terms-modal{
-  width:min(560px,100%);max-height:88dvh;overflow:hidden;
-  background:var(--bg-1);border:1px solid var(--border);border-radius:16px;
-  box-shadow:var(--sh-lg);display:flex;flex-direction:column;
+.auth-wrap{
+  position:relative;z-index:1;min-height:100dvh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:calc(env(safe-area-inset-top,0px) + 30px) 18px calc(env(safe-area-inset-bottom,0px) + 30px);
+  animation:appIn .26s cubic-bezier(.16,1,.3,1) both;
 }
-.terms-head{padding:16px 18px;border-bottom:1px solid var(--border);font-weight:700}
-.terms-body{padding:14px 18px;overflow:auto;color:var(--text-1);line-height:1.45}
-.terms-actions{display:flex;gap:10px;justify-content:flex-end;padding:14px 18px;border-top:1px solid var(--border)}
+
+/* ── Ambient background layers ── */
+.amb{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.amb-glow{position:absolute;top:-22%;right:-18%;width:78vw;height:78vw;max-width:560px;max-height:560px;
+  background:radial-gradient(circle at 50% 50%, rgba(45,255,158,.22) 0%, rgba(34,197,94,.10) 38%, transparent 70%);
+  filter:blur(8px);animation:glowPulse 7s ease-in-out infinite}
+.amb-glow.b{top:auto;bottom:-26%;right:auto;left:-24%;width:70vw;height:70vw;max-width:480px;max-height:480px;
+  background:radial-gradient(circle at 50% 50%, rgba(34,197,94,.10) 0%, transparent 68%);animation-duration:9s}
+.amb-grain{position:absolute;inset:0;
+  background:radial-gradient(ellipse 120% 50% at 50% -10%, rgba(20,40,30,.5) 0%, transparent 60%),
+  linear-gradient(180deg, transparent 0%, rgba(0,0,0,.4) 100%)}
+.particles{position:absolute;inset:0}
+.particles span{position:absolute;bottom:-12px;border-radius:50%;background:var(--neon);box-shadow:0 0 6px rgba(45,255,158,.8);animation:drift linear infinite}
+
+/* ── Brand ── */
+.auth-brand{display:flex;align-items:center;gap:11px;margin-bottom:24px}
+.auth-brand-mark{width:46px;height:46px;border-radius:13px;overflow:hidden;flex-shrink:0;
+  box-shadow:0 6px 20px rgba(0,0,0,.5),0 0 0 1px var(--neon-line),0 0 26px rgba(45,255,158,.25)}
+.auth-brand-mark img{width:100%;height:100%;object-fit:cover;display:block}
+.auth-brand-text{font-size:1.5rem;font-weight:800;letter-spacing:-.03em;color:var(--ink-0)}
+.auth-brand-text span{color:var(--neon)}
+
+/* ── Card ── */
+.auth-card{
+  width:100%;max-width:404px;position:relative;overflow:hidden;border-radius:26px;padding:24px 22px;
+  background:radial-gradient(120% 90% at 100% 0%, rgba(45,255,158,.10) 0%, transparent 52%),var(--glass);
+  border:1px solid var(--neon-line);
+  -webkit-backdrop-filter:blur(26px) saturate(150%);backdrop-filter:blur(26px) saturate(150%);
+  box-shadow:0 22px 50px rgba(0,0,0,.55),0 1px 0 rgba(255,255,255,.06) inset;
+}
+.auth-card::after{content:"";position:absolute;top:0;right:0;width:150px;height:150px;
+  background:radial-gradient(circle at 100% 0%, rgba(45,255,158,.28) 0%, transparent 62%);pointer-events:none;opacity:.7}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:6px;margin-bottom:20px;background:rgba(255,255,255,.04);border:1px solid var(--hair);border-radius:14px;padding:4px;position:relative;z-index:1}
+.tab{flex:1;padding:10px;text-align:center;font-size:.84rem;font-weight:700;cursor:pointer;background:transparent;color:var(--ink-2);border:none;border-radius:10px;font-family:inherit;transition:.18s}
+.tab.active{background:linear-gradient(180deg,var(--neon),var(--g));color:#04130b;box-shadow:0 5px 14px rgba(34,197,94,.35)}
+
+/* ── Form ── */
+.form-group{margin-bottom:14px;position:relative;z-index:1}
+.form-row{display:flex;gap:10px}
+.form-row .form-group{flex:1}
+.form-label{display:block;font-size:.68rem;color:var(--ink-2);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.07em}
+.form-input{width:100%;padding:13px 14px;background:rgba(255,255,255,.04);border:1px solid var(--hair);border-radius:13px;color:var(--ink-0);font-family:inherit;font-size:.9rem;transition:.16s}
+.form-input:focus{outline:none;border-color:var(--neon-line);background:rgba(45,255,158,.05);box-shadow:0 0 0 3px rgba(45,255,158,.10)}
+.form-input::placeholder{color:var(--ink-3)}
+
+/* ── Força da senha ── */
+.pw-strength{margin:-4px 0 14px;position:relative;z-index:1}
+.pw-strength[hidden]{display:none}
+.pw-bars{display:flex;gap:5px}
+.pw-bars span{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.09);transition:background .25s}
+.pw-strength.s1 .pw-bars span:nth-child(-n+1){background:#f87171}
+.pw-strength.s2 .pw-bars span:nth-child(-n+2){background:#fbbf24}
+.pw-strength.s3 .pw-bars span:nth-child(-n+3){background:#a3e635}
+.pw-strength.s4 .pw-bars span{background:var(--neon)}
+.pw-label{font-size:.7rem;font-weight:700;margin-top:6px;color:var(--ink-2)}
+.pw-strength.s1 .pw-label{color:#f87171}
+.pw-strength.s2 .pw-label{color:#fbbf24}
+.pw-strength.s3 .pw-label{color:#a3e635}
+.pw-strength.s4 .pw-label{color:var(--neon)}
+
+/* ── Confirmação de senha ── */
+.pw-match{font-size:.7rem;font-weight:700;margin:-4px 0 14px;color:#f87171;position:relative;z-index:1}
+.pw-match[hidden]{display:none}
+.pw-match.ok{color:var(--neon)}
+
+/* ── Submit ── */
+.btn-submit{width:100%;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px;border-radius:15px;cursor:pointer;
+  font-family:inherit;font-size:.92rem;font-weight:800;letter-spacing:-.01em;color:#04130b;border:none;
+  background:linear-gradient(180deg,var(--neon) 0%,var(--g) 100%);
+  box-shadow:0 6px 18px rgba(34,197,94,.4),inset 0 1px 0 rgba(255,255,255,.35);
+  transition:transform .14s,box-shadow .14s,opacity .14s;margin-top:4px}
+.btn-submit:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(34,197,94,.5)}
+.btn-submit:active{transform:translateY(0)}
+.btn-submit:disabled{opacity:.55;cursor:not-allowed;transform:none}
+
+/* ── Termos + hint ── */
+.terms-check{display:flex;align-items:flex-start;gap:9px;margin:8px 0 18px;color:var(--ink-2);font-size:.8rem;line-height:1.35;position:relative;z-index:1}
+.terms-check input{margin-top:2px;accent-color:var(--g);width:16px;height:16px;flex-shrink:0}
+.terms-check a{color:var(--neon)}
+.auth-hint{text-align:center;color:var(--ink-3);font-size:.74rem;margin-top:16px;position:relative;z-index:1}
+
+/* ── Termos modal ── */
+.terms-backdrop{position:fixed;inset:0;z-index:10000;display:none;background:rgba(0,0,0,.72);align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.terms-modal{width:min(560px,100%);max-height:88dvh;overflow:hidden;background:var(--glass-2);border:1px solid var(--neon-line);border-radius:20px;
+  -webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);box-shadow:0 22px 50px rgba(0,0,0,.6);display:flex;flex-direction:column}
+.terms-head{padding:16px 18px;border-bottom:1px solid var(--hair);font-weight:800;letter-spacing:-.02em}
+.terms-body{padding:14px 18px;overflow:auto;color:var(--ink-1);line-height:1.45}
+.terms-body a{color:var(--neon)}
+.terms-actions{display:flex;gap:10px;justify-content:flex-end;padding:14px 18px;border-top:1px solid var(--hair)}
 </style>
+<script src="page-transition.js" defer></script>
 </head>
 <body>
 
@@ -68,41 +149,56 @@
   <img src="icon-512.png" class="splash-icon" alt="Pedra Delivery">
 </div>
 
+<!-- Ambient background -->
+<div class="amb" id="amb" style="display:none">
+  <div class="amb-glow"></div>
+  <div class="amb-glow b"></div>
+  <div class="amb-grain"></div>
+  <div class="particles" id="particles"></div>
+</div>
+
 <!-- Auth (shown only if not logged in) -->
-<div class="splash" id="authPage" style="display:none">
-    <div style="text-align:center;margin-bottom:32px">
-        <div class="splash-title">Pedra Delivery</div>
-        <div class="splash-sub">Entre ou crie sua conta</div>
+<div class="auth-wrap" id="authPage" style="display:none">
+    <div class="auth-brand">
+        <div class="auth-brand-mark"><img src="icon-192.png" alt="Pedra Delivery"></div>
+        <div class="auth-brand-text"><span>Pedra</span> Delivery</div>
     </div>
-    <div class="auth-box" style="display:block">
-        <div class="auth-card">
-            <div class="tabs">
-                <button class="tab active" id="tabLogin" onclick="showTab('login')">Entrar</button>
-                <button class="tab" id="tabRegister" onclick="showTab('register')">Criar conta</button>
-            </div>
-
-            <!-- Login form -->
-            <form id="loginForm" onsubmit="handleLogin(event)">
-                <div class="form-group"><label class="form-label">E-mail</label><input type="email" class="form-input" id="loginEmail" placeholder="seu@email.com" required></div>
-                <div class="form-group"><label class="form-label">Senha</label><input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required></div>
-                <button type="submit" class="btn btn-accent btn-block" id="loginBtn">Entrar</button>
-            </form>
-
-            <!-- Register form -->
-            <form id="registerForm" style="display:none" onsubmit="handleRegister(event)">
-                <div class="form-group"><label class="form-label">Nome</label><input type="text" class="form-input" id="regName" placeholder="Seu nome" required oninput="sanitizeNameInput(this)"></div>
-                <div class="form-group"><label class="form-label">E-mail</label><input type="email" class="form-input" id="regEmail" placeholder="seu@email.com" required></div>
-                <div class="form-group"><label class="form-label">Telefone</label><input type="tel" class="form-input" id="regPhone" placeholder="(01) 2 3456 7890" required oninput="formatRegisterPhone(this)" maxlength="17"></div>
-                <div class="form-group"><label class="form-label">Senha</label><input type="password" class="form-input" id="regPassword" placeholder="Mínimo 6 caracteres" required minlength="6"></div>
-                <label class="terms-check">
-                    <input type="checkbox" id="regTermsCheck" required>
-                    <span>Li e aceito os <a href="terms.html" target="_blank" rel="noopener">Termos de Uso</a>.</span>
-                </label>
-                <button type="submit" class="btn btn-accent btn-block" id="regBtn">Criar conta</button>
-            </form>
-
-            <div class="auth-hint">Ao continuar, você aceita os termos de uso</div>
+    <div class="auth-card">
+        <div class="tabs">
+            <button class="tab active" id="tabLogin" onclick="showTab('login')">Entrar</button>
+            <button class="tab" id="tabRegister" onclick="showTab('register')">Criar conta</button>
         </div>
+
+        <!-- Login form -->
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group"><label class="form-label">E-mail</label><input type="email" class="form-input" id="loginEmail" placeholder="seu@email.com" required></div>
+            <div class="form-group"><label class="form-label">Senha</label><input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required></div>
+            <button type="submit" class="btn-submit" id="loginBtn">Entrar</button>
+        </form>
+
+        <!-- Register form -->
+        <form id="registerForm" style="display:none" onsubmit="handleRegister(event)">
+            <div class="form-row">
+                <div class="form-group"><label class="form-label">Nome</label><input type="text" class="form-input" id="regName" placeholder="Seu nome" required oninput="sanitizeNameInput(this)"></div>
+                <div class="form-group"><label class="form-label">Sobrenome</label><input type="text" class="form-input" id="regSurname" placeholder="Seu sobrenome" required oninput="sanitizeNameInput(this)"></div>
+            </div>
+            <div class="form-group"><label class="form-label">E-mail</label><input type="email" class="form-input" id="regEmail" placeholder="seu@email.com" required></div>
+            <div class="form-group"><label class="form-label">Telefone</label><input type="tel" class="form-input" id="regPhone" placeholder="(01) 2 3456 7890" required oninput="formatRegisterPhone(this)" maxlength="17"></div>
+            <div class="form-group"><label class="form-label">Senha</label><input type="password" class="form-input" id="regPassword" placeholder="Mínimo 6 caracteres" required minlength="6" oninput="updatePwStrength();updatePwMatch()"></div>
+            <div class="pw-strength" id="pwStrength" hidden>
+                <div class="pw-bars"><span></span><span></span><span></span><span></span></div>
+                <div class="pw-label" id="pwLabel"></div>
+            </div>
+            <div class="form-group"><label class="form-label">Confirmar senha</label><input type="password" class="form-input" id="regPassword2" placeholder="Repita a senha" required minlength="6" oninput="updatePwMatch()"></div>
+            <div class="pw-match" id="pwMatch" hidden></div>
+            <label class="terms-check">
+                <input type="checkbox" id="regTermsCheck" required>
+                <span>Li e aceito os <a href="terms.html" target="_blank" rel="noopener">Termos de Uso</a>.</span>
+            </label>
+            <button type="submit" class="btn-submit" id="regBtn">Criar conta</button>
+        </form>
+
+        <div class="auth-hint">Ao continuar, você aceita os termos de uso</div>
     </div>
 </div>
 
@@ -115,7 +211,7 @@
             Leia os termos completos em <a href="terms.html" target="_blank" rel="noopener">terms.html</a>.
         </div>
         <div class="terms-actions">
-            <button type="button" class="btn btn-accent" id="acceptTermsBtn">Aceito</button>
+            <button type="button" class="btn-submit" style="width:auto;padding:12px 22px" id="acceptTermsBtn">Aceito</button>
         </div>
     </div>
 </div>
@@ -175,6 +271,40 @@ function isValidPhoneRequiredFormat(phone){
     return /^\(\d{2}\)\s\d\s\d{4}\s\d{4}$/.test(phone);
 }
 
+// ── Força da senha ──
+function passwordStrength(pw){
+    if(!pw) return 0;
+    let score = 0;
+    if(pw.length >= 6) score++;
+    if(pw.length >= 10) score++;
+    if(/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++;
+    if(/\d/.test(pw)) score++;
+    if(/[^A-Za-z0-9]/.test(pw)) score++;
+    return Math.min(score, 4); // 0..4
+}
+
+function updatePwStrength(){
+    const pw = document.getElementById('regPassword').value;
+    const box = document.getElementById('pwStrength');
+    const label = document.getElementById('pwLabel');
+    if(!pw){ box.hidden = true; box.className = 'pw-strength'; return; }
+    const score = passwordStrength(pw);
+    const labels = ['Muito fraca','Fraca','Média','Boa','Forte'];
+    box.hidden = false;
+    box.className = 'pw-strength s' + Math.max(1, score);
+    label.textContent = 'Força: ' + labels[score];
+}
+
+function updatePwMatch(){
+    const pw = document.getElementById('regPassword').value;
+    const pw2 = document.getElementById('regPassword2').value;
+    const box = document.getElementById('pwMatch');
+    if(!pw2){ box.hidden = true; return; }
+    box.hidden = false;
+    if(pw === pw2){ box.classList.add('ok'); box.textContent = '✓ As senhas coincidem'; }
+    else { box.classList.remove('ok'); box.textContent = 'As senhas não coincidem'; }
+}
+
 function waitForTermsAcceptance(){
     return new Promise((resolve)=>{
         const backdrop = document.getElementById('termsBackdrop');
@@ -217,24 +347,32 @@ async function handleLogin(e){
 async function handleRegister(e){
     e.preventDefault();
     const name=document.getElementById('regName').value.trim();
+    const surname=document.getElementById('regSurname').value.trim();
     const email=document.getElementById('regEmail').value.trim();
     const phone=formatPhoneToRequired(document.getElementById('regPhone').value.trim());
     const pw=document.getElementById('regPassword').value;
-    if(!name||!phone){toast('Preencha todos os campos');return}
+    const pw2=document.getElementById('regPassword2').value;
+    if(!name||!surname||!phone){toast('Preencha todos os campos');return}
     if(!isValidName(name)){toast('Nome não pode conter números');return}
+    if(!isValidName(surname)){toast('Sobrenome não pode conter números');return}
     if(!isKnownProviderEmail(email)){toast('Use um provedor conhecido (gmail, hotmail, outlook...)');return}
     if(!isValidPhoneRequiredFormat(phone)){toast('Telefone no formato: (01) 2 3456 7890');return}
+    if(pw.length<6){toast('A senha deve ter no mínimo 6 caracteres');return}
+    if(pw!==pw2){toast('As senhas não coincidem');return}
     const termsChecked = !!document.getElementById('regTermsCheck')?.checked;
     if(!termsChecked){toast('Você precisa aceitar os Termos de Uso');return}
     document.getElementById('regPhone').value = phone;
     const acceptedTerms = await waitForTermsAcceptance();
     if(!acceptedTerms) return;
+    const fullName = `${name} ${surname}`.trim();
     const btn=document.getElementById('regBtn');
     btn.disabled=true;btn.textContent='Criando...';
     try{
         const cred=await auth.createUserWithEmailAndPassword(email,pw);
+        try{ await cred.user.updateProfile({ displayName: fullName }); }catch(_){}
         await db.collection('users').doc(cred.user.uid).set({
-            name,email:email.toLowerCase(),phone,
+            name:fullName,firstName:name,lastName:surname,
+            email:email.toLowerCase(),phone,
             termsAccepted:true,
             termsAcceptedAt:firebase.firestore.FieldValue.serverTimestamp(),
             createdAt:firebase.firestore.FieldValue.serverTimestamp()
@@ -244,6 +382,21 @@ async function handleRegister(e){
         const msgs={'auth/email-already-in-use':'E-mail já cadastrado','auth/weak-password':'Senha muito fraca'};
         toast(msgs[err.code]||err.message);
         btn.disabled=false;btn.textContent='Criar conta';
+    }
+}
+
+// ══════════ Partículas ══════════
+function spawnParticles(){
+    const wrap=document.getElementById('particles');if(!wrap||wrap.childElementCount)return;
+    for(let i=0;i<16;i++){
+        const s=document.createElement('span');
+        const sz=2+Math.random()*2.5;
+        s.style.width=s.style.height=sz+'px';
+        s.style.left=Math.random()*100+'%';
+        const dur=9+Math.random()*10;
+        s.style.animationDuration=dur+'s';
+        s.style.animationDelay=(-Math.random()*dur)+'s';
+        wrap.appendChild(s);
     }
 }
 
@@ -259,7 +412,9 @@ auth.onAuthStateChanged(user=>{
         splash.classList.add('out');
         setTimeout(()=>{
             splash.style.display='none';
+            document.getElementById('amb').style.display='';
             document.getElementById('authPage').style.display='flex';
+            spawnParticles();
         },320);
     }
 });
