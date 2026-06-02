@@ -1,6 +1,10 @@
 (function () {
   const samePageTargets = new Set(['', '#']);
 
+  document.addEventListener('contextmenu', function (event) {
+    event.preventDefault();
+  }, true);
+
   window.navigateTo = function (href) {
     if (!href) return;
     document.body.classList.add('page-leave');

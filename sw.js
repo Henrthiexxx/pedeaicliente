@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pedrad-v5';
+const CACHE_NAME = 'pedrad-v6';
 const APP_BASE   = new URL('./', self.location.href).href;
 
 const PRECACHE = [
