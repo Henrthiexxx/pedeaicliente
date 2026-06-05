@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pedrad-v8';
+const CACHE_NAME = 'pedrad-v9';
 const APP_BASE   = new URL('./', self.location.href).href;
 
 const PRECACHE = [
@@ -57,16 +57,17 @@ self.addEventListener('fetch', e => {
   }
 
   if (isHtml) {
-    // Stale-while-revalidate: entrega do cache imediatamente, atualiza em background
+    // Network-first: online sempre entrega o HTML mais recente (evita páginas
+    // desatualizadas em cache, ex.: profile que não carregava o telefone).
+    // Offline cai para o cache.
     e.respondWith(
       caches.open(CACHE_NAME).then(cache =>
-        cache.match(e.request).then(cached => {
-          const fresh = fetch(e.request).then(res => {
+        fetch(e.request)
+          .then(res => {
             if (res.ok) cache.put(e.request, res.clone());
             return res;
-          }).catch(() => null);
-          return cached || fresh; // se tiver cache, serve já; fresh atualiza em bg
-        })
+          })
+          .catch(() => cache.match(e.request))
       )
     );
     return;
