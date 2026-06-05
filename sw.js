@@ -1,11 +1,11 @@
-const CACHE_NAME = 'pedrad-v6';
+const CACHE_NAME = 'pedrad-v8';
 const APP_BASE   = new URL('./', self.location.href).href;
 
 const PRECACHE = [
   '.', 'index.html', 'home.html', 'store.html', 'checkout.html',
   'orders.html', 'profile.html', 'notifications.html', 'address.html',
   'client.css', 'index.css', 'page-transition.js', 'pwa-register.js',
-  'swipe-back.js', 'safe-area.js',
+  'swipe-back.js', 'safe-area.js', 'security-monitor.js',
   'manifest.json', 'icon-192.png'
 ].map(p => new URL(p, APP_BASE).href);
 

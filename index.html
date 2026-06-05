@@ -208,10 +208,12 @@ body{
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-functions-compat.js"></script>
 <script>
 const FC={apiKey:"AIzaSyAnIJRcUxN-0swpVnonPbJjTSK87o4CQ_g",authDomain:"pedrad-814d0.firebaseapp.com",projectId:"pedrad-814d0",storageBucket:"pedrad-814d0.appspot.com",messagingSenderId:"293587190550",appId:"1:293587190550:web:80c9399f82847c80e20637"};
 if(!firebase.apps.length)firebase.initializeApp(FC);
-const db=firebase.firestore(),auth=firebase.auth();
+const db=firebase.firestore(),auth=firebase.auth(),functionsClient=firebase.functions();
+let isRegistering=false;
 
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2500)}
 
@@ -258,6 +260,21 @@ function formatRegisterPhone(input){
 
 function isValidPhoneRequiredFormat(phone){
     return /^\(\d{2}\)\s\d\s\d{4}\s\d{4}$/.test(phone);
+}
+
+function normalizePhoneDigits(value){
+    return String(value || '').replace(/\D/g, '').slice(0, 11);
+}
+
+async function checkUserContactAvailability(email, phoneFormatted, excludeUid){
+    const callable = functionsClient.httpsCallable('checkUserContactAvailability');
+    const result = await callable({
+        email,
+        phone: normalizePhoneDigits(phoneFormatted),
+        phoneFormatted,
+        excludeUid: excludeUid || ''
+    });
+    return result.data || {};
 }
 
 // ── Força da senha ──
@@ -337,8 +354,9 @@ async function handleRegister(e){
     e.preventDefault();
     const name=document.getElementById('regName').value.trim();
     const surname=document.getElementById('regSurname').value.trim();
-    const email=document.getElementById('regEmail').value.trim();
+    const email=document.getElementById('regEmail').value.trim().toLowerCase();
     const phone=formatPhoneToRequired(document.getElementById('regPhone').value.trim());
+    const phoneDigits=normalizePhoneDigits(phone);
     const pw=document.getElementById('regPassword').value;
     const pw2=document.getElementById('regPassword2').value;
     if(!name||!surname||!phone){toast('Preencha todos os campos');return}
@@ -357,17 +375,28 @@ async function handleRegister(e){
     const btn=document.getElementById('regBtn');
     btn.disabled=true;btn.textContent='Criando...';
     try{
+        const availability = await checkUserContactAvailability(email, phone);
+        if(availability.emailExists){toast('E-mail já cadastrado');btn.disabled=false;btn.textContent='Criar conta';return}
+        if(availability.phoneExists){toast('Telefone já cadastrado');btn.disabled=false;btn.textContent='Criar conta';return}
+
+        isRegistering=true;
         const cred=await auth.createUserWithEmailAndPassword(email,pw);
         try{ await cred.user.updateProfile({ displayName: fullName }); }catch(_){}
         await db.collection('users').doc(cred.user.uid).set({
             name:fullName,firstName:name,lastName:surname,
-            email:email.toLowerCase(),phone,
+            email,emailLower:email,phone:phoneDigits,phoneDigits,phoneFormatted:phone,
             termsAccepted:true,
             termsAcceptedAt:firebase.firestore.FieldValue.serverTimestamp(),
             createdAt:firebase.firestore.FieldValue.serverTimestamp()
         });
-        // onAuthStateChanged will redirect
+        localStorage.setItem('auth_uid',cred.user.uid);
+        localStorage.setItem('auth_name',fullName);
+        localStorage.setItem('auth_email',email);
+        localStorage.setItem('auth_last_check',Date.now().toString());
+        localStorage.setItem('userPhone',phoneDigits);
+        location.replace('home.html');
     }catch(err){
+        isRegistering=false;
         const msgs={'auth/email-already-in-use':'E-mail já cadastrado','auth/weak-password':'Senha muito fraca'};
         toast(msgs[err.code]||err.message);
         btn.disabled=false;btn.textContent='Criar conta';
@@ -392,6 +421,11 @@ function spawnParticles(){
 // ══════════ AUTH GATE ══════════
 auth.onAuthStateChanged(user=>{
     if(user){
+        if(isRegistering)return;
+        localStorage.setItem('auth_uid',user.uid);
+        localStorage.setItem('auth_name',user.displayName||'');
+        localStorage.setItem('auth_email',user.email||'');
+        localStorage.setItem('auth_last_check',Date.now().toString());
         // Logged in → go to home
         location.replace('home.html');
     }else{
@@ -402,5 +436,6 @@ auth.onAuthStateChanged(user=>{
 });
 </script>
 <script src="safe-area.js" defer></script>
+<script src="security-monitor.js" defer></script>
 </body>
 </html>

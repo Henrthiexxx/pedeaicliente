@@ -12,13 +12,15 @@
   <style>
     :root,[data-theme="dark"]{
       --bg:#080808;--bg-card:#0e0e11;--bg-input:#121216;--bg-elevated:#191920;
-      --text:#d8d8e0;--text-secondary:#8888a0;--text-muted:#505060;
+      --text:#f0f0f2;--text-secondary:#8888a0;--text-muted:#505060;
       --border:#161619;--border-hover:#252530;
-      --glass-bg:rgba(8,8,8,.92);--glass-border:rgba(255,255,255,.04);
+      --glass-bg:rgba(8,8,8,.82);--glass-border:rgba(255,255,255,.04);
       --shadow-sm:0 2px 8px rgba(0,0,0,.5);--shadow-md:0 6px 18px rgba(0,0,0,.6);
-      --success:#22c55e;
+      --g:#22c55e;--g-dim:rgba(34,197,94,.10);--g-glow:rgba(34,197,94,.18);
+      --primary:#22c55e;--danger:#f87171;--success:#22c55e;
     }
-    body{background:radial-gradient(ellipse 110% 32% at 50% 0%,#0d2018 0%,transparent 68%),#080808!important}
+    *{box-sizing:border-box}
+    body{background:radial-gradient(ellipse 110% 32% at 50% 0%,#0d2018 0%,transparent 68%),#080808!important;color:var(--text)}
     @keyframes appIn{from{opacity:0;transform:scale(1.025)}to{opacity:1;transform:scale(1)}}
     .page-enter{animation:appIn .21s cubic-bezier(.16,1,.3,1) both; margin:0; min-height:100vh; }
 
@@ -26,104 +28,118 @@
     .addresses-container{
       min-height:100vh;
       padding:20px;
-      padding-top:88px;
-      padding-bottom:48px;
-      max-width: 920px;
+      padding-top:82px;
+      padding-bottom:calc(64px + env(safe-area-inset-bottom, 0px) + 28px);
+      max-width: 560px;
       margin: 0 auto;
     }
 
-    /* Header */
+    /* Header (glass) */
     .addresses-back-header{
       position:fixed; top:0; left:0; right:0;
-      height:64px;
-      background: var(--bg);
+      height:60px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(18px) saturate(160%);
+      -webkit-backdrop-filter: blur(18px) saturate(160%);
       display:flex; align-items:center; gap:12px;
-      padding: 0 20px;
+      padding: 0 16px;
       z-index:100;
-      border-bottom: 1px solid var(--border);
-      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--glass-border);
     }
     .addresses-back-btn{
-      width:44px; height:44px;
-      border-radius:12px;
+      width:38px; height:38px;
+      border-radius:11px;
       background: var(--bg-input);
       border: 1px solid var(--border);
       color: var(--text);
-      font-size: 1.05rem;
       cursor:pointer;
-      transition: all .15s ease;
+      transition: border-color .15s, background .15s, transform .12s;
       display:flex; align-items:center; justify-content:center;
     }
-    .addresses-back-btn:hover{ border-color: var(--primary); transform: translateY(-1px); }
-    .addresses-back-btn:active{ transform: translateY(0px); }
+    .addresses-back-btn:hover{ border-color: rgba(34,197,94,.4); background:#16161c; }
+    .addresses-back-btn:active{ transform: translateY(1px); }
     .addresses-back-title{
-      font-size: .95rem;
-      font-weight: 500;
-      letter-spacing: 2px;
-      text-transform: uppercase;
+      font-size: .98rem;
+      font-weight: 700;
+      letter-spacing: -.02em;
       color: var(--text);
-      opacity: .92;
+    }
+
+    /* Section label */
+    .addr-section-label{
+      font-size:.66rem; font-weight:700; letter-spacing:.08em;
+      text-transform:uppercase; color:var(--text-muted); margin:2px 2px 12px;
     }
 
     /* Cards */
     .address-card{
       display:flex;
-      gap: 14px;
+      gap: 13px;
       align-items: flex-start;
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 14px 14px;
-      margin-bottom: 12px;
-      box-shadow: 0 8px 20px rgba(0,0,0,.15);
+      padding: 14px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: border-color .16s, background .16s, box-shadow .16s;
     }
-    .address-badge{
-      width: 12px;
-      min-width: 12px;
-      height: 12px;
-      border-radius: 999px;
-      background: var(--primary);
-      margin-top: 6px;
-      box-shadow: 0 0 0 4px rgba(255,255,255,.03);
+    .address-card:hover{ border-color: var(--border-hover); }
+    .address-card:active{ transform: translateY(1px); }
+    .address-card.selected{
+      border-color: rgba(34,197,94,.4);
+      background: linear-gradient(180deg, rgba(34,197,94,.05) 0%, var(--bg-card) 62%);
+      box-shadow: 0 0 0 1px rgba(34,197,94,.06), 0 10px 26px rgba(0,0,0,.4);
     }
+    .addr-pin{
+      width: 38px; min-width: 38px; height: 38px;
+      border-radius: 11px;
+      display:flex; align-items:center; justify-content:center;
+      background: var(--g-dim); color: var(--g);
+      box-shadow: inset 0 0 10px rgba(34,197,94,.16);
+    }
+    .addr-pin svg{ width:18px; height:18px; }
     .address-info{ flex: 1; min-width: 0; }
-
+    .addr-label-row{ display:flex; align-items:center; gap:8px; margin-bottom:5px; }
     .address-label{
       font-weight: 700;
-      letter-spacing: .3px;
-      margin-bottom: 6px;
+      letter-spacing: -.01em;
       color: var(--text);
-      font-size: 1rem;
+      font-size: .96rem;
+    }
+    .addr-current{
+      font-size:.56rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+      color:var(--g); background:var(--g-dim); border:1px solid rgba(34,197,94,.24);
+      border-radius:999px; padding:2px 7px;
     }
     .address-text{
       color: var(--text-muted);
-      font-size: .9rem;
-      line-height: 1.25rem;
-      margin-bottom: 4px;
+      font-size: .84rem;
+      line-height: 1.3;
+      margin-bottom: 2px;
       word-break: break-word;
     }
 
     .address-meta-row{
       display:flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 7px;
       margin-top: 10px;
     }
     .chip{
       border: 1px solid var(--border);
       background: var(--bg-input);
-      color: var(--text);
+      color: var(--text-secondary);
       border-radius: 999px;
-      padding: 6px 10px;
-      font-size: .82rem;
+      padding: 5px 10px;
+      font-size: .72rem;
       line-height: 1;
-      opacity: .95;
+      font-weight: 600;
     }
+    .chip.fee{ color: var(--g); border-color: rgba(34,197,94,.24); background: var(--g-dim); }
     .chip.muted{ color: var(--text-muted); }
-    .chip.primary{
-      border-color: rgba(255,255,255,.08);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
-    }
 
     .actions-col{
       display:flex;
@@ -132,63 +148,70 @@
       align-items: flex-end;
     }
     .icon-btn{
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
       border: 1px solid var(--border);
       background: var(--bg-input);
-      color: var(--text);
+      color: var(--text-muted);
       cursor: pointer;
-      transition: all .15s ease;
+      transition: border-color .15s, color .15s, background .15s, transform .12s;
       display:flex;
       align-items:center;
       justify-content:center;
-      position: relative;
     }
-    .icon-btn:hover{ border-color: var(--primary); transform: translateY(-1px); }
-    .icon-btn:active{ transform: translateY(0); }
-
-    /* “sem ícones”: usa texto minimalista */
-    .icon-btn::before{
-      content: "Del";
-      font-size: .78rem;
-      letter-spacing: .6px;
-      text-transform: uppercase;
-      opacity: .9;
-    }
+    .icon-btn:hover{ border-color: rgba(248,113,113,.4); color: var(--danger); background: rgba(248,113,113,.06); }
+    .icon-btn:active{ transform: translateY(1px); }
+    .icon-btn svg{ width:17px; height:17px; }
 
     /* Footer CTA */
     .cta-row{
-      margin-top: 16px;
+      margin-top: 8px;
       display:flex;
       gap: 10px;
       align-items:center;
     }
-    .btn-full{ width: 100%; border-radius: 14px; padding: 14px 14px; }
+    .addr-add-btn{
+      width:100%;
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      padding:14px; border-radius:14px; border:none; cursor:pointer; font-family:inherit;
+      font-size:.9rem; font-weight:800; letter-spacing:-.01em;
+      background:linear-gradient(180deg,#2edb6b 0%,#1db857 100%); color:#041a0c;
+      box-shadow:0 6px 0 #0e8038, 0 10px 28px rgba(34,197,94,.4), inset 0 1px 0 rgba(255,255,255,.25);
+      transform:translateY(-2px); transition:transform .14s, box-shadow .14s;
+    }
+    .addr-add-btn:hover{ transform:translateY(-4px); box-shadow:0 8px 0 #0e8038, 0 16px 36px rgba(34,197,94,.5), inset 0 1px 0 rgba(255,255,255,.28); }
+    .addr-add-btn:active{ transform:translateY(2px); box-shadow:0 2px 0 #0e8038, 0 4px 12px rgba(34,197,94,.28), inset 0 1px 0 rgba(255,255,255,.15); }
+    .addr-add-btn svg{ width:17px; height:17px; }
 
     /* Empty */
     .empty-state{
       background: var(--bg-card);
       border: 1px dashed var(--border);
       border-radius: 18px;
-      padding: 26px;
+      padding: 34px 26px;
       text-align: center;
       color: var(--text-muted);
-      box-shadow: 0 8px 20px rgba(0,0,0,.10);
     }
+    .empty-icon{
+      width:52px; height:52px; margin:0 auto 14px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      background:var(--g-dim); color:var(--g);
+    }
+    .empty-icon svg{ width:24px; height:24px; }
     .empty-state-title{
       color: var(--text);
       font-weight: 700;
       margin-bottom: 6px;
-      letter-spacing: .2px;
+      letter-spacing: -.01em;
     }
-    .empty-state-text{ font-size: .92rem; line-height: 1.35rem; }
+    .empty-state-text{ font-size: .86rem; line-height: 1.45; }
 
     /* Modal refinements */
     .modal-content{
-      border-radius: 18px;
+      border-radius: 20px;
       overflow: hidden;
-      box-shadow: 0 14px 40px rgba(0,0,0,.35);
+      box-shadow: 0 24px 60px rgba(0,0,0,.7);
       border: 1px solid var(--border);
       background: var(--bg-card);
     }
@@ -198,24 +221,35 @@
     }
     .modal-title{
       font-weight: 700;
-      letter-spacing: .6px;
-      text-transform: uppercase;
-      font-size: .9rem;
+      letter-spacing: -.01em;
+      font-size: 1rem;
     }
     .modal-close{
-      width: 42px; height: 42px;
-      border-radius: 12px;
+      width: 38px; height: 38px;
+      border-radius: 11px;
       border: 1px solid var(--border);
       background: var(--bg-input);
       color: var(--text);
       cursor: pointer;
+      transition: border-color .15s;
     }
-    .modal-close:hover{ border-color: var(--primary); }
+    .modal-close:hover{ border-color: var(--border-hover); }
 
-    /* Location box (sem emojis) */
+    .input-group label{ font-size:.72rem; font-weight:600; color:var(--text-secondary); letter-spacing:.02em; }
+    .input:focus, select.input:focus{
+      border-color: rgba(34,197,94,.45) !important;
+      box-shadow: 0 0 0 3px rgba(34,197,94,.08) !important;
+      outline: none;
+    }
+    .modal-body .btn-primary{
+      background:linear-gradient(180deg,#2edb6b 0%,#1db857 100%);
+      color:#041a0c; font-weight:800; border:none;
+    }
+
+    /* Location box */
     .location-box{
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: 14px;
       padding: 14px;
       background: rgba(255,255,255,.02);
       margin: 14px 0 16px;
@@ -225,18 +259,18 @@
       gap: 10px;
       align-items:center;
       color: var(--text-muted);
-      font-size: .9rem;
-      line-height: 1.2rem;
+      font-size: .84rem;
+      line-height: 1.2;
     }
     .status-dot{
-      width: 10px;
-      height: 10px;
+      width: 9px;
+      height: 9px;
       border-radius: 999px;
       background: var(--border);
       box-shadow: 0 0 0 4px rgba(255,255,255,.02);
     }
     .location-status.success{ color: var(--text); }
-    .location-status.success .status-dot{ background: #2ecc71; }
+    .location-status.success .status-dot{ background: var(--g); box-shadow: 0 0 8px rgba(34,197,94,.6); }
     .location-status.error{ color: var(--danger); }
     .location-status.error .status-dot{ background: var(--danger); }
 
@@ -246,7 +280,6 @@
       margin-bottom: 12px;
       color: var(--text-muted);
       font-size: .85rem;
-      letter-spacing: .2px;
     }
 
     /* Small screens */
@@ -254,9 +287,11 @@
       .addresses-container{ padding-left: 14px; padding-right: 14px; }
       .address-card{ padding: 12px; }
       .actions-col{ gap: 6px; }
-      .icon-btn{ width: 42px; height: 42px; }
     }
   </style>
+<link rel="stylesheet" href="client.css">
+<script src="pwa-register.js" defer></script>
+<script src="page-transition.js" defer></script>
 </head>
 
 <body class="page-enter">
@@ -269,7 +304,8 @@
     <div id="addressesList"></div>
 
     <div class="cta-row">
-      <button class="btn btn-primary btn-full" onclick="showAddAddressModal()">
+      <button class="addr-add-btn" onclick="showAddAddressModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Adicionar endereço
       </button>
     </div>
@@ -341,6 +377,22 @@
   <!-- Toast -->
   <div class="toast" id="toast"></div>
 
+  <!-- ══════════ BOTTOM NAV ══════════ -->
+  <nav class="client-nav">
+    <a class="cnav-item" href="home.html">
+      <span class="cnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+      Início
+    </a>
+    <a class="cnav-item" href="orders.html">
+      <span class="cnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg></span>
+      Pedidos
+    </a>
+    <a class="cnav-item active" href="profile.html">
+      <span class="cnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+      Perfil
+    </a>
+  </nav>
+
   <!-- Scripts -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -366,6 +418,33 @@
     let addresses = [];
     let deliveryFees = [];
     let capturedLocation = null;
+    let selectedAddressId = null;
+
+    // Chaves compartilhadas com checkout.js e a barra de endereço da home
+    const SEL_ADDR_KEY = "pedrad_selected_address";
+    const ADDR_CACHE_PREFIX = "cache_addresses_v1_";
+
+    function getStoredAddressId() {
+      try { return localStorage.getItem(SEL_ADDR_KEY) || null; } catch (_) { return null; }
+    }
+    // Mantém o cache lido pelo checkout/home em dia após adicionar/excluir
+    function syncAddressCache() {
+      if (!currentUser) return;
+      try {
+        localStorage.setItem(ADDR_CACHE_PREFIX + currentUser.uid, JSON.stringify({ ts: Date.now(), data: addresses }));
+      } catch (_) {}
+    }
+    // Garante que o endereço selecionado aponte para um endereço existente
+    function ensureSelectedAddress() {
+      if (selectedAddressId && addresses.some((a) => a.id === selectedAddressId)) return;
+      const stored = getStoredAddressId();
+      if (stored && addresses.some((a) => a.id === stored)) { selectedAddressId = stored; return; }
+      selectedAddressId = addresses.length ? addresses[0].id : null;
+      try {
+        if (selectedAddressId) localStorage.setItem(SEL_ADDR_KEY, selectedAddressId);
+        else localStorage.removeItem(SEL_ADDR_KEY);
+      } catch (_) {}
+    }
 
     // Auth Guard
     auth.onAuthStateChanged(async (user) => {
@@ -398,6 +477,8 @@
       try {
         const snapshot = await db.collection("users").doc(currentUser.uid).collection("addresses").get();
         addresses = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        ensureSelectedAddress();
+        syncAddressCache();
       } catch (err) {
         console.error("Error loading addresses:", err);
       }
@@ -411,6 +492,9 @@
       if (addresses.length === 0) {
         container.innerHTML = `
           <div class="empty-state">
+            <div class="empty-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
             <div class="empty-state-title">Nenhum endereço cadastrado</div>
             <div class="empty-state-text">Adicione um endereço para habilitar entregas e calcular a taxa automaticamente.</div>
           </div>
@@ -418,36 +502,55 @@
         return;
       }
 
-      container.innerHTML = addresses
-        .map((addr) => {
-          const fee = getDeliveryFee(addr.neighborhood);
-          const hasGPS = !!addr.location;
+      const pinSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+      const trashSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>';
 
-          return `
-            <div class="address-card">
-              <div class="address-badge" aria-hidden="true"></div>
+      container.innerHTML =
+        '<div class="addr-section-label">Toque para entregar aqui</div>' +
+        addresses
+          .map((addr) => {
+            const fee = getDeliveryFee(addr.neighborhood);
+            const hasGPS = !!addr.location;
+            const isSel = addr.id === selectedAddressId;
+
+            return `
+            <div class="address-card ${isSel ? "selected" : ""}" onclick="selectAddress('${escapeAttr(addr.id)}')">
+              <div class="addr-pin" aria-hidden="true">${pinSvg}</div>
 
               <div class="address-info">
-                <div class="address-label">${escapeHtml(addr.label || "")}</div>
+                <div class="addr-label-row">
+                  <span class="address-label">${escapeHtml(addr.label || "Endereço")}</span>
+                  ${isSel ? '<span class="addr-current">Em uso</span>' : ""}
+                </div>
 
-                <div class="address-text">${escapeHtml(addr.street || "")}, ${escapeHtml(addr.number || "")}</div>
+                <div class="address-text">${escapeHtml(addr.street || "")}${addr.number ? ", " + escapeHtml(addr.number) : ""}</div>
                 ${addr.complement ? `<div class="address-text">${escapeHtml(addr.complement)}</div>` : ""}
                 <div class="address-text">${escapeHtml(addr.neighborhood || "")}</div>
                 ${addr.reference ? `<div class="address-text">Ref: ${escapeHtml(addr.reference)}</div>` : ""}
 
                 <div class="address-meta-row">
-                  <span class="chip primary">Taxa: ${formatCurrency(fee)}</span>
+                  <span class="chip fee">Taxa: ${formatCurrency(fee)}</span>
                   <span class="chip muted">${hasGPS ? "Localização salva" : "Sem localização"}</span>
                 </div>
               </div>
 
               <div class="actions-col">
-                <button class="icon-btn" onclick="deleteAddress('${addr.id}')" aria-label="Excluir endereço"></button>
+                <button class="icon-btn" onclick="event.stopPropagation(); deleteAddress('${escapeAttr(addr.id)}')" aria-label="Excluir endereço">${trashSvg}</button>
               </div>
             </div>
           `;
-        })
-        .join("");
+          })
+          .join("");
+    }
+
+    // Selecionar endereço de entrega (sincroniza com checkout/home)
+    function selectAddress(id) {
+      if (!id) return;
+      selectedAddressId = id;
+      try { localStorage.setItem(SEL_ADDR_KEY, id); } catch (_) {}
+      renderAddresses();
+      const a = addresses.find((x) => x.id === id);
+      showToast("Entregar em " + (a?.label || "endereço"));
     }
 
     // Get Delivery Fee
@@ -652,6 +755,14 @@
         address.id = docRef.id;
         addresses.push(address);
 
+        // Se ainda não havia um endereço de entrega válido, usa o recém-criado
+        const hadValidSelection = selectedAddressId && addresses.some((a) => a.id === selectedAddressId);
+        if (!hadValidSelection) {
+          selectedAddressId = address.id;
+          try { localStorage.setItem(SEL_ADDR_KEY, address.id); } catch (_) {}
+        }
+        syncAddressCache();
+
         closeModal();
         renderAddresses();
         showToast("Endereço salvo com sucesso");
@@ -670,6 +781,12 @@
         await db.collection("users").doc(currentUser.uid).collection("addresses").doc(addressId).delete();
 
         addresses = addresses.filter((a) => a.id !== addressId);
+        // Se o endereço removido era o de entrega, reaponta para outro (ou limpa)
+        if (selectedAddressId === addressId) {
+          selectedAddressId = null;
+          ensureSelectedAddress();
+        }
+        syncAddressCache();
         renderAddresses();
         showToast("Endereço excluído");
       } catch (err) {
@@ -716,5 +833,6 @@
   </script>
 <script src="safe-area.js" defer></script>
 <script src="swipe-back.js" defer></script>
+<script src="security-monitor.js" defer></script>
 </body>
 </html>

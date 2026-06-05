@@ -216,6 +216,10 @@
         .change-input.show { display: block; }
     </style>
     <script>function esc(s){if(typeof s!="string")return"";var d=document.createElement("div");d.textContent=s;return d.innerHTML;}</script>
+<link rel="stylesheet" href="client.css">
+<script src="pwa-register.js" defer></script>
+<script src="page-transition.js" defer></script>
+<script src="safe-area.js" defer></script>
 </head>
 <body>
     <div class="header">
@@ -568,7 +572,7 @@
                     storeId: store.id,
                     userId: user.uid,
                     userName: user.displayName || user.email,
-                    userPhone: user.phoneNumber || '',
+                    userPhone: localStorage.getItem('userPhone') || user.phoneNumber || '',
                     items: cart,
                     ...dispatchFields,
                     address: deliveryMode === 'delivery' ? selectedAddress : null,
@@ -613,5 +617,6 @@
             return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
         }
     </script>
+<script src="security-monitor.js" defer></script>
 </body>
 </html>
