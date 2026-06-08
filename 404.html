@@ -4,7 +4,7 @@
     <script>(function(){var t=localStorage.getItem("theme")||"dark";document.documentElement.setAttribute("data-theme",t);})()</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Página não encontrada - Pedrad</title>
+    <title>Página não encontrada - Pedra Delivery</title>
     <meta name="theme-color" content="#000000">
     <style>
         :root,[data-theme="dark"]{--bg:#09090b;--bg-card:#0f0f12;--bg-input:#18181b;--text:#fafafa;--text-muted:#71717a;--border:#27272a;--primary:#fff;--accent:#a78bfa;--danger:#f87171;--success:#4ade80;--warning:#fbbf24;--radius:12px;}[data-theme="light"]{--bg:#f4f4f5;--bg-card:#fff;--bg-input:#f0f0f2;--text:#18181b;--text-muted:#a1a1aa;--border:#e4e4e7;--primary:#18181b;--accent:#7c3aed;--danger:#dc2626;--success:#16a34a;--warning:#d97706;}
@@ -14,6 +14,7 @@
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
+            min-height: 100dvh;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -70,6 +71,10 @@
         .links a:hover { color: var(--text); }
     </style>
     <script>function esc(s){if(typeof s!="string")return"";var d=document.createElement("div");d.textContent=s;return d.innerHTML;}</script>
+<link rel="stylesheet" href="client.css">
+<script src="pwa-register.js" defer></script>
+<script src="page-transition.js" defer></script>
+<script src="safe-area.js" defer></script>
 </head>
 <body>
     <div class="container">
